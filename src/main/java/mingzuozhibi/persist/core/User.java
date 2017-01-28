@@ -1,7 +1,6 @@
 package mingzuozhibi.persist.core;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.*;
 import mingzuozhibi.persist.BaseModel;
 
 import javax.persistence.Column;
@@ -29,6 +28,7 @@ public class User extends BaseModel {
         return password;
     }
 
+    @JsonProperty("password")
     public void setPassword(String password) {
         this.password = password;
     }

@@ -1,5 +1,6 @@
 package mingzuozhibi.persist;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
@@ -13,6 +14,11 @@ public abstract class BaseModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long getId() {
+        return id;
+    }
+
+    @JsonGetter("pid")
+    public Long exportId() {
         return id;
     }
 
