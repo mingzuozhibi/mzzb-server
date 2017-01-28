@@ -1,7 +1,8 @@
-package mingzuozhibi.security;
+package mingzuozhibi.config;
 
 import mingzuozhibi.persist.core.User;
 import mingzuozhibi.persist.core.UserDao;
+import mingzuozhibi.support.JsonArg;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,24 +10,31 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.*;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@RestController
 @Configuration
-@EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @PropertySource("file:config/setting.properties")
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+    private Logger logger = LoggerFactory.getLogger(SecurityConfiguration.class);
 
     @Autowired
     private UserDao userDao;
@@ -37,24 +45,43 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Value("${security.admin.userlist}")
     private String securityAdminUserlist;
 
+    private MyUserDetailsService userDetailsService;
+
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         setupAdminUser();
-        auth.userDetailsService(new MyUserDetailsService());
+        userDetailsService = new MyUserDetailsService();
+        auth.userDetailsService(userDetailsService);
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        Logger logger = LoggerFactory.getLogger(this.getClass());
-
         http.authorizeRequests()
                 .antMatchers("/api/users/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.GET).permitAll()
+                .antMatchers("/api/login").permitAll()
                 .antMatchers("/api/**").hasRole("USER");
         http.httpBasic();
         http.csrf().disable();
 
         logger.info("设置安全策略");
+    }
+
+    @PostMapping("/api/login")
+    public String ajaxLogin(@JsonArg("$.username") String username,
+                            @JsonArg("$.password") String password) {
+        logger.info("用户登入: username={}, password=******", username);
+        try {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            if (userDetails.getPassword().equals(password) && userDetails.isEnabled()) {
+                Authentication authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails, userDetails.getPassword(), userDetails.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                return "login success!";
+            }
+        } catch (UsernameNotFoundException ignored) {
+        }
+        return "login failed!";
     }
 
     private void setupAdminUser() {
