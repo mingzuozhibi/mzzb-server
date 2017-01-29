@@ -1,7 +1,7 @@
 package mingzuozhibi.config;
 
 import mingzuozhibi.persist.core.User;
-import mingzuozhibi.persist.core.UserDao;
+import mingzuozhibi.persist.core.UserRepository;
 import mingzuozhibi.support.JsonArg;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +38,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private Logger logger = LoggerFactory.getLogger(SecurityConfiguration.class);
 
     @Autowired
-    private UserDao userDao;
+    private UserRepository userRepository;
 
     @Value("${security.admin.password}")
     private String securityAdminPassword;
@@ -58,17 +58,17 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private void setupAdminUser() {
         Logger logger = LoggerFactory.getLogger(this.getClass());
 
-        User user = userDao.findByUsername("admin");
+        User user = userRepository.findByUsername("admin");
         if (user == null) {
             user = new User();
             user.setUsername("admin");
             user.setPassword(securityAdminPassword);
-            userDao.save(user);
+            userRepository.save(user);
 
             logger.info("创建管理员用户");
         } else if (!securityAdminPassword.equals(user.getPassword())) {
             user.setPassword(securityAdminPassword);
-            userDao.save(user);
+            userRepository.save(user);
 
             logger.info("更新管理员密码");
         }
@@ -110,9 +110,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     private void onLoginSuccess(String username) {
-        User user = userDao.findByUsername(username);
+        User user = userRepository.findByUsername(username);
         user.setLastLoggedin(new Date());
-        userDao.save(user);
+        userRepository.save(user);
     }
 
     private class MyUserDetailsService implements UserDetailsService {
@@ -134,7 +134,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
         @Override
         public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-            User user = userDao.findByUsername(username);
+            User user = userRepository.findByUsername(username);
             if (user == null) {
                 throw new UsernameNotFoundException("username " + username + " not found");
             }
