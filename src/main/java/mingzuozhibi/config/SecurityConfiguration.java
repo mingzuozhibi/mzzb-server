@@ -31,10 +31,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
                 .antMatchers("/api/users/**").hasRole("ADMIN")
+                .antMatchers("/api/auth/**").permitAll()
                 .antMatchers(HttpMethod.GET).permitAll()
-                .antMatchers("/api/login").permitAll()
                 .antMatchers("/api/**").hasRole("USER");
-        http.httpBasic();
         http.csrf().disable();
 
         Logger logger = LoggerFactory.getLogger(getClass());
