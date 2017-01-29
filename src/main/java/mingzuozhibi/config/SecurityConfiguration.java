@@ -55,6 +55,25 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         auth.userDetailsService(userDetailsService);
     }
 
+    private void setupAdminUser() {
+        Logger logger = LoggerFactory.getLogger(this.getClass());
+
+        User user = userDao.findByUsername("admin");
+        if (user == null) {
+            user = new User();
+            user.setUsername("admin");
+            user.setPassword(securityAdminPassword);
+            userDao.save(user);
+
+            logger.info("创建管理员用户");
+        } else if (!securityAdminPassword.equals(user.getPassword())) {
+            user.setPassword(securityAdminPassword);
+            userDao.save(user);
+
+            logger.info("更新管理员密码");
+        }
+    }
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
@@ -78,6 +97,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 Authentication authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, userDetails.getPassword(), userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                onLoginSuccess(username);
                 logger.info("用户登入: 用户已成功登入, username={}", username);
                 return "{\"success\": true}";
             } else {
@@ -89,25 +109,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         return "{\"success\": false}";
     }
 
-    private void setupAdminUser() {
-        Logger logger = LoggerFactory.getLogger(this.getClass());
-
-        User user = userDao.findByUsername("admin");
-        if (user == null) {
-            user = new User();
-            user.setUsername("admin");
-            user.setPassword(securityAdminPassword);
-            userDao.save(user);
-
-            logger.info("创建管理员用户");
-        } else if (!securityAdminPassword.equals(user.getPassword())) {
-            user.setPassword(securityAdminPassword);
-            userDao.save(user);
-
-            logger.info("更新管理员密码");
-        }
+    private void onLoginSuccess(String username) {
+        User user = userDao.findByUsername(username);
+        user.setLastLoggedin(new Date());
+        userDao.save(user);
     }
-
 
     private class MyUserDetailsService implements UserDetailsService {
 
@@ -134,13 +140,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             }
             return new UserDetails() {
                 public List<GrantedAuthority> getAuthorities() {
-                    onLoginSuccess();
                     return ADMIN_LIST.contains(username) ? ADMIN_ROLES : USER_ROLES;
-                }
-
-                private void onLoginSuccess() {
-                    user.setLastLoggedin(new Date());
-                    userDao.save(user);
                 }
 
                 public String getPassword() {
