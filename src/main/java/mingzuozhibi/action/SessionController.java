@@ -56,7 +56,7 @@ public class SessionController {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             if (userDetails.getPassword().equals(password) && userDetails.isEnabled()) {
                 Authentication authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, userDetails.getPassword(), userDetails.getAuthorities());
+                        userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 onLoginSuccess(username);
                 logger.info("用户登入: 用户已成功登入, username={}", username);
