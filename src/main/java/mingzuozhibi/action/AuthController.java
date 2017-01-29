@@ -11,8 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.*;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 
@@ -66,7 +65,7 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/api/auth/status")
+    @GetMapping("/api/auth/status")
     public String status() {
         logger.info("状态获取: 正在检测登入状态");
 
