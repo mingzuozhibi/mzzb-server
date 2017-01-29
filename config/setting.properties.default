@@ -1,1 +1,4 @@
 # environment configuration
+
+security.admin.password=<your password>
+security.admin.userlist=admin
