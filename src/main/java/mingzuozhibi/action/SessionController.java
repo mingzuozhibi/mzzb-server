@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Date;
 
 @RestController
-public class AuthController {
+public class SessionController {
 
     @Autowired
     private UserRepository userRepository;
@@ -24,9 +24,30 @@ public class AuthController {
     @Autowired
     private UserDetailsService userDetailsService;
 
-    private Logger logger = LoggerFactory.getLogger(AuthController.class);
+    private Logger logger = LoggerFactory.getLogger(SessionController.class);
 
-    @PostMapping("/api/auth/login")
+    @GetMapping("/api/session")
+    public String status() {
+        logger.info("状态获取: 正在检测登入状态");
+
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication authentication = context.getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            String username = authentication.getName();
+            if (!"anonymousUser".equals(username)) {
+                logger.info("状态获取: 检测到已登入用户, username={}", username);
+                return "{\"success\": true, \"username\": \"" + username + "\"}";
+            } else {
+                logger.info("状态获取: 检测到匿名用户");
+                return "{\"success\": false}";
+            }
+        } else {
+            logger.info("状态获取: 未检测到已登入状态");
+            return "{\"success\": false}";
+        }
+    }
+
+    @PostMapping("/api/session")
     public String login(@JsonArg("$.username") String username,
                         @JsonArg("$.password") String password) {
         logger.info("用户登入: username={}, password=******", username);
@@ -35,7 +56,7 @@ public class AuthController {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             if (userDetails.getPassword().equals(password) && userDetails.isEnabled()) {
                 Authentication authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, userDetails.getPassword(), userDetails.getAuthorities());
+                        userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 onLoginSuccess(username);
                 logger.info("用户登入: 用户已成功登入, username={}", username);
@@ -50,7 +71,7 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/api/auth/logout")
+    @DeleteMapping("/api/session")
     public String logout() {
         logger.info("用户登出: 正在检测登入状态");
 
@@ -68,27 +89,6 @@ public class AuthController {
             }
         } else {
             logger.info("用户登出: 未检测到已登入状态");
-            return "{\"success\": false}";
-        }
-    }
-
-    @GetMapping("/api/auth/status")
-    public String status() {
-        logger.info("状态获取: 正在检测登入状态");
-
-        SecurityContext context = SecurityContextHolder.getContext();
-        Authentication authentication = context.getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            String username = authentication.getName();
-            if (!"anonymousUser".equals(username)) {
-                logger.info("状态获取: 检测到已登入用户, username={}", username);
-                return "{\"success\": true, \"username\": \"" + username + "\"}";
-            } else {
-                logger.info("状态获取: 检测到匿名用户");
-                return "{\"success\": false}";
-            }
-        } else {
-            logger.info("状态获取: 未检测到已登入状态");
             return "{\"success\": false}";
         }
     }
