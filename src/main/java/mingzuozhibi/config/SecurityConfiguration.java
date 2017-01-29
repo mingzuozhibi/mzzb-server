@@ -34,7 +34,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET).permitAll()
                 .antMatchers("/api/login").permitAll()
                 .antMatchers("/api/**").hasRole("USER");
-        http.httpBasic();
         http.csrf().disable();
 
         Logger logger = LoggerFactory.getLogger(getClass());
