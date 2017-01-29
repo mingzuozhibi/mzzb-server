@@ -21,7 +21,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.*;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -77,11 +78,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 Authentication authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, userDetails.getPassword(), userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                return "login success!";
+                logger.info("用户登入: 用户已成功登入, username={}", username);
+                return "{\"success\": true}";
+            } else {
+                logger.info("用户登入: 未能成功登入, username={}", username);
             }
         } catch (UsernameNotFoundException ignored) {
+            logger.info("用户登入: 未找到该用户, username={}", username);
         }
-        return "login failed!";
+        return "{\"success\": false}";
     }
 
     private void setupAdminUser() {
