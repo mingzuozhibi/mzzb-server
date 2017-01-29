@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Date;
 
 @RestController
-public class LoginController {
+public class AuthController {
 
     @Autowired
     private UserRepository userRepository;
@@ -25,11 +25,11 @@ public class LoginController {
     @Autowired
     private UserDetailsService userDetailsService;
 
-    private Logger logger = LoggerFactory.getLogger(LoginController.class);
+    private Logger logger = LoggerFactory.getLogger(AuthController.class);
 
-    @PostMapping("/api/login")
-    public String ajaxLogin(@JsonArg("$.username") String username,
-                            @JsonArg("$.password") String password) {
+    @PostMapping("/api/auth/login")
+    public String login(@JsonArg("$.username") String username,
+                        @JsonArg("$.password") String password) {
         logger.info("用户登入: username={}, password=******", username);
         try {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -50,14 +50,14 @@ public class LoginController {
         }
     }
 
-    @PostMapping("/api/logout")
-    public String ajaxLogout() {
+    @PostMapping("/api/auth/logout")
+    public String logout() {
         logger.info("用户登出: 正在检测登入状态");
 
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication authentication = context.getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
-            authentication.setAuthenticated(false);
+            context.setAuthentication(null);
             logger.info("用户登出: 用户已成功登出, username={}", authentication.getName());
             return "{\"success\": true}";
         } else {
@@ -66,8 +66,8 @@ public class LoginController {
         }
     }
 
-    @PostMapping("/api/status")
-    public String ajaxStatus() {
+    @PostMapping("/api/auth/status")
+    public String status() {
         logger.info("状态获取: 正在检测登入状态");
 
         SecurityContext context = SecurityContextHolder.getContext();
