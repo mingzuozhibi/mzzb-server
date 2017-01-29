@@ -1,13 +1,17 @@
 **initial database**
 
-```
-create database mzzb_pro charset utf8;
-create user 'mzzb_pro'@'localhost' identified by 'mzzb_pro';
-grant all privileges on mzzb_pro.* to 'mzzb_pro'@'localhost';
+1. create database, user and grant privileges
+2. create table for spring jdbc session
+3. all sql in manual/initial_db.sql
+4. or you also run manual/initial_db.sh
 
-create database mzzb_dev charset utf8;
-create user 'mzzb_dev'@'localhost' identified by 'mzzb_dev';
-grant all privileges on mzzb_dev.* to 'mzzb_dev'@'localhost';
+**initial config**
 
-flush privileges;
-```
+1. copy setting.properties.default to setting.properties
+2. change security.admin.password to your password
+
+**run develop**
+
+1. run mvn spring-boot:run
+2. open localhost:9090/api
+3. enter ctrl+c to stop server
