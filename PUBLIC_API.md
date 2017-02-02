@@ -11,6 +11,7 @@ Response:
 {
   "success": bool,   # true if logged else false
   "username": string # exists if success is true
+  "roles": string    # exists if success is true
 }
 ```
 

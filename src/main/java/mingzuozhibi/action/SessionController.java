@@ -3,11 +3,13 @@ package mingzuozhibi.action;
 import mingzuozhibi.persist.core.User;
 import mingzuozhibi.persist.core.UserRepository;
 import mingzuozhibi.support.JsonArg;
+import net.minidev.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.*;
@@ -38,15 +40,33 @@ public class SessionController {
             String username = authentication.getName();
             if (!"anonymousUser".equals(username)) {
                 logger.info("状态获取: 检测到已登入用户, username={}", username);
-                return "{\"success\": true, \"username\": \"" + username + "\"}";
+                JSONObject object = new JSONObject();
+                object.put("success", true);
+                object.put("username", username);
+                putAuthority(object, authentication);
+                return object.toString();
             } else {
                 logger.info("状态获取: 检测到匿名用户");
-                return "{\"success\": false}";
+                return simpleResult(false);
             }
         } else {
             logger.info("状态获取: 未检测到已登入状态");
-            return "{\"success\": false}";
+            return simpleResult(false);
         }
+    }
+
+    private void putAuthority(JSONObject object, Authentication authentication) {
+        authentication.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .reduce((s1, s2) -> s1 + "," + s2)
+                .ifPresent(roles -> object.put("roles", roles));
+    }
+
+    private String simpleResult(boolean success) {
+        JSONObject object = new JSONObject();
+        object.put("success", success);
+        return object.toString();
     }
 
     @PostMapping(value = "/api/session", produces = CONTENT_TYPE)
@@ -62,15 +82,21 @@ public class SessionController {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 onLoginSuccess(username);
                 logger.info("用户登入: 用户已成功登入, username={}", username);
-                return "{\"success\": true}";
+                return simpleResult(true);
             } else {
                 logger.info("用户登入: 未能成功登入, username={}", username);
-                return "{\"success\": false}";
+                return simpleResult(false);
             }
         } catch (UsernameNotFoundException ignored) {
             logger.info("用户登入: 未找到该用户, username={}", username);
-            return "{\"success\": false}";
+            return simpleResult(false);
         }
+    }
+
+    private void onLoginSuccess(String username) {
+        User user = userRepository.findByUsername(username);
+        user.setLastLoggedin(new Date());
+        userRepository.save(user);
     }
 
     @DeleteMapping(value = "/api/session", produces = CONTENT_TYPE)
@@ -84,21 +110,15 @@ public class SessionController {
             context.setAuthentication(null);
             if (!"anonymousUser".equals(username)) {
                 logger.info("用户登出: 用户已成功登出, username={}", username);
-                return "{\"success\": true}";
+                return simpleResult(true);
             } else {
                 logger.info("用户登出: 检测到匿名用户");
-                return "{\"success\": true}";
+                return simpleResult(true);
             }
         } else {
             logger.info("用户登出: 未检测到已登入状态");
-            return "{\"success\": false}";
+            return simpleResult(false);
         }
-    }
-
-    private void onLoginSuccess(String username) {
-        User user = userRepository.findByUsername(username);
-        user.setLastLoggedin(new Date());
-        userRepository.save(user);
     }
 
 }
