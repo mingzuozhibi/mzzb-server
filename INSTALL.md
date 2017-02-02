@@ -2,7 +2,7 @@
 
 1. create database, user and grant privileges
 2. create table for spring jdbc session
-3. all sql in manual/initial_db.sql
+3. all sql statement in manual/sql/
 4. or you also run manual/initial_db.sh
 
 **initial config**
