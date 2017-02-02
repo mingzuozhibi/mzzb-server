@@ -18,6 +18,8 @@ import java.util.Date;
 @RestController
 public class SessionController {
 
+    private static final String CONTENT_TYPE = "application/json;charset=UTF-8";
+
     @Autowired
     private UserRepository userRepository;
 
@@ -26,7 +28,7 @@ public class SessionController {
 
     private Logger logger = LoggerFactory.getLogger(SessionController.class);
 
-    @GetMapping("/api/session")
+    @GetMapping(value = "/api/session", produces = CONTENT_TYPE)
     public String status() {
         logger.info("状态获取: 正在检测登入状态");
 
@@ -47,7 +49,7 @@ public class SessionController {
         }
     }
 
-    @PostMapping("/api/session")
+    @PostMapping(value = "/api/session", produces = CONTENT_TYPE)
     public String login(@JsonArg("$.username") String username,
                         @JsonArg("$.password") String password) {
         logger.info("用户登入: username={}, password=******", username);
@@ -71,7 +73,7 @@ public class SessionController {
         }
     }
 
-    @DeleteMapping("/api/session")
+    @DeleteMapping(value = "/api/session", produces = CONTENT_TYPE)
     public String logout() {
         logger.info("用户登出: 正在检测登入状态");
 

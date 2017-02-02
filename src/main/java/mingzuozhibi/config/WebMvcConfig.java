@@ -8,11 +8,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 import java.util.List;
 
-@Configuration
 @EnableWebMvc
-public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
+@Configuration
+public class WebMvcConfig extends WebMvcConfigurerAdapter {
 
-    @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
         argumentResolvers.add(new JsonArgumentResolver());
     }
