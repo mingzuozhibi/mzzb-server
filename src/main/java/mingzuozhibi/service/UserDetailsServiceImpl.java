@@ -44,10 +44,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     private void setupConstants() {
-        ROLE_ADMIN = Stream.of("ROLE_USER", "ROLE_ADMIN")
+        ROLE_ADMIN = Stream.of("ROLE_BASIC", "ROLE_ADMIN")
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
-        ROLE_USER = Stream.of("ROLE_USER")
+        ROLE_USER = Stream.of("ROLE_BASIC")
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
         ADMIN_LIST = Stream.of(securityAdminUserlist.split(","))

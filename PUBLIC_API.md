@@ -1,11 +1,59 @@
+## Authority
+
+```
+Need Role Admin:
+1. Path: /api/users
+   Method: ALL
+
+No Role Require:
+1. Path: /api/**
+   Method: ^(GET|HEAD|TRACE|OPTIONS)$
+2. Path: /api/session
+   Method: ALL
+
+Need Role Basic:
+1. Path: /api/**
+   Method: ^(POST|PATCH|PUT|DELETE)$
+```
+
+## Csrf Token
+
+```
+Need Csrf Token:
+1. Path: /api/**
+   Method: ^(POST|PATCH|PUT|DELETE)$
+
+How To Get Token:
+1. Access GET /api/session
+2. Parse Response Header
+3. Save X-CSRF-HEADER, X-CSRF-PARAM, X-CSRF-TOKEN
+
+How To Use Token:
+1. Access POST /api/session (With Json Data)
+2. Set Header: ${X-CSRF-HEADER}: ${X-CSRF-TOKEN}
+3. If Login Success, You Can Get Session Cookie
+4. Or Else You Also Pass Token With Param
+5. Add Param Like ${X-CSRF-PARAM}=${X-CSRF-TOKEN}
+```
+
+## Cookie
+
+```
+1. SESSION
+   In order to maintain the login status, check role
+   You must pass SESSION with cookie if need any role
+```
+
 ## /api/session
 
 **Check Session**
 
 ```
+Need Role: No
+Need Csrf: No
+
 Request:
 GET /api/session
-Cookie: SESSION
 
 Response:
 {
@@ -18,6 +66,9 @@ Response:
 **Login Session**
 
 ```
+Need Role: No
+Need Csrf: Required
+
 Request:
 POST /api/session
 {
@@ -26,7 +77,6 @@ POST /api/session
 }
 
 Response:
-Set-Cookie: SESSION  # exists if logged
 {
 	"success": bool, # true if logged else false
 }
@@ -35,9 +85,11 @@ Set-Cookie: SESSION  # exists if logged
 **Logout Session**
 
 ```
+Need Role: No
+Need Csrf: Required
+
 Request:
 DELETE /api/session
-Cookie: SESSION
 
 Response:
 {
@@ -54,8 +106,10 @@ Notice: If no session are passed, the user will not
 **Get One User**
 
 ```
+Need Role: Admin
+Need Csrf: No
+
 Request:
-Cookie: SESSION # role: admin
 GET /api/users/{userId}
 
 Response:
@@ -72,13 +126,16 @@ When Success
 
 When Not Found
 	404	Not Found
-When Not Roles
+When Not Role
 	403 Forbidden
 ```
 
 **Get All User**
 
 ```
+Need Role: Admin
+Need Csrf: No
+
 Request:
 Cookie: SESSION # role: admin
 GET /api/users
@@ -107,16 +164,18 @@ When Success
     }
 }
 
-When Not Roles
+When Not Role
 	403 Forbidden
 ```
 
 **Create User**
 
 ```
+Need Role: Admin
+Need Csrf: Required
+
 Request:
 POST /api/users
-Cookie: SESSION # role: admin
 {
 	"username": string, # required
 	"password": string  # required
@@ -136,7 +195,9 @@ When Success
 
 When Param Error
 	400	Bad Request
-When Not Roles
+When Not Role
+	403 Forbidden
+When Not Csrf
 	403 Forbidden
 When Not Allow
 	409	Conflict
@@ -145,9 +206,11 @@ When Not Allow
 **Drop User**
 
 ```
+Need Role: Admin
+Need Csrf: Required
+
 Request:
 DELETE /api/users/{userId}
-Cookie: SESSION # role: admin
 {
 	"username": string, # required
 	"username": string  # required
@@ -156,7 +219,9 @@ Cookie: SESSION # role: admin
 Response:
 When Success
 	204	No Content
-When Not Roles
+When Not Role
+	403 Forbidden
+When Not Csrf
 	403 Forbidden
 When Not Found
 	404	Not Found
@@ -165,9 +230,11 @@ When Not Found
 **Patch User**
 
 ```
+Need Role: Admin
+Need Csrf: Required
+
 Request:
 PATCH /api/users/{userId}
-Cookie: SESSION # role: admin
 {
 	..., # propperties want modify (include password)
 }
@@ -186,7 +253,9 @@ When Success
 
 When Param Error
 	400	Bad Request
-When Not Roles
+When Not Role
+	403 Forbidden
+When Not Csrf
 	403 Forbidden
 When Not Allow
 	409	Conflict
@@ -195,8 +264,10 @@ When Not Allow
 **Find By Username**
 
 ```
+Need Role: Admin
+Need Csrf: No
+
 Request:
-Cookie: SESSION # role: admin
 GET /api/users/search/findByUsername?username={username}
 
 Response:
