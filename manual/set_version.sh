@@ -13,7 +13,7 @@ mvn versions:commit
 
 # 提交 pom.xml 版本号
 git add .
-git cm "chore: set version to v$1"
+git commit -m "chore: set version to v$1"
 
 # 发布新版本
 git flow release finish "v$1"
