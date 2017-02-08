@@ -28,7 +28,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private List<GrantedAuthority> ROLE_USER;
     private HashSet<String> ADMIN_LIST;
 
-    @Autowired
     private UserRepository userRepository;
 
     @Value("${security.admin.password}")
@@ -36,6 +35,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Value("${security.admin.userlist}")
     private String securityAdminUserlist;
+
+    @Autowired
+    public UserDetailsServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @PostConstruct
     public void initial() {
