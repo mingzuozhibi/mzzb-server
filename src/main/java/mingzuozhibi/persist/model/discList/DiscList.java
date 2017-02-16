@@ -56,7 +56,7 @@ public class DiscList extends BaseModel implements Comparable<DiscList> {
         this.date = date;
     }
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "disc_list_discs")
     public List<Disc> getDiscs() {
         return discs;
@@ -73,11 +73,6 @@ public class DiscList extends BaseModel implements Comparable<DiscList> {
         } else {
             return other.name.compareTo(name);
         }
-    }
-
-    @Transient
-    public boolean isBefore(Date date) {
-        return this.date == null || this.date.compareTo(date) < 0;
     }
 
     @Transient
