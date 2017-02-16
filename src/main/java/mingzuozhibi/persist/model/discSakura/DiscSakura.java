@@ -1,6 +1,7 @@
-package mingzuozhibi.persist.model;
+package mingzuozhibi.persist.model.discSakura;
 
 import mingzuozhibi.persist.BaseModel;
+import mingzuozhibi.persist.model.disc.Disc;
 import org.springframework.util.Assert;
 
 import javax.persistence.Column;

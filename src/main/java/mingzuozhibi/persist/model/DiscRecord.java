@@ -1,6 +1,7 @@
 package mingzuozhibi.persist.model;
 
 import mingzuozhibi.persist.BaseModel;
+import mingzuozhibi.persist.model.disc.Disc;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
