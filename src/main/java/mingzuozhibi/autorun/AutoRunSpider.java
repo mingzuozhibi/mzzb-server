@@ -16,15 +16,26 @@ public class AutoRunSpider {
     private SakuraSpeedSpider sakuraSpeedSpider;
 
     @Scheduled(cron = "0 0/2 * * * ?")
-    public void reportCurrentTime() {
+    public void fetchSakuraSpeedData() {
+        fetchSakuraSpeedData(3);
+    }
+
+    private void fetchSakuraSpeedData(int retry) {
         Logger logger = LoggerFactory.getLogger(AutoRunSpider.class);
-        if (logger.isInfoEnabled()) {
-            logger.info("fetching sakura speed data");
-            try {
-                sakuraSpeedSpider.fetch();
-            } catch (IOException e) {
-                if (logger.isWarnEnabled()) {
-                    logger.warn("fetching sakura speed data throw an error", e);
+        if (retry == 0) {
+            if (logger.isWarnEnabled()) {
+                logger.warn("fetching sakura speed data failed");
+            }
+        } else {
+            if (logger.isInfoEnabled()) {
+                logger.info("fetching sakura speed data ({})", retry);
+                try {
+                    sakuraSpeedSpider.fetch();
+                } catch (IOException e) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("fetching sakura speed data throw an error", e);
+                    }
+                    fetchSakuraSpeedData(retry - 1);
                 }
             }
         }
