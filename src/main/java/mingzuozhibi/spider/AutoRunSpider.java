@@ -28,14 +28,17 @@ public class AutoRunSpider {
         } else {
             if (logger.isInfoEnabled()) {
                 logger.info("fetching sakura speed data ({})", retry);
-                try {
-                    sakuraSpeedSpider.fetch();
-                } catch (IOException e) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("fetching sakura speed data throw an error", e);
-                    }
-                    fetchSakuraSpeedData(retry - 1);
+            }
+            try {
+                sakuraSpeedSpider.fetch();
+            } catch (IOException e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("fetching sakura speed data throw an error", e);
                 }
+                fetchSakuraSpeedData(retry - 1);
+            }
+            if (logger.isInfoEnabled()) {
+                logger.info("fetched sakura speed data ({})", retry);
             }
         }
     }
