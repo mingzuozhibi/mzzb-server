@@ -1,4 +1,4 @@
-package mingzuozhibi.autorun.spider;
+package mingzuozhibi.spider;
 
 import mingzuozhibi.persist.model.DiscType;
 import mingzuozhibi.persist.model.disc.Disc;
@@ -39,10 +39,10 @@ public class SakuraSpeedSpider {
     private DiscRepository discRepository;
 
     @Autowired
-    private DiscSakuraRepository discSakuraRepository;
+    private DiscListRepository discListRepository;
 
     @Autowired
-    private DiscListRepository discListRepository;
+    private DiscSakuraRepository discSakuraRepository;
 
     public void fetch() throws IOException {
         Document document = Jsoup.connect(SAKURA_SPEED_URL).get();

@@ -12,7 +12,7 @@ import java.util.Collections;
 public class ServletConfig {
 
     @Bean
-    FilterRegistrationBean filterRegistrationBean() {
+    public FilterRegistrationBean filterRegistrationBean() {
         FilterRegistrationBean registrationBean = new FilterRegistrationBean();
         registrationBean.setUrlPatterns(Collections.singletonList("/*"));
         registrationBean.setFilter(new OpenSessionInViewFilter());
