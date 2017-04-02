@@ -1,4 +1,4 @@
-package mingzuozhibi.spider;
+package mingzuozhibi.service;
 
 import org.springframework.stereotype.Service;
 

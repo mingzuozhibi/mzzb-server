@@ -1,4 +1,4 @@
-package mingzuozhibi.spider;
+package mingzuozhibi.service;
 
 import mingzuozhibi.persist.model.DiscType;
 import mingzuozhibi.persist.model.disc.Disc;

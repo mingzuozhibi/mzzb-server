@@ -1,5 +1,7 @@
-package mingzuozhibi.spider;
+package mingzuozhibi.config;
 
+import mingzuozhibi.service.AmazonDiscsSpider;
+import mingzuozhibi.service.SakuraSpeedSpider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +11,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 
 @Service
-public class AutoRunSpider {
+public class AutoRunConfig {
 
     @Autowired
     private SakuraSpeedSpider sakuraSpeedSpider;
@@ -32,7 +34,7 @@ public class AutoRunSpider {
     }
 
     private void fetchSakuraSpeedData(int retry) {
-        Logger logger = LoggerFactory.getLogger(AutoRunSpider.class);
+        Logger logger = LoggerFactory.getLogger(AutoRunConfig.class);
         if (retry == 0) {
             if (logger.isWarnEnabled()) {
                 logger.warn("fetching sakura speed data failed");
@@ -60,7 +62,7 @@ public class AutoRunSpider {
     }
 
     private void fetchAmazonDiscsData(int retry) {
-        Logger logger = LoggerFactory.getLogger(AutoRunSpider.class);
+        Logger logger = LoggerFactory.getLogger(AutoRunConfig.class);
         if (retry == 0) {
             if (logger.isWarnEnabled()) {
                 logger.warn("fetching amazon discs data failed");
