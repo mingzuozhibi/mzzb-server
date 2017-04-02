@@ -44,6 +44,10 @@ public class SakuraSpeedSpider {
     @Autowired
     private DiscSakuraRepository discSakuraRepository;
 
+    public boolean timeout() {
+        return true;
+    }
+
     public void fetch() throws IOException {
         Document document = Jsoup.connect(SAKURA_SPEED_URL).get();
         Elements tables = document.select("table");
