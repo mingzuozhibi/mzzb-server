@@ -73,7 +73,7 @@ Request:
 POST /api/session
 {
 	"username": string, # required
-	"username": string  # required
+	"password": string  # required
 }
 
 Response:
