@@ -17,8 +17,8 @@ public class DiscSakura extends BaseModel implements Comparable<DiscSakura> {
     private Disc disc;
 
     private Date date;
-    private int curk; // current spdt
-    private int prrk; // previous spdt
+    private int curk; // current rank
+    private int prrk; // previous rank
     private int cubk; // current book
     private int cupt; // current point
     private int sday; // surplus days

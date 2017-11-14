@@ -1,4 +1,4 @@
-package mingzuozhibi.spider;
+package mingzuozhibi.service;
 
 import mingzuozhibi.persist.model.DiscType;
 import mingzuozhibi.persist.model.disc.Disc;
@@ -44,6 +44,10 @@ public class SakuraSpeedSpider {
     @Autowired
     private DiscSakuraRepository discSakuraRepository;
 
+    public boolean timeout() {
+        return true;
+    }
+
     public void fetch() throws IOException {
         Document document = Jsoup.connect(SAKURA_SPEED_URL).get();
         Elements tables = document.select("table");
@@ -65,7 +69,8 @@ public class SakuraSpeedSpider {
     private void updateDiscList(Element table, DiscList discList, Date updateTime) {
         LinkedList<Disc> discs = new LinkedList<>();
         table.select("tr").stream().skip(1).forEach(tr -> {
-            String asin = tr.child(5).child(0).attr("href").substring(11);
+            String href = tr.child(5).child(0).attr("href");
+            String asin = href.substring(href.length() - 10);
             Disc disc = getDisc(asin, tr);
 
             DiscSakura discSakura = getDiscSakura(disc);
