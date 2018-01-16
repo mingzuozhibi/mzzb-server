@@ -1,0 +1,24 @@
+{
+    "__meta__": {
+        "about": "HTTPie session file",
+        "help": "https://httpie.org/docs#sessions",
+        "httpie": "0.9.9"
+    },
+    "auth": {
+        "password": null,
+        "type": null,
+        "username": null
+    },
+    "cookies": {
+        "SESSION": {
+            "expires": null,
+            "path": "/",
+            "secure": false,
+            "value": "8c059cf3-e67e-40af-8d59-9531896eb895"
+        }
+    },
+    "headers": {
+        "Accept": "application/json, */*",
+        "X-CSRF-TOKEN": "054b298f-eca0-4650-98f0-b24e868cbdad"
+    }
+}
