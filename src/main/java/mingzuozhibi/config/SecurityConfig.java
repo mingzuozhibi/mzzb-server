@@ -30,6 +30,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/session").permitAll()
                 .antMatchers(HttpMethod.GET).permitAll()
                 .antMatchers("/api/**").hasRole("BASIC");
+        http.csrf().ignoringAntMatchers("/actuator/*", "/loggers/*", "/jolokia/*");
 
         http.addFilterAfter(new CsrfTokenResponseHeaderBindingFilter(), CsrfFilter.class);
 
