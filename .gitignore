@@ -2,4 +2,5 @@
 *.iml
 record
 target
+manual/http_test/session.json
 config/*.properties
