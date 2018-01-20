@@ -29,5 +29,7 @@ security:
 management:
   security:
     enabled: false
+logging:
+  file: "target/webapp.log"
 server:
   port: 9090
