@@ -67,7 +67,7 @@ public class DiscList extends BaseModel implements Comparable<DiscList> {
     }
 
     public int compareTo(DiscList other) {
-        Assert.notNull(other);
+        Assert.notNull(other, "other must not null");
         if (sakura != other.sakura) {
             return sakura ? -1 : 1;
         } else {

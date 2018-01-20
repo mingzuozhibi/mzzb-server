@@ -113,7 +113,7 @@ public class Disc extends BaseModel implements Comparable<Disc> {
     }
 
     public int compareTo(Disc other) {
-        Assert.notNull(other);
+        Assert.notNull(other, "other must not null");
         return title.compareTo(other.title);
     }
 

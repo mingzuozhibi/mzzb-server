@@ -63,7 +63,7 @@ public class DiscRecord extends BaseModel implements Comparable<DiscRecord> {
     }
 
     public int compareTo(DiscRecord other) {
-        Assert.notNull(other);
+        Assert.notNull(other, "other must not null");
         return other.date.compareTo(date);
     }
 

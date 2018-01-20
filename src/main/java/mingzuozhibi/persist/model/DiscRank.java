@@ -173,7 +173,7 @@ public class DiscRank extends BaseModel implements Comparable<DiscRank> {
     }
 
     public int compareTo(DiscRank other) {
-        Assert.notNull(other);
+        Assert.notNull(other, "other must not null");
         if (park != 0 && other.park != 0) {
             return park - other.park;
         } else {

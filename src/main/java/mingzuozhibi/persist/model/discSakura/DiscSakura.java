@@ -87,7 +87,7 @@ public class DiscSakura extends BaseModel implements Comparable<DiscSakura> {
     }
 
     public int compareTo(DiscSakura other) {
-        Assert.notNull(other);
+        Assert.notNull(other, "other must not null");
         if (curk != 0 && other.curk != 0) {
             return curk - other.curk;
         } else {
