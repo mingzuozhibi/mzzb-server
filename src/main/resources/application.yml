@@ -25,7 +25,7 @@ spring:
       base-path: /api
   boot:
     admin:
-      url: http://localhost:8080
+      url: http://localhost:9091
       username: "${security.user.name}"       #These two are needed so that the client
       password: "${security.user.password}"   #can register at the protected server api
       client:

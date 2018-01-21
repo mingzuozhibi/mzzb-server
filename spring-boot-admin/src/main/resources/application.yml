@@ -10,6 +10,9 @@ logging:
 management:
   context-path: "/actuator"
 
+server:
+  port: 9091
+
 spring:
   application:
     name: "@pom.artifactId@"
