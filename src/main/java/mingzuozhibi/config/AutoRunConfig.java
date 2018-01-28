@@ -78,7 +78,7 @@ public class AutoRunConfig {
                     logger.debug("fetching amazon discs data throw an error", e);
                 }
                 if (retry > 0) {
-                    fetchSakuraSpeedData(retry - 1);
+                    fetchAmazonDiscsData(retry - 1);
                 } else {
                     return;
                 }
