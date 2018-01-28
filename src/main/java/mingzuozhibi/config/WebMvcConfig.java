@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.List;
 
 @EnableWebMvc
-@Configuration
 @EnableJdbcHttpSession
 public class WebMvcConfig extends WebMvcConfigurerAdapter {
 

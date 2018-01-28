@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-@Configuration
 @PropertySource("file:config/setting.properties")
 public class UserDetailsServiceImpl implements UserDetailsService {
 
