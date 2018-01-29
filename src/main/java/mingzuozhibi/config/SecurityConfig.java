@@ -34,10 +34,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.addFilterAfter(new CsrfTokenResponseHeaderBindingFilter(), CsrfFilter.class);
 
-        Logger logger = LoggerFactory.getLogger(getClass());
-        if (logger.isInfoEnabled()) {
-            logger.info("设置安全策略");
-        }
+        Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+        logger.info("设置安全策略");
     }
 
 }

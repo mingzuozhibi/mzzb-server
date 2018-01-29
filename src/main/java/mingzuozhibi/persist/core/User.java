@@ -1,6 +1,8 @@
 package mingzuozhibi.persist.core;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import mingzuozhibi.persist.BaseModel;
 
 import javax.persistence.Column;

@@ -2,8 +2,8 @@ package mingzuozhibi.persist.model.disc;
 
 import mingzuozhibi.persist.BaseModel;
 import mingzuozhibi.persist.model.DiscRank;
-import mingzuozhibi.persist.model.discSakura.DiscSakura;
 import mingzuozhibi.persist.model.DiscType;
+import mingzuozhibi.persist.model.discSakura.DiscSakura;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.util.Assert;

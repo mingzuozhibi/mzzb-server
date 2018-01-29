@@ -56,7 +56,7 @@ public class DiscList extends BaseModel implements Comparable<DiscList> {
         this.date = date;
     }
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany
     @JoinTable(name = "disc_list_discs")
     public List<Disc> getDiscs() {
         return discs;

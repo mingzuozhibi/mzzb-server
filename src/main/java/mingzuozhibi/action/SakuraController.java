@@ -15,16 +15,20 @@ import java.util.List;
 @RestController
 public class SakuraController extends BaseController {
 
-
     @Autowired
     private DiscListRepository discListRepository;
 
     @GetMapping(value = "/api/sakura", produces = CONTENT_TYPE)
     public String sakura() {
         JSONArray data = new JSONArray();
-        discListRepository.findBySakura(true)
-                .forEach(discList -> data.add(buildDiscList(discList)));
-        logger.debug("获取sakura数据, data.size=" + data.size());
+        List<DiscList> sakuras = discListRepository.findBySakura(true);
+        LOGGER.debug("获取sakura数据, 共{}个列表", sakuras.size());
+
+        sakuras.forEach(discList -> {
+            data.add(buildDiscList(discList));
+            LOGGER.debug("列表[{}]共{}个碟片", discList.getTitle(), discList.getDiscs().size());
+        });
+
         return objectResult(data);
     }
 

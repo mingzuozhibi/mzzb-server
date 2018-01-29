@@ -7,10 +7,10 @@ import org.slf4j.LoggerFactory;
 public class BaseController {
 
     protected static final String CONTENT_TYPE = "application/json;charset=UTF-8";
-    protected Logger logger;
+    protected Logger LOGGER;
 
     public BaseController() {
-        logger = LoggerFactory.getLogger(this.getClass());
+        LOGGER = LoggerFactory.getLogger(this.getClass());
     }
 
     protected String booleanResult(boolean success) {
