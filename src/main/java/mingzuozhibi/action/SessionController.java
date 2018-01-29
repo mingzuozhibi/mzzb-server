@@ -31,25 +31,25 @@ public class SessionController extends BaseController {
 
     @GetMapping(value = "/api/session", produces = CONTENT_TYPE)
     public String status() {
-        logger.info("状态获取: 正在检测登入状态");
+        LOGGER.debug("状态获取: 正在检测登入状态");
 
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication authentication = context.getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
             String username = authentication.getName();
             if (!"anonymousUser".equals(username)) {
-                logger.info("状态获取: 检测到已登入用户, username={}", username);
+                LOGGER.info("状态获取: 检测到已登入用户, username={}", username);
                 JSONObject object = new JSONObject();
                 object.put("success", true);
                 object.put("username", username);
                 putAuthority(object, authentication);
                 return object.toString();
             } else {
-                logger.info("状态获取: 检测到匿名用户");
+                LOGGER.debug("状态获取: 检测到匿名用户");
                 return booleanResult(false);
             }
         } else {
-            logger.info("状态获取: 未检测到已登入状态");
+            LOGGER.debug("状态获取: 未检测到已登入状态");
             return booleanResult(false);
         }
     }
@@ -65,7 +65,7 @@ public class SessionController extends BaseController {
     @PostMapping(value = "/api/session", produces = CONTENT_TYPE)
     public String login(@JsonArg("$.username") String username,
                         @JsonArg("$.password") String password) {
-        logger.info("用户登入: username={}, password=******", username);
+        LOGGER.debug("用户登入: username={}, password=******", username);
 
         try {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -74,14 +74,14 @@ public class SessionController extends BaseController {
                         userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 onLoginSuccess(username);
-                logger.info("用户登入: 用户已成功登入, username={}", username);
+                LOGGER.info("用户登入: 用户已成功登入, username={}", username);
                 return booleanResult(true);
             } else {
-                logger.info("用户登入: 未能成功登入, username={}", username);
+                LOGGER.debug("用户登入: 未能成功登入, username={}", username);
                 return booleanResult(false);
             }
         } catch (UsernameNotFoundException ignored) {
-            logger.info("用户登入: 未找到该用户, username={}", username);
+            LOGGER.debug("用户登入: 未找到该用户, username={}", username);
             return booleanResult(false);
         }
     }
@@ -94,7 +94,7 @@ public class SessionController extends BaseController {
 
     @DeleteMapping(value = "/api/session", produces = CONTENT_TYPE)
     public String logout() {
-        logger.info("用户登出: 正在检测登入状态");
+        LOGGER.debug("用户登出: 正在检测登入状态");
 
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication authentication = context.getAuthentication();
@@ -102,14 +102,14 @@ public class SessionController extends BaseController {
             String username = authentication.getName();
             context.setAuthentication(null);
             if (!"anonymousUser".equals(username)) {
-                logger.info("用户登出: 用户已成功登出, username={}", username);
+                LOGGER.debug("用户登出: 用户已成功登出, username={}", username);
                 return booleanResult(true);
             } else {
-                logger.info("用户登出: 检测到匿名用户");
+                LOGGER.debug("用户登出: 检测到匿名用户");
                 return booleanResult(true);
             }
         } else {
-            logger.info("用户登出: 未检测到已登入状态");
+            LOGGER.debug("用户登出: 未检测到已登入状态");
             return booleanResult(false);
         }
     }

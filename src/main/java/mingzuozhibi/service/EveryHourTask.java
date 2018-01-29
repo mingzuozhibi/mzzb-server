@@ -25,7 +25,6 @@ public class EveryHourTask {
     @Transactional
     public void run() {
         dao.execute(session -> {
-            Logger logger = LoggerFactory.getLogger(EveryHourTask.class);
             List<DiscList> sakuras = discListRepository.findBySakura(true)
                     .stream().filter(discList -> !discList.isTop100())
                     .collect(Collectors.toList());
@@ -34,8 +33,12 @@ public class EveryHourTask {
                         .filter(this::isReleasedTenDays)
                         .collect(Collectors.toList());
                 discList.getDiscs().removeAll(toDelete);
-                logger.info("remove {} discs from disclist {}", toDelete.size(), discList.getTitle());
-                toDelete.forEach(disc -> logger.debug("remove disc {} from disclist {}", disc.getTitle(), discList.getTitle()));
+
+                Logger logger = LoggerFactory.getLogger(EveryHourTask.class);
+                if (logger.isInfoEnabled() && toDelete.size() > 0) {
+                    logger.info("从列表[{}]移除{}个碟片", discList.getTitle(), toDelete.size());
+                    toDelete.forEach(disc -> logger.info("移除碟片{}", disc.getTitle()));
+                }
             });
         });
     }

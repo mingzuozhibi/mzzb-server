@@ -59,7 +59,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     private void setupAdminUser() {
-        Logger logger = LoggerFactory.getLogger(this.getClass());
+        Logger logger = LoggerFactory.getLogger(UserDetailsServiceImpl.class);
 
         User user = userRepository.findByUsername("admin");
         if (user == null) {
