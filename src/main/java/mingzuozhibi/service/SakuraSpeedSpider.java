@@ -7,6 +7,7 @@ import mingzuozhibi.persist.model.discList.DiscList;
 import mingzuozhibi.persist.model.discList.DiscListRepository;
 import mingzuozhibi.persist.model.discSakura.DiscSakura;
 import mingzuozhibi.persist.model.discSakura.DiscSakuraRepository;
+import mingzuozhibi.support.Dao;
 import org.apache.commons.lang3.time.DateUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -36,6 +37,9 @@ public class SakuraSpeedSpider {
     private SimpleDateFormat release = new SimpleDateFormat("yyyy/MM/dd");
 
     @Autowired
+    private Dao dao;
+
+    @Autowired
     private DiscRepository discRepository;
 
     @Autowired
@@ -58,12 +62,14 @@ public class SakuraSpeedSpider {
     }
 
     private void updateDiscList(Element table, String updateText) {
-        DiscList discList = getDiscList(table.parent().id());
-        if (!updateText.equals("更新中")) {
-            Date japanDate = parseDate(update, updateText);
-            Date chinaDate = DateUtils.addHours(japanDate, -1);
-            updateDiscList(table, discList, chinaDate);
-        }
+        dao.execute(session -> {
+            DiscList discList = getDiscList(table.parent().id());
+            if (!updateText.equals("更新中")) {
+                Date japanDate = parseDate(update, updateText);
+                Date chinaDate = DateUtils.addHours(japanDate, -1);
+                updateDiscList(table, discList, chinaDate);
+            }
+        });
     }
 
     private void updateDiscList(Element table, DiscList discList, Date updateTime) {

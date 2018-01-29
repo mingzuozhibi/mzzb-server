@@ -1,6 +1,7 @@
 package mingzuozhibi.config;
 
 import mingzuozhibi.service.AmazonDiscsSpider;
+import mingzuozhibi.service.EveryHourTask;
 import mingzuozhibi.service.SakuraSpeedSpider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,11 +14,21 @@ import java.io.IOException;
 @Service
 public class AutoRunConfig {
 
+    /**
+     * call by MzzbServerApplication
+     */
+    public void runStartupServer() {
+        runEveryHourTask();
+    }
+
     @Autowired
     private SakuraSpeedSpider sakuraSpeedSpider;
 
     @Autowired
     private AmazonDiscsSpider amazonDiscsSpider;
+
+    @Autowired
+    private EveryHourTask everyHourTask;
 
     @Scheduled(cron = "10 0/2 * * * ?")
     public void fetchSakuraSpeedData() {
@@ -31,6 +42,14 @@ public class AutoRunConfig {
         if (amazonDiscsSpider.timeout()) {
             fetchAmazonDiscsData(3);
         }
+    }
+
+    @Scheduled(cron = "0 2 * * * ?")
+    public void runEveryHourTask() {
+        Logger logger = LoggerFactory.getLogger(AutoRunConfig.class);
+        logger.info("run every hour task start");
+        everyHourTask.run();
+        logger.info("run every hour task finish");
     }
 
     private void fetchSakuraSpeedData(int retry) {
