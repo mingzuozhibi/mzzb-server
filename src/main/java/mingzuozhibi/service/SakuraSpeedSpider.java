@@ -29,14 +29,14 @@ import java.util.Set;
 public class SakuraSpeedSpider {
 
     private static final String SAKURA_SPEED_URL = "http://rankstker.net/index_news.cgi";
-
-    private static final DateTimeFormatter update = DateTimeFormatter.ofPattern("yyyy年M月d日 H時m分s秒")
-            .withZone(ZoneId.of("Asia/Tokyo"));
-    private static final DateTimeFormatter release = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
-            .withZone(ZoneId.of("Asia/Tokyo"));
+    public static final Logger LOGGER = LoggerFactory.getLogger(SakuraSpeedSpider.class);
 
     @Autowired
     private Dao dao;
+
+    public static void main(String[] args) {
+        System.out.println(new SakuraSpeedSpider().parseRelease("2018/03/23"));
+    }
 
     public void fetch() throws IOException {
         Document document = Jsoup.connect(SAKURA_SPEED_URL).get();
@@ -51,7 +51,9 @@ public class SakuraSpeedSpider {
         dao.execute(session -> {
             Sakura sakura = getOrCreateSakura(table.parent().id());
             if (!updateText.equals("更新中")) {
-                updateSakura(table, sakura, parseTime(update, updateText));
+                updateSakura(table, sakura, parseUpdate(updateText));
+            } else {
+                LOGGER.info("发现sakura网站更新中");
             }
         });
     }
@@ -60,15 +62,20 @@ public class SakuraSpeedSpider {
         String searchKey = key.isEmpty() ? Sakura.TOP100 : key;
         Sakura sakura = dao.lookup(Sakura.class, "key", searchKey);
         if (sakura == null) {
-            Logger logger = LoggerFactory.getLogger(SakuraSpeedSpider.class);
-            logger.info("发现新的Sakura列表, key={}", key);
             sakura = new Sakura(key, null);
             dao.save(sakura);
+            LOGGER.info("发现新的Sakura列表, title={}", sakura.getTitle());
         }
         return sakura;
     }
 
     private void updateSakura(Element table, Sakura sakura, LocalDateTime updateTime) {
+        LocalDateTime sakuraUpdateDate = sakura.getSakuraUpdateDate();
+        if (sakuraUpdateDate != null && updateTime.compareTo(sakuraUpdateDate) == 0) {
+            LOGGER.debug("不需要更新[{}]列表", sakura.getTitle());
+            return;
+        }
+        LOGGER.info("正在更新[{}]列表", sakura.getTitle());
         LinkedList<Disc> toAdd = new LinkedList<>();
         table.select("tr").stream().skip(1).forEach(tr -> {
             String href = tr.child(5).child(0).attr("href");
@@ -98,12 +105,22 @@ public class SakuraSpeedSpider {
         if (disc == null) {
             String title = nameOfDisc(tr.child(5).text());
             String typeIcon = tr.child(1).text();
+            String dateText = tr.child(4).text();
+            LocalDate releaseDate = parseRelease(fixYear(dateText));
             disc = new Disc(asin, title, parseDiscType(typeIcon),
-                    UpdateType.Sakura, isAmazonLimit(title), parseRelease(tr));
+                    UpdateType.Sakura, isAmazonLimit(title), releaseDate);
             disc.setTitlePc(titleOfDisc(title));
+            LOGGER.info("发现了新的碟片, title={}", disc.getTitle());
         }
         dao.save(disc);
         return disc;
+    }
+
+    private String fixYear(String dateText) {
+        if (dateText.length() == 8) {
+            dateText = "20" + dateText;
+        }
+        return dateText;
     }
 
     private DiscType parseDiscType(String type) {
@@ -119,12 +136,24 @@ public class SakuraSpeedSpider {
         }
     }
 
-    private LocalDate parseRelease(Element tr) {
-        String dateText = tr.child(4).text();
-        if (dateText.length() == 8) {
-            dateText = "20" + dateText;
-        }
-        return parseDate(release, dateText);
+    public static final ZoneId TokyoZoneId = ZoneId.of("Asia/Tokyo");
+    public static final ZoneId LocalZoneId = ZoneId.systemDefault();
+
+    private static final DateTimeFormatter UpdateTimeParser;
+    private static final DateTimeFormatter ReleaseDateParse;
+
+    static {
+        UpdateTimeParser = DateTimeFormatter.ofPattern("yyyy年M月d日 H時m分s秒");
+        ReleaseDateParse = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+    }
+
+    private LocalDate parseRelease(String dateText) {
+        return LocalDate.from(ReleaseDateParse.parse(dateText));
+    }
+
+    private LocalDateTime parseUpdate(String timeText) {
+        return ZonedDateTime.parse(timeText, UpdateTimeParser.withZone(TokyoZoneId))
+                .withZoneSameInstant(LocalZoneId).toLocalDateTime();
     }
 
     private String nameOfDisc(String discText) {
@@ -145,14 +174,6 @@ public class SakuraSpeedSpider {
 
     public static boolean isAmazonLimit(String japan) {
         return japan.startsWith("【Amazon.co.jp限定】");
-    }
-
-    private LocalDateTime parseTime(DateTimeFormatter formatter, String text) {
-        return ZonedDateTime.parse(text, formatter).toLocalDateTime();
-    }
-
-    private LocalDate parseDate(DateTimeFormatter formatter, String text) {
-        return ZonedDateTime.parse(text + " 09:00:00", formatter).toLocalDate();
     }
 
     private int parseNumber(String number) {

@@ -35,6 +35,8 @@ public class EveryHourTask {
                 if (logger.isInfoEnabled() && toDelete.size() > 0) {
                     logger.info("从列表[{}]移除{}个碟片", sakura.getTitle(), toDelete.size());
                     toDelete.forEach(disc -> logger.info("移除碟片{}", disc.getTitle()));
+                } else {
+                    logger.info("列表[{}]没有需要移除的过期碟片", sakura.getTitle());
                 }
             });
         });

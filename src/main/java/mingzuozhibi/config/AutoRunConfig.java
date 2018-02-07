@@ -25,6 +25,7 @@ public class AutoRunConfig {
      * call by MzzbServerApplication
      */
     public void runStartupServer() {
+        fetchSakuraSpeedData(3);
         runEveryHourTask();
     }
 
@@ -44,7 +45,7 @@ public class AutoRunConfig {
         LOGGER.debug("正在更新sakura数据 (还有{}次机会)", retry);
         try {
             sakuraSpeedSpider.fetch();
-            LOGGER.info("成功更新sakura数据");
+            LOGGER.debug("成功更新sakura数据");
         } catch (IOException e) {
             if (retry > 0) {
                 LOGGER.debug("更新sakura数据时抛出一个错误", e);
