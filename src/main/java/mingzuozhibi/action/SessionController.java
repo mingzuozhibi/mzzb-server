@@ -1,7 +1,7 @@
 package mingzuozhibi.action;
 
-import mingzuozhibi.persist.core.User;
-import mingzuozhibi.persist.core.UserRepository;
+import mingzuozhibi.persist.User;
+import mingzuozhibi.support.Dao;
 import mingzuozhibi.support.JsonArg;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +18,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @RestController
 public class SessionController extends BaseController {
 
     @Autowired
-    private UserRepository userRepository;
+    private Dao dao;
 
     @Autowired
     private UserDetailsService userDetailsService;
@@ -87,9 +87,9 @@ public class SessionController extends BaseController {
     }
 
     private void onLoginSuccess(String username) {
-        User user = userRepository.findByUsername(username);
-        user.setLastLoggedin(new Date());
-        userRepository.save(user);
+        User user = dao.lookup(User.class, "username", username);
+        user.setLastLoggedIn(LocalDateTime.now());
+        dao.save(user);
     }
 
     @DeleteMapping(value = "/api/session", produces = CONTENT_TYPE)

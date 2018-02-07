@@ -1,8 +1,7 @@
 package mingzuozhibi.service;
 
-import mingzuozhibi.persist.model.disc.Disc;
-import mingzuozhibi.persist.model.discList.DiscList;
-import mingzuozhibi.persist.model.discList.DiscListRepository;
+import mingzuozhibi.persist.Disc;
+import mingzuozhibi.persist.Sakura;
 import mingzuozhibi.support.Dao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,24 +19,21 @@ public class EveryHourTask {
     @Autowired
     private Dao dao;
 
-    @Autowired
-    private DiscListRepository discListRepository;
-
     @Transactional
     public void run() {
         dao.execute(session -> {
-            List<DiscList> sakuras = discListRepository.findBySakura(true)
-                    .stream().filter(discList -> !discList.isTop100())
+            List<Sakura> sakuras = dao.findAll(Sakura.class).stream()
+                    .filter(sakura -> !sakura.isTop100())
                     .collect(Collectors.toList());
-            sakuras.forEach(discList -> {
-                List<Disc> toDelete = discList.getDiscs().stream()
+            sakuras.forEach(sakura -> {
+                List<Disc> toDelete = sakura.getDiscs().stream()
                         .filter(this::isReleasedTenDays)
                         .collect(Collectors.toList());
-                discList.getDiscs().removeAll(toDelete);
+                sakura.getDiscs().removeAll(toDelete);
 
                 Logger logger = LoggerFactory.getLogger(EveryHourTask.class);
                 if (logger.isInfoEnabled() && toDelete.size() > 0) {
-                    logger.info("从列表[{}]移除{}个碟片", discList.getTitle(), toDelete.size());
+                    logger.info("从列表[{}]移除{}个碟片", sakura.getTitle(), toDelete.size());
                     toDelete.forEach(disc -> logger.info("移除碟片{}", disc.getTitle()));
                 }
             });
@@ -44,10 +41,9 @@ public class EveryHourTask {
     }
 
     private boolean isReleasedTenDays(Disc disc) {
-        long nowtime = System.currentTimeMillis();
-        long release = disc.getRelease().getTime();
-        long tenDays = 10 * 24 * 3600 * 1000;
-        return nowtime > release + tenDays;
+        long nowtime = LocalDate.now().toEpochDay();
+        long release = disc.getReleaseDate().toEpochDay();
+        return nowtime > release + 10;
     }
 
 }

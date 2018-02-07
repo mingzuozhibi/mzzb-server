@@ -1,8 +1,5 @@
 package mingzuozhibi.persist;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import javax.persistence.*;
 
 @MappedSuperclass
@@ -17,17 +14,11 @@ public abstract class BaseModel {
         return id;
     }
 
-    @JsonGetter("pid")
-    public Long exportId() {
-        return id;
-    }
-
     public void setId(Long id) {
         this.id = id;
     }
 
     @Version
-    @JsonIgnore
     public Long getVersion() {
         return version;
     }

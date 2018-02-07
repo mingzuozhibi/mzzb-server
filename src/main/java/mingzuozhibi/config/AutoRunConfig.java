@@ -30,9 +30,7 @@ public class AutoRunConfig {
 
     @Scheduled(cron = "10 0/2 * * * ?")
     public void fetchSakuraSpeedData() {
-        if (sakuraSpeedSpider.timeout()) {
-            fetchSakuraSpeedData(3);
-        }
+        fetchSakuraSpeedData(3);
     }
 
     @Scheduled(cron = "0 2 * * * ?")

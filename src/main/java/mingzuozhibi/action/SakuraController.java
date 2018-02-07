@@ -1,73 +1,35 @@
 package mingzuozhibi.action;
 
-import mingzuozhibi.persist.model.disc.Disc;
-import mingzuozhibi.persist.model.discList.DiscList;
-import mingzuozhibi.persist.model.discList.DiscListRepository;
-import mingzuozhibi.persist.model.discSakura.DiscSakura;
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
+import mingzuozhibi.persist.Sakura;
+import mingzuozhibi.support.Dao;
+import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 public class SakuraController extends BaseController {
 
     @Autowired
-    private DiscListRepository discListRepository;
+    private Dao dao;
 
     @GetMapping(value = "/api/sakura", produces = CONTENT_TYPE)
-    public String sakura() {
+    public String sakura(@RequestParam("discColumns") String discColumns) {
         JSONArray data = new JSONArray();
-        List<DiscList> sakuras = discListRepository.findBySakura(true);
-        LOGGER.debug("获取sakura数据, 共{}个列表", sakuras.size());
-
-        sakuras.forEach(discList -> {
-            data.add(buildDiscList(discList));
-            LOGGER.debug("列表[{}]共{}个碟片", discList.getTitle(), discList.getDiscs().size());
+        List<Sakura> sakuras = dao.findBy(Sakura.class, "enabled", true);
+        LOGGER.debug("获取sakura数据, 共{}个列表, 请求参数: {}", sakuras.size(), discColumns);
+        Set<String> columns = Arrays.stream(discColumns.split(",")).collect(Collectors.toSet());
+        sakuras.forEach(sakura -> {
+            data.put(sakura.toJSON(true, columns));
+            LOGGER.debug("列表[{}]共{}个碟片", sakura.getTitle(), sakura.getDiscs().size());
         });
-
         return objectResult(data);
-    }
-
-    private JSONObject buildDiscList(DiscList discList) {
-        JSONObject object = new JSONObject();
-        object.put("name", discList.getName());
-        object.put("title", discList.getTitle());
-        if (discList.getDate() != null)
-            object.put("update_date", discList.getDate().getTime());
-        object.put("discs", buildDiscs(discList.getDiscs()));
-        return object;
-    }
-
-    private JSONArray buildDiscs(List<Disc> discs) {
-        JSONArray array = new JSONArray();
-        discs.forEach(disc -> {
-            JSONObject object = new JSONObject();
-            object.put("id", disc.getId());
-            object.put("asin", disc.getAsin());
-            object.put("japan", disc.getJapan());
-            object.put("title", disc.getTitle());
-            if (disc.getSname() != null)
-                object.put("sname", disc.getSname());
-            else
-                object.put("sname", disc.getTitle());
-            object.put("type", disc.getType().name());
-            DiscSakura sakura = disc.getSakura();
-            if (sakura != null) {
-                object.put("this_rank", sakura.getCurk());
-                object.put("prev_rank", sakura.getPrrk());
-                object.put("this_book", sakura.getCubk());
-                object.put("total_point", sakura.getCupt());
-                object.put("surplus_days", sakura.getSday());
-                if (sakura.getDate() != null)
-                    object.put("update_time", sakura.getDate().getTime());
-            }
-            array.add(object);
-        });
-        return array;
     }
 
 }
