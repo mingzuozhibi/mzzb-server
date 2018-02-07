@@ -1,6 +1,6 @@
 package mingzuozhibi.action;
 
-import net.minidev.json.JSONObject;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

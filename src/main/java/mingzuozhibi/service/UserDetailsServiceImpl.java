@@ -1,7 +1,7 @@
 package mingzuozhibi.service;
 
-import mingzuozhibi.persist.core.User;
-import mingzuozhibi.persist.core.UserRepository;
+import mingzuozhibi.persist.User;
+import mingzuozhibi.support.Dao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +24,11 @@ import java.util.stream.Stream;
 @PropertySource("file:config/setting.properties")
 public class UserDetailsServiceImpl implements UserDetailsService {
 
+    private final Dao dao;
+
     private List<GrantedAuthority> ROLE_ADMIN;
     private List<GrantedAuthority> ROLE_USER;
     private HashSet<String> ADMIN_LIST;
-
-    private UserRepository userRepository;
 
     @Value("${security.admin.password}")
     private String securityAdminPassword;
@@ -37,8 +37,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private String securityAdminUserlist;
 
     @Autowired
-    public UserDetailsServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserDetailsServiceImpl(Dao dao) {
+        this.dao = dao;
     }
 
     @PostConstruct
@@ -61,24 +61,22 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private void setupAdminUser() {
         Logger logger = LoggerFactory.getLogger(UserDetailsServiceImpl.class);
 
-        User user = userRepository.findByUsername("admin");
+        User user = dao.lookup(User.class, "username", "admin");
         if (user == null) {
-            user = new User();
-            user.setUsername("admin");
-            user.setPassword(securityAdminPassword);
-            userRepository.save(user);
+            user = new User("admin", securityAdminPassword);
+            dao.save(user);
 
             logger.info("创建管理员用户");
         } else if (!securityAdminPassword.equals(user.getPassword())) {
             user.setPassword(securityAdminPassword);
-            userRepository.save(user);
+            dao.update(user);
 
             logger.info("更新管理员密码");
         }
     }
 
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username);
+        User user = dao.lookup(User.class, "username", username);
         if (user == null) {
             throw new UsernameNotFoundException("username " + username + " not found");
         }
