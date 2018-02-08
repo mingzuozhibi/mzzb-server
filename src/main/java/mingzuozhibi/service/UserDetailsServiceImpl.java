@@ -2,6 +2,7 @@ package mingzuozhibi.service;
 
 import mingzuozhibi.persist.User;
 import mingzuozhibi.support.Dao;
+import mingzuozhibi.support.PassUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,8 @@ import java.util.stream.Stream;
 @PropertySource("file:config/setting.properties")
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final Dao dao;
+    private Dao dao;
+    private PassUtil passUtil;
 
     private List<GrantedAuthority> ROLE_ADMIN;
     private List<GrantedAuthority> ROLE_USER;
@@ -37,8 +39,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private String securityAdminUserlist;
 
     @Autowired
-    public UserDetailsServiceImpl(Dao dao) {
+    public UserDetailsServiceImpl(Dao dao, PassUtil passUtil) {
         this.dao = dao;
+        this.passUtil = passUtil;
     }
 
     @PostConstruct
@@ -61,14 +64,16 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private void setupAdminUser() {
         Logger logger = LoggerFactory.getLogger(UserDetailsServiceImpl.class);
 
+        String md5Password = passUtil.encode("admin", securityAdminPassword);
+
         User user = dao.lookup(User.class, "username", "admin");
         if (user == null) {
-            user = new User("admin", securityAdminPassword);
+            user = new User("admin", md5Password);
             dao.save(user);
 
             logger.info("创建管理员用户");
-        } else if (!securityAdminPassword.equals(user.getPassword())) {
-            user.setPassword(securityAdminPassword);
+        } else if (!passUtil.vaild(user, securityAdminPassword)) {
+            user.setPassword(md5Password);
             dao.update(user);
 
             logger.info("更新管理员密码");

@@ -38,7 +38,7 @@ public class SessionController extends BaseController {
         if (authentication != null && authentication.isAuthenticated()) {
             String username = authentication.getName();
             if (!"anonymousUser".equals(username)) {
-                LOGGER.info("状态获取: 检测到已登入用户, username={}", username);
+                LOGGER.debug("状态获取: 检测到已登入用户, username={}", username);
                 JSONObject object = new JSONObject();
                 object.put("success", true);
                 object.put("username", username);

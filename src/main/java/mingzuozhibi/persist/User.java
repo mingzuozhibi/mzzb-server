@@ -29,7 +29,7 @@ public class User extends BaseModel {
         this.lastLoggedIn = LocalDateTime.now();
     }
 
-    @Column(length = 40, nullable = false)
+    @Column(length = 50, nullable = false)
     public String getPassword() {
         return password;
     }
@@ -38,7 +38,7 @@ public class User extends BaseModel {
         this.password = password;
     }
 
-    @Column(length = 40, unique = true, nullable = false)
+    @Column(length = 50, unique = true, nullable = false)
     public String getUsername() {
         return username;
     }
