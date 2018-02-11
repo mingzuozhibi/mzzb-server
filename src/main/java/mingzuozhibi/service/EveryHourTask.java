@@ -21,6 +21,10 @@ public class EveryHourTask {
 
     @Transactional
     public void run() {
+        doEveryHourTask();
+    }
+
+    private void doEveryHourTask() {
         dao.execute(session -> {
             List<Sakura> sakuras = dao.findAll(Sakura.class).stream()
                     .filter(sakura -> !sakura.isTop100())
@@ -43,9 +47,8 @@ public class EveryHourTask {
     }
 
     private boolean isReleasedTenDays(Disc disc) {
-        long nowtime = LocalDate.now().toEpochDay();
-        long release = disc.getReleaseDate().toEpochDay();
-        return nowtime > release + 10;
+        LocalDate releaseTenDays = disc.getReleaseDate().plusDays(10);
+        return LocalDate.now().isAfter(releaseTenDays);
     }
 
 }

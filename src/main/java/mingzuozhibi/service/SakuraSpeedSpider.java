@@ -17,13 +17,13 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+
+import static mingzuozhibi.service.SakuraSpeedSpider.Util.*;
 
 @Service
 public class SakuraSpeedSpider {
@@ -33,10 +33,6 @@ public class SakuraSpeedSpider {
 
     @Autowired
     private Dao dao;
-
-    public static void main(String[] args) {
-        System.out.println(new SakuraSpeedSpider().parseRelease("2018/03/23"));
-    }
 
     public void fetch() throws IOException {
         Document document = Jsoup.connect(SAKURA_SPEED_URL).get();
@@ -136,56 +132,54 @@ public class SakuraSpeedSpider {
         }
     }
 
-    public static final ZoneId TokyoZoneId = ZoneId.of("Asia/Tokyo");
-    public static final ZoneId LocalZoneId = ZoneId.systemDefault();
+    public static abstract class Util {
 
-    private static final DateTimeFormatter UpdateTimeParser;
-    private static final DateTimeFormatter ReleaseDateParse;
+        private static final DateTimeFormatter UPDATE_TIME;
+        private static final DateTimeFormatter RELEASE_DATE;
 
-    static {
-        UpdateTimeParser = DateTimeFormatter.ofPattern("yyyy年M月d日 H時m分s秒");
-        ReleaseDateParse = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-    }
-
-    private LocalDate parseRelease(String dateText) {
-        return LocalDate.from(ReleaseDateParse.parse(dateText));
-    }
-
-    private LocalDateTime parseUpdate(String timeText) {
-        return ZonedDateTime.parse(timeText, UpdateTimeParser.withZone(TokyoZoneId))
-                .withZoneSameInstant(LocalZoneId).toLocalDateTime();
-    }
-
-    private String nameOfDisc(String discText) {
-        discText = discText.replace("【予約不可】", "");
-        discText = discText.replace("【更新停止】", "");
-        return discText;
-    }
-
-    public static String titleOfDisc(String discName) {
-        discName = discName.replace("【Blu-ray】", " [Blu-ray]");
-        discName = discName.replace("【DVD】", " [DVD]");
-        if (isAmazonLimit(discName)) {
-            discName = discName.substring(16).trim() + "【尼限定】";
+        static {
+            UPDATE_TIME = DateTimeFormatter.ofPattern("yyyy年M月d日 H時m分s秒");
+            RELEASE_DATE = DateTimeFormatter.ofPattern("yyyy/MM/dd");
         }
-        discName = discName.replaceAll("\\s+", " ");
-        return discName;
-    }
 
-    public static boolean isAmazonLimit(String japan) {
-        return japan.startsWith("【Amazon.co.jp限定】");
-    }
+        public static LocalDate parseRelease(String dateText) {
+            return LocalDate.parse(dateText, RELEASE_DATE);
+        }
 
-    private int parseNumber(String number) {
-        int result = 0;
-        for (int i = 0; i < number.length(); i++) {
-            char ch = number.charAt(i);
-            if (Character.isDigit(ch)) {
-                result *= 10;
-                result += ch - '0';
+        public static LocalDateTime parseUpdate(String timeText) {
+            return LocalDateTime.parse(timeText, UPDATE_TIME).minusHours(1);
+        }
+
+        public static String nameOfDisc(String discText) {
+            discText = discText.replace("【予約不可】", "");
+            discText = discText.replace("【更新停止】", "");
+            return discText;
+        }
+
+        public static String titleOfDisc(String discName) {
+            discName = discName.replace("【Blu-ray】", " [Blu-ray]");
+            discName = discName.replace("【DVD】", " [DVD]");
+            if (isAmazonLimit(discName)) {
+                discName = discName.substring(16).trim() + "【尼限定】";
             }
+            discName = discName.replaceAll("\\s+", " ");
+            return discName;
         }
-        return result;
-    }
 
+        public static boolean isAmazonLimit(String japan) {
+            return japan.startsWith("【Amazon.co.jp限定】");
+        }
+
+        public static int parseNumber(String number) {
+            int result = 0;
+            for (int i = 0; i < number.length(); i++) {
+                char ch = number.charAt(i);
+                if (Character.isDigit(ch)) {
+                    result *= 10;
+                    result += ch - '0';
+                }
+            }
+            return result;
+        }
+    }
 }
