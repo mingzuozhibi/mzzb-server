@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
+import java.util.Optional;
 
 @Entity
 public class User extends BaseModel {
@@ -26,7 +27,6 @@ public class User extends BaseModel {
         this.password = password;
         this.enabled = true;
         this.registerDate = LocalDateTime.now();
-        this.lastLoggedIn = LocalDateTime.now();
     }
 
     @Column(length = 50, nullable = false)
@@ -65,7 +65,7 @@ public class User extends BaseModel {
         this.registerDate = registerDate;
     }
 
-    @Column(nullable = false)
+    @Column
     public LocalDateTime getLastLoggedIn() {
         return lastLoggedIn;
     }
@@ -95,7 +95,9 @@ public class User extends BaseModel {
         object.put("username", getUsername());
         object.put("enabled", enabled);
         object.put("registerDate", registerDate.format(formatterTime));
-        object.put("lastLoggedIn", lastLoggedIn.format(formatterTime));
+        String loginTime = Optional.ofNullable(lastLoggedIn)
+                .map(formatterTime::format).orElse("从未登录");
+        object.put("lastLoggedIn", loginTime);
         return object;
     }
 
