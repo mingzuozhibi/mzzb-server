@@ -25,7 +25,7 @@ public class UserController extends BaseController {
     }
 
     @PostMapping(value = "/api/users", produces = CONTENT_TYPE)
-    public String save(
+    public String addUser(
             @JsonArg("$.username") String username,
             @JsonArg("$.password") String password) {
         if (dao.lookup(User.class, "username", username) != null) {
