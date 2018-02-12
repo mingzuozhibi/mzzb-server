@@ -16,7 +16,7 @@ public class UserController extends BaseController {
     private Dao dao;
 
     @GetMapping(value = "/api/users", produces = CONTENT_TYPE)
-    public String findAll() {
+    public String listUser() {
         JSONArray array = new JSONArray();
         dao.findAll(User.class).forEach(user -> {
             array.put(user.toJSON());
@@ -25,7 +25,7 @@ public class UserController extends BaseController {
     }
 
     @PostMapping(value = "/api/users", produces = CONTENT_TYPE)
-    public String addUser(
+    public String saveUser(
             @JsonArg("$.username") String username,
             @JsonArg("$.password") String password) {
         if (dao.lookup(User.class, "username", username) != null) {
