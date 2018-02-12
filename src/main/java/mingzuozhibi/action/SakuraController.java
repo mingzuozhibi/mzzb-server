@@ -1,5 +1,6 @@
 package mingzuozhibi.action;
 
+import mingzuozhibi.persist.Disc;
 import mingzuozhibi.persist.Sakura;
 import mingzuozhibi.support.Dao;
 import org.json.JSONArray;
@@ -26,10 +27,18 @@ public class SakuraController extends BaseController {
         LOGGER.debug("获取sakura数据, 共{}个列表, 请求参数: {}", sakuras.size(), discColumns);
         Set<String> columns = Arrays.stream(discColumns.split(",")).collect(Collectors.toSet());
         sakuras.forEach(sakura -> {
-            data.put(sakura.toJSON(true, columns));
+            data.put(sakura.toJSON().put("discs", buildDiscs(sakura, columns)));
             LOGGER.debug("列表[{}]共{}个碟片", sakura.getTitle(), sakura.getDiscs().size());
         });
         return objectResult(data);
+    }
+
+    private JSONArray buildDiscs(Sakura sakura, Set<String> columns) {
+        JSONArray discs = new JSONArray();
+        sakura.getDiscs().stream()
+                .filter(disc -> disc.getUpdateType() != Disc.UpdateType.None)
+                .forEach(disc -> discs.put(disc.toJSON(columns)));
+        return discs;
     }
 
 }

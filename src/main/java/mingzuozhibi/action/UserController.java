@@ -16,7 +16,7 @@ public class UserController extends BaseController {
     @Autowired
     private Dao dao;
 
-    @GetMapping(value = "/api/users", produces = CONTENT_TYPE)
+    @GetMapping(value = "/api/admin/users", produces = CONTENT_TYPE)
     public String listUser() {
         JSONArray array = new JSONArray();
         dao.findAll(User.class).forEach(user -> {
@@ -25,7 +25,7 @@ public class UserController extends BaseController {
         return objectResult(array);
     }
 
-    @PostMapping(value = "/api/users", produces = CONTENT_TYPE)
+    @PostMapping(value = "/api/admin/users", produces = CONTENT_TYPE)
     public String saveUser(
             @JsonArg("$.username") String username,
             @JsonArg("$.password") String password) {
@@ -37,7 +37,7 @@ public class UserController extends BaseController {
         return objectResult(user.toJSON());
     }
 
-    @PostMapping(value = "/api/users/{id}", produces = CONTENT_TYPE)
+    @PostMapping(value = "/api/admin/users/{id}", produces = CONTENT_TYPE)
     public String editUser(
             @PathVariable("id") Long id,
             @JsonArg("$.username") String username,
