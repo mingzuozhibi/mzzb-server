@@ -4,7 +4,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.persistence.*;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -106,7 +108,8 @@ public class Sakura extends BaseModel implements Comparable<Sakura> {
         object.put("title", getTitle());
         object.put("enabled", isEnabled());
         object.put("sakuraUpdateDate", Optional.ofNullable(sakuraUpdateDate)
-                .map(formatter::format).orElse("该列表并未从Sakura更新过"));
+                .map(date -> date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
+                .orElse(0L));
         if (hasDiscs) {
             JSONArray array = new JSONArray();
             getDiscs().forEach(disc -> array.put(disc.toJSON(discColumns)));

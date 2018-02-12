@@ -20,7 +20,7 @@ public class SakuraController extends BaseController {
     private Dao dao;
 
     @GetMapping(value = "/api/sakuras", produces = CONTENT_TYPE)
-    public String findAll(@RequestParam("discColumns") String discColumns) {
+    public String listSakura(@RequestParam("discColumns") String discColumns) {
         JSONArray data = new JSONArray();
         List<Sakura> sakuras = dao.findBy(Sakura.class, "enabled", true);
         LOGGER.debug("获取sakura数据, 共{}个列表, 请求参数: {}", sakuras.size(), discColumns);

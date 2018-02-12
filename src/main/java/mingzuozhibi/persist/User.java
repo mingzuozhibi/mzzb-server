@@ -26,7 +26,7 @@ public class User extends BaseModel {
         this.username = username;
         this.password = password;
         this.enabled = true;
-        this.registerDate = LocalDateTime.now();
+        this.registerDate = LocalDateTime.now().withNano(0);
     }
 
     @Column(length = 50, nullable = false)
