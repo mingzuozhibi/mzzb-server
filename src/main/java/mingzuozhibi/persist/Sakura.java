@@ -101,7 +101,7 @@ public class Sakura extends BaseModel implements Comparable<Sakura> {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
-    public JSONObject toJSON(boolean hasDiscs, Set<String> discColumns) {
+    public JSONObject toJSON() {
         JSONObject object = new JSONObject();
         object.put("id", getId());
         object.put("key", getKey());
@@ -110,11 +110,6 @@ public class Sakura extends BaseModel implements Comparable<Sakura> {
         object.put("sakuraUpdateDate", Optional.ofNullable(sakuraUpdateDate)
                 .map(date -> date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
                 .orElse(0L));
-        if (hasDiscs) {
-            JSONArray array = new JSONArray();
-            getDiscs().forEach(disc -> array.put(disc.toJSON(discColumns)));
-            object.put("discs", array);
-        }
         return object;
     }
 
