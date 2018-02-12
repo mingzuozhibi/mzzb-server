@@ -50,8 +50,8 @@ public class Disc extends BaseModel {
         this.updateType = updateType;
         this.amazonLimit = amazonLimit;
         this.releaseDate = releaseDate;
-        this.createDate = LocalDateTime.now();
-        this.modifyDate = LocalDateTime.now();
+        this.createDate = LocalDateTime.now().withNano(0);
+        this.modifyDate = LocalDateTime.now().withNano(0);
     }
 
     @Column(length = 20, nullable = false, unique = true)
@@ -171,7 +171,7 @@ public class Disc extends BaseModel {
         this.createDate = createDate;
     }
 
-    @Column(nullable = false)
+    @Column
     public LocalDateTime getModifyDate() {
         return modifyDate;
     }
@@ -239,10 +239,11 @@ public class Disc extends BaseModel {
         if (columns.contains("createDate"))
             object.put("createDate", getCreateDate().format(formatterTime));
         if (columns.contains("modifyDate"))
-            object.put("modifyDate", getModifyDate().format(formatterTime));
+            object.put("modifyDate", Optional.ofNullable(getModifyDate())
+                    .map(formatterTime::format).orElse("从未修改"));
         if (columns.contains("modifyUser"))
             object.put("modifyUser", Optional.ofNullable(getModifyUser())
-                    .map(User::getUsername).orElse("系统"));
+                    .map(User::getUsername).orElse("无"));
         if (columns.contains("surplusDays"))
             object.put("surplusDays", getSurplusDays());
         return object;
