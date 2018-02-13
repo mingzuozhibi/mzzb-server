@@ -3,7 +3,8 @@ package mingzuozhibi.action;
 import mingzuozhibi.persist.User;
 import mingzuozhibi.support.Dao;
 import mingzuozhibi.support.JsonArg;
-import net.minidev.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -31,35 +32,36 @@ public class SessionController extends BaseController {
 
     @GetMapping(value = "/api/session", produces = CONTENT_TYPE)
     public String status() {
-        LOGGER.debug("状态获取: 正在检测登入状态");
-
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication authentication = context.getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            String username = authentication.getName();
-            if (!"anonymousUser".equals(username)) {
-                LOGGER.debug("状态获取: 检测到已登入用户, username={}", username);
-                JSONObject object = new JSONObject();
-                object.put("success", true);
-                object.put("username", username);
-                putAuthority(object, authentication);
-                return object.toString();
-            } else {
-                LOGGER.debug("状态获取: 检测到匿名用户");
-                return booleanResult(false);
-            }
-        } else {
-            LOGGER.debug("状态获取: 未检测到已登入状态");
-            return booleanResult(false);
-        }
+        JSONObject object = getJSON(authentication);
+
+        LOGGER.debug("用户登入状态为: {}", object.toString());
+        return objectResult(object);
     }
 
-    private void putAuthority(JSONObject object, Authentication authentication) {
-        authentication.getAuthorities()
-                .stream()
+    private JSONObject getJSON(Authentication authentication) {
+        JSONObject object = new JSONObject();
+        String name = authentication.getName();
+        boolean isLogged = authentication.isAuthenticated() && !"anonymousUser".equals(name);
+        if (isLogged) {
+            object.put("userName", name);
+            object.put("isLogged", true);
+            object.put("userRoles", getUserRoles(authentication));
+        } else {
+            object.put("userName", "Guest");
+            object.put("isLogged", false);
+            object.put("userRoles", new JSONArray());
+        }
+        return object;
+    }
+
+    private JSONArray getUserRoles(Authentication authentication) {
+        JSONArray userRoles = new JSONArray();
+        authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .reduce((s1, s2) -> s1 + "," + s2)
-                .ifPresent(roles -> object.put("roles", roles));
+                .forEach(userRoles::put);
+        return userRoles;
     }
 
     @PostMapping(value = "/api/session", produces = CONTENT_TYPE)
@@ -75,15 +77,14 @@ public class SessionController extends BaseController {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 onLoginSuccess(username);
                 LOGGER.info("用户登入: 用户已成功登入, username={}", username);
-                return booleanResult(true);
             } else {
                 LOGGER.debug("用户登入: 未能成功登入, username={}", username);
-                return booleanResult(false);
             }
         } catch (UsernameNotFoundException ignored) {
             LOGGER.debug("用户登入: 未找到该用户, username={}", username);
-            return booleanResult(false);
         }
+
+        return status();
     }
 
     private void onLoginSuccess(String username) {
@@ -98,20 +99,9 @@ public class SessionController extends BaseController {
 
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication authentication = context.getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            String username = authentication.getName();
-            context.setAuthentication(null);
-            if (!"anonymousUser".equals(username)) {
-                LOGGER.debug("用户登出: 用户已成功登出, username={}", username);
-                return booleanResult(true);
-            } else {
-                LOGGER.debug("用户登出: 检测到匿名用户");
-                return booleanResult(true);
-            }
-        } else {
-            LOGGER.debug("用户登出: 未检测到已登入状态");
-            return booleanResult(false);
-        }
+        authentication.setAuthenticated(false);
+
+        return status();
     }
 
 }
