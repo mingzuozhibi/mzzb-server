@@ -13,12 +13,6 @@ public class BaseController {
         LOGGER = LoggerFactory.getLogger(this.getClass());
     }
 
-    protected String booleanResult(boolean success) {
-        JSONObject root = new JSONObject();
-        root.put("success", success);
-        return root.toString();
-    }
-
     protected String objectResult(Object object) {
         JSONObject root = new JSONObject();
         root.put("success", true);
