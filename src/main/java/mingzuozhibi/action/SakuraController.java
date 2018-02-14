@@ -33,6 +33,14 @@ public class SakuraController extends BaseController {
         return objectResult(data);
     }
 
+    @GetMapping(value = "/api/admin/sakuras", produces = CONTENT_TYPE)
+    public String listAdminSakuras() {
+        JSONArray data = new JSONArray();
+        List<Sakura> sakuras = dao.findAll(Sakura.class);
+        sakuras.forEach(sakura -> data.put(sakura.toJSON()));
+        return objectResult(data);
+    }
+
     private JSONArray buildDiscs(Sakura sakura, Set<String> columns) {
         JSONArray discs = new JSONArray();
         sakura.getDiscs().stream()
