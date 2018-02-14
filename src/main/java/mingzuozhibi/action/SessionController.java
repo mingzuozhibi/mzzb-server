@@ -42,17 +42,21 @@ public class SessionController extends BaseController {
 
     private JSONObject getJSON(Authentication authentication) {
         JSONObject object = new JSONObject();
-        String name = authentication.getName();
-        boolean isLogged = authentication.isAuthenticated() && !"anonymousUser".equals(name);
-        if (isLogged) {
-            object.put("userName", name);
-            object.put("isLogged", true);
-            object.put("userRoles", getUserRoles(authentication));
-        } else {
-            object.put("userName", "Guest");
-            object.put("isLogged", false);
-            object.put("userRoles", new JSONArray());
+
+        if (authentication != null) {
+            String name = authentication.getName();
+            boolean isLogged = authentication.isAuthenticated() && !"anonymousUser".equals(name);
+            if (isLogged) {
+                object.put("userName", name);
+                object.put("isLogged", true);
+                object.put("userRoles", getUserRoles(authentication));
+                return object;
+            }
         }
+
+        object.put("userName", "Guest");
+        object.put("isLogged", false);
+        object.put("userRoles", new JSONArray());
         return object;
     }
 
@@ -98,8 +102,7 @@ public class SessionController extends BaseController {
         LOGGER.debug("用户登出: 正在检测登入状态");
 
         SecurityContext context = SecurityContextHolder.getContext();
-        Authentication authentication = context.getAuthentication();
-        authentication.setAuthenticated(false);
+        context.setAuthentication(null);
 
         return status();
     }
