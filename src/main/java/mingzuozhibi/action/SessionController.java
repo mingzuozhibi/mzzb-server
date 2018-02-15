@@ -31,7 +31,7 @@ public class SessionController extends BaseController {
     private UserDetailsService userDetailsService;
 
     @GetMapping(value = "/api/session", produces = CONTENT_TYPE)
-    public String status() {
+    public String current() {
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication authentication = context.getAuthentication();
         JSONObject object = getJSON(authentication);
@@ -88,7 +88,7 @@ public class SessionController extends BaseController {
             LOGGER.debug("用户登入: 未找到该用户, username={}", username);
         }
 
-        return status();
+        return current();
     }
 
     private void onLoginSuccess(String username) {
@@ -104,7 +104,7 @@ public class SessionController extends BaseController {
         SecurityContext context = SecurityContextHolder.getContext();
         context.setAuthentication(null);
 
-        return status();
+        return current();
     }
 
 }
