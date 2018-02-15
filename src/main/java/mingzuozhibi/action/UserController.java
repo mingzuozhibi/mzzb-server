@@ -18,7 +18,7 @@ public class UserController extends BaseController {
     private Dao dao;
 
     @Transactional
-    @GetMapping(value = "/api/admin/users", produces = CONTENT_TYPE)
+    @GetMapping(value = "/api/admin/users", produces = MEDIA_TYPE)
     public String listAdminUser() {
         JSONArray array = new JSONArray();
         dao.findAll(User.class).forEach(user -> {
@@ -28,7 +28,7 @@ public class UserController extends BaseController {
     }
 
     @Transactional
-    @PostMapping(value = "/api/admin/users", produces = CONTENT_TYPE)
+    @PostMapping(value = "/api/admin/users", produces = MEDIA_TYPE)
     public String saveAdminUser(
             @JsonArg("$.username") String username,
             @JsonArg("$.password") String password) {
@@ -41,7 +41,7 @@ public class UserController extends BaseController {
     }
 
     @Transactional
-    @PostMapping(value = "/api/admin/users/{id}", produces = CONTENT_TYPE)
+    @PostMapping(value = "/api/admin/users/{id}", produces = MEDIA_TYPE)
     public String editAdminUser(
             @PathVariable("id") Long id,
             @JsonArg("$.username") String username,

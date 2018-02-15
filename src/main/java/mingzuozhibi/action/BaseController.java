@@ -3,10 +3,11 @@ package mingzuozhibi.action;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 
 public class BaseController {
 
-    protected static final String CONTENT_TYPE = "application/json;charset=UTF-8";
+    protected static final String MEDIA_TYPE = MediaType.APPLICATION_JSON_UTF8_VALUE;
     protected Logger LOGGER;
 
     public BaseController() {

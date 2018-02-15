@@ -24,7 +24,7 @@ public class SakuraController extends BaseController {
     private Dao dao;
 
     @Transactional
-    @GetMapping(value = "/api/sakuras", produces = CONTENT_TYPE)
+    @GetMapping(value = "/api/sakuras", produces = MEDIA_TYPE)
     public String listSakura(@RequestParam("discColumns") String discColumns) {
         JSONArray data = new JSONArray();
         List<Sakura> sakuras = dao.findBy(Sakura.class, "enabled", true);
@@ -38,7 +38,7 @@ public class SakuraController extends BaseController {
     }
 
     @Transactional
-    @GetMapping(value = "/api/basic/sakuras", produces = CONTENT_TYPE)
+    @GetMapping(value = "/api/basic/sakuras", produces = MEDIA_TYPE)
     public String listBasicSakura() {
         JSONArray data = new JSONArray();
         List<Sakura> sakuras = dao.findAll(Sakura.class);
@@ -47,7 +47,7 @@ public class SakuraController extends BaseController {
     }
 
     @Transactional
-    @PostMapping(value = "/api/basic/sakuras", produces = CONTENT_TYPE)
+    @PostMapping(value = "/api/basic/sakuras", produces = MEDIA_TYPE)
     public String saveBasicSakura(
             @JsonArg("$.key") String key,
             @JsonArg("$.title") String title) {
