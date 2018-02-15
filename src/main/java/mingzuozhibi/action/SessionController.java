@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +31,7 @@ public class SessionController extends BaseController {
     @Autowired
     private UserDetailsService userDetailsService;
 
+    @Transactional
     @GetMapping(value = "/api/session", produces = CONTENT_TYPE)
     public String current() {
         SecurityContext context = SecurityContextHolder.getContext();
@@ -68,6 +70,7 @@ public class SessionController extends BaseController {
         return userRoles;
     }
 
+    @Transactional
     @PostMapping(value = "/api/session", produces = CONTENT_TYPE)
     public String login(@JsonArg("$.username") String username,
                         @JsonArg("$.password") String password) {
@@ -97,6 +100,7 @@ public class SessionController extends BaseController {
         dao.save(user);
     }
 
+    @Transactional
     @DeleteMapping(value = "/api/session", produces = CONTENT_TYPE)
     public String logout() {
         LOGGER.debug("用户登出: 正在检测登入状态");

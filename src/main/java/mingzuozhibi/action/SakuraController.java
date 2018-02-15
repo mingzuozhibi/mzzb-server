@@ -6,6 +6,7 @@ import mingzuozhibi.support.Dao;
 import mingzuozhibi.support.JsonArg;
 import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +23,7 @@ public class SakuraController extends BaseController {
     @Autowired
     private Dao dao;
 
+    @Transactional
     @GetMapping(value = "/api/sakuras", produces = CONTENT_TYPE)
     public String listSakura(@RequestParam("discColumns") String discColumns) {
         JSONArray data = new JSONArray();
@@ -35,6 +37,7 @@ public class SakuraController extends BaseController {
         return objectResult(data);
     }
 
+    @Transactional
     @GetMapping(value = "/api/basic/sakuras", produces = CONTENT_TYPE)
     public String listBasicSakura() {
         JSONArray data = new JSONArray();
@@ -43,6 +46,7 @@ public class SakuraController extends BaseController {
         return objectResult(data);
     }
 
+    @Transactional
     @PostMapping(value = "/api/basic/sakuras", produces = CONTENT_TYPE)
     public String saveBasicSakura(
             @JsonArg("$.key") String key,

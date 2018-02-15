@@ -5,6 +5,7 @@ import mingzuozhibi.support.Dao;
 import mingzuozhibi.support.JsonArg;
 import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +17,7 @@ public class UserController extends BaseController {
     @Autowired
     private Dao dao;
 
+    @Transactional
     @GetMapping(value = "/api/admin/users", produces = CONTENT_TYPE)
     public String listAdminUser() {
         JSONArray array = new JSONArray();
@@ -25,6 +27,7 @@ public class UserController extends BaseController {
         return objectResult(array);
     }
 
+    @Transactional
     @PostMapping(value = "/api/admin/users", produces = CONTENT_TYPE)
     public String saveAdminUser(
             @JsonArg("$.username") String username,
@@ -37,6 +40,7 @@ public class UserController extends BaseController {
         return objectResult(user.toJSON());
     }
 
+    @Transactional
     @PostMapping(value = "/api/admin/users/{id}", produces = CONTENT_TYPE)
     public String editAdminUser(
             @PathVariable("id") Long id,
