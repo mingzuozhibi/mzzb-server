@@ -5,6 +5,7 @@ import mingzuozhibi.support.Dao;
 import mingzuozhibi.support.JsonArg;
 import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,8 +17,9 @@ public class UserController extends BaseController {
     @Autowired
     private Dao dao;
 
-    @GetMapping(value = "/api/admin/users", produces = CONTENT_TYPE)
-    public String listUser() {
+    @Transactional
+    @GetMapping(value = "/api/admin/users", produces = MEDIA_TYPE)
+    public String listAdminUser() {
         JSONArray array = new JSONArray();
         dao.findAll(User.class).forEach(user -> {
             array.put(user.toJSON());
@@ -25,8 +27,9 @@ public class UserController extends BaseController {
         return objectResult(array);
     }
 
-    @PostMapping(value = "/api/admin/users", produces = CONTENT_TYPE)
-    public String saveUser(
+    @Transactional
+    @PostMapping(value = "/api/admin/users", produces = MEDIA_TYPE)
+    public String saveAdminUser(
             @JsonArg("$.username") String username,
             @JsonArg("$.password") String password) {
         if (dao.lookup(User.class, "username", username) != null) {
@@ -37,8 +40,9 @@ public class UserController extends BaseController {
         return objectResult(user.toJSON());
     }
 
-    @PostMapping(value = "/api/admin/users/{id}", produces = CONTENT_TYPE)
-    public String editUser(
+    @Transactional
+    @PostMapping(value = "/api/admin/users/{id}", produces = MEDIA_TYPE)
+    public String editAdminUser(
             @PathVariable("id") Long id,
             @JsonArg("$.username") String username,
             @JsonArg("$.password") String password,

@@ -2,19 +2,22 @@ package mingzuozhibi.persist;
 
 import org.json.JSONObject;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
+import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Entity
-public class User extends BaseModel {
+public class User extends BaseModel implements Serializable {
 
     private String username;
     private String password;
     private boolean enabled;
+    private Set<String> roles = new HashSet<>();
 
     private LocalDateTime registerDate;
     private LocalDateTime lastLoggedIn;
@@ -27,6 +30,7 @@ public class User extends BaseModel {
         this.password = password;
         this.enabled = true;
         this.registerDate = LocalDateTime.now().withNano(0);
+        this.roles.add("ROLE_BASIC");
     }
 
     @Column(length = 50, nullable = false)
@@ -54,6 +58,16 @@ public class User extends BaseModel {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    @ElementCollection
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    public Set<String> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<String> roles) {
+        this.roles = roles;
     }
 
     @Column(nullable = false)
