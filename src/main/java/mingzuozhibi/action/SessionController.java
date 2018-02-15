@@ -78,20 +78,26 @@ public class SessionController extends BaseController {
 
         try {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if (userDetails.getPassword().equals(password) && userDetails.isEnabled()) {
-                Authentication authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                onLoginSuccess(username);
-                LOGGER.info("用户登入: 用户已成功登入, username={}", username);
+            if (userDetails.getPassword().equals(password)) {
+                if (userDetails.isEnabled()) {
+                    Authentication authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    onLoginSuccess(username);
+                    LOGGER.info("用户登入: 用户已成功登入, username={}", username);
+                    return current();
+                } else {
+                    LOGGER.debug("用户登入: 用户未启用, username={}", username);
+                    return errorMessage("用户已被停用");
+                }
             } else {
                 LOGGER.debug("用户登入: 未能成功登入, username={}", username);
+                return errorMessage("用户密码错误");
             }
         } catch (UsernameNotFoundException ignored) {
             LOGGER.debug("用户登入: 未找到该用户, username={}", username);
+            return errorMessage("用户名不存在");
         }
-
-        return current();
     }
 
     private void onLoginSuccess(String username) {
