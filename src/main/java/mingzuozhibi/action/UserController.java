@@ -24,6 +24,10 @@ public class UserController extends BaseController {
         dao.findAll(User.class).forEach(user -> {
             array.put(user.toJSON());
         });
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("[{}]get:/api/admin/users, size={}",
+                    getWebDetails().getRemoteAddress(), array.length());
+        }
         return objectResult(array);
     }
 
@@ -37,6 +41,10 @@ public class UserController extends BaseController {
         }
         User user = new User(username, password);
         dao.save(user);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("[{}]post:/api/admin/users: {}",
+                    getWebDetails().getRemoteAddress(), user.toJSON());
+        }
         return objectResult(user.toJSON());
     }
 
@@ -48,10 +56,18 @@ public class UserController extends BaseController {
             @JsonArg("$.password") String password,
             @JsonArg("$.enabled") boolean enabled) {
         User user = dao.get(User.class, id);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("[{}]post:/api/admin/users/{}:Before:{}",
+                    getWebDetails().getRemoteAddress(), id, user.toJSON());
+        }
         user.setUsername(username);
         user.setEnabled(enabled);
         if (password != null && !password.isEmpty()) {
             user.setPassword(password);
+        }
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("[{}]post:/api/admin/users/{}:Modify:{}",
+                    getWebDetails().getRemoteAddress(), id, user.toJSON());
         }
         return objectResult(user.toJSON());
     }
