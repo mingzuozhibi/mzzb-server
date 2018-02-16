@@ -2,7 +2,6 @@ package mingzuozhibi.security;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -24,6 +23,8 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
             String username = context.read("$.username", String.class);
             String password = context.read("$.password", String.class);
             authRequest = new UsernamePasswordAuthenticationToken(username, password);
+            LoggerFactory.getLogger(CustomAuthenticationFilter.class)
+                    .info("CustomAuthenticationFilter Running");
         } catch (IOException e) {
             e.printStackTrace();
             authRequest = new UsernamePasswordAuthenticationToken("", "");
