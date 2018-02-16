@@ -28,12 +28,18 @@ public class SakuraController extends BaseController {
     public String listSakura(@RequestParam("discColumns") String discColumns) {
         JSONArray data = new JSONArray();
         List<Sakura> sakuras = dao.findBy(Sakura.class, "enabled", true);
-        LOGGER.debug("获取sakura数据, 共{}个列表, 请求参数: {}", sakuras.size(), discColumns);
+
         Set<String> columns = Arrays.stream(discColumns.split(",")).collect(Collectors.toSet());
         sakuras.forEach(sakura -> {
             data.put(sakura.toJSON().put("discs", buildDiscs(sakura, columns)));
-            LOGGER.debug("列表[{}]共{}个碟片", sakura.getTitle(), sakura.getDiscs().size());
         });
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("[{}]get:/api/sakuras, 共{}个列表, 请求参数: {}",
+                    getWebDetails().getRemoteAddress(), sakuras.size(), discColumns);
+            sakuras.forEach(sakura -> {
+                LOGGER.debug("列表[{}]共{}个碟片", sakura.getTitle(), sakura.getDiscs().size());
+            });
+        }
         return objectResult(data);
     }
 
@@ -43,6 +49,10 @@ public class SakuraController extends BaseController {
         JSONArray data = new JSONArray();
         List<Sakura> sakuras = dao.findAll(Sakura.class);
         sakuras.forEach(sakura -> data.put(sakura.toJSON()));
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.info("用户[{}]获取Sakura列表: size={}", getCurrentName(), data.length());
+        }
         return objectResult(data);
     }
 
@@ -56,6 +66,10 @@ public class SakuraController extends BaseController {
         }
         Sakura sakura = new Sakura(key, title);
         dao.save(sakura);
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("用户[{}]创建了新的Sakura列表: {}", getCurrentName(), sakura.toJSON());
+        }
         return objectResult(sakura.toJSON());
     }
 

@@ -33,7 +33,7 @@ public class User extends BaseModel implements Serializable {
         this.roles.add("ROLE_BASIC");
     }
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 32, nullable = false)
     public String getPassword() {
         return password;
     }
@@ -42,7 +42,7 @@ public class User extends BaseModel implements Serializable {
         this.password = password;
     }
 
-    @Column(length = 50, unique = true, nullable = false)
+    @Column(length = 32, unique = true, nullable = false)
     public String getUsername() {
         return username;
     }
