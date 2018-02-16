@@ -18,6 +18,7 @@ public class EveryHourTask {
 
     @Autowired
     private Dao dao;
+    public static final Logger LOGGGER = LoggerFactory.getLogger(EveryHourTask.class);
 
     @Transactional
     public void run() {
@@ -35,12 +36,11 @@ public class EveryHourTask {
                         .collect(Collectors.toList());
                 sakura.getDiscs().removeAll(toDelete);
 
-                Logger logger = LoggerFactory.getLogger(EveryHourTask.class);
-                if (logger.isInfoEnabled() && toDelete.size() > 0) {
-                    logger.info("从列表[{}]移除{}个碟片", sakura.getTitle(), toDelete.size());
-                    toDelete.forEach(disc -> logger.info("移除碟片{}", disc.getTitle()));
+                if (LOGGGER.isInfoEnabled() && toDelete.size() > 0) {
+                    LOGGGER.info("从列表[{}]移除{}个碟片", sakura.getTitle(), toDelete.size());
+                    toDelete.forEach(disc -> LOGGGER.info("移除碟片{}", disc.getTitle()));
                 } else {
-                    logger.info("列表[{}]没有需要移除的过期碟片", sakura.getTitle());
+                    LOGGGER.debug("列表[{}]没有需要移除的过期碟片", sakura.getTitle());
                 }
             });
         });
