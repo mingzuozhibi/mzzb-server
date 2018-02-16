@@ -18,8 +18,12 @@ import java.util.List;
 @Configuration
 public class WebMvcConfig extends WebMvcConfigurerAdapter {
 
+    public static final Logger LOGGER = LoggerFactory.getLogger(WebMvcConfig.class);
+
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
         argumentResolvers.add(new JsonArgumentResolver());
+
+        LOGGER.info("已成功配置JsonArgumentResolver");
     }
 
     @Bean
@@ -28,9 +32,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
         bean.setUrlPatterns(Collections.singletonList("/api/*"));
         bean.setFilter(new OpenSessionInViewFilter());
 
-        Logger logger = LoggerFactory.getLogger(WebMvcConfig.class);
-        logger.info("OpenSessionInViewFilter已成功配置");
-
+        LOGGER.info("已成功配置OpenSessionInViewFilter");
         return bean;
     }
 
