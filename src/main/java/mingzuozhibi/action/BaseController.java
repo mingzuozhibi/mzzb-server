@@ -4,6 +4,9 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
 public class BaseController {
 
@@ -26,6 +29,18 @@ public class BaseController {
         root.put("success", false);
         root.put("message", message);
         return root.toString();
+    }
+
+    protected Authentication getAuthentication() {
+        return SecurityContextHolder.getContext().getAuthentication();
+    }
+
+    protected WebAuthenticationDetails getWebDetails() {
+        return (WebAuthenticationDetails) getAuthentication().getDetails();
+    }
+
+    protected String getCurrentName() {
+        return getAuthentication().getName();
     }
 
 }
