@@ -2,6 +2,7 @@ package mingzuozhibi.security;
 
 import mingzuozhibi.persist.User;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Set;
@@ -29,7 +30,7 @@ public class UserDetailsImpl implements UserDetails {
 
     public Set<GrantedAuthority> getAuthorities() {
         return user.getRoles().stream()
-                .map(role -> (GrantedAuthority) () -> role)
+                .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toSet());
     }
 
@@ -45,4 +46,8 @@ public class UserDetailsImpl implements UserDetails {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return String.format("UserDetails[name:%s,enabled:%s]", getUsername(), isEnabled());
+    }
 }

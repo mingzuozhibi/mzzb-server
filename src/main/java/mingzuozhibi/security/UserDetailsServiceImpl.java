@@ -20,7 +20,7 @@ import java.io.Serializable;
 
 @Service
 @PropertySource("file:config/setting.properties")
-public class UserDetailsServiceImpl implements UserDetailsService, Serializable {
+public class UserDetailsServiceImpl implements UserDetailsService {
 
     private Dao dao;
     private PassUtil passUtil;

@@ -94,11 +94,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         @Override
         public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
             dao.execute(session -> {
-                String username = authentication.getName();
-                LOGGER.info("用户成功登入，用户名为：{}", username);
-                dao.lookup(User.class, "username", username)
+                dao.lookup(User.class, "username", getCurrentName())
                         .setLastLoggedIn(LocalDateTime.now().withNano(0));
             });
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("[{}]登入成功:{}", getWebDetails().getRemoteAddress(), getJSON(authentication));
+            }
             response.getWriter().write(objectResult(getJSON(authentication)));
             response.flushBuffer();
         }
@@ -107,6 +108,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private class LoginFailureHandler extends BaseController implements org.springframework.security.web.authentication.AuthenticationFailureHandler {
         @Override
         public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("[{}]登入失败:[username={}]",
+                        request.getRemoteAddr(), request.getAttribute("username"));
+            }
             response.getWriter().write(errorMessage(exception.getMessage()));
             response.flushBuffer();
         }
@@ -115,6 +120,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private class LogoutHandler extends BaseController implements LogoutSuccessHandler {
         @Override
         public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.info("[{}]登出成功", request.getRemoteAddr());
+            }
             response.getWriter().write(objectResult(getJSON(null)));
             response.flushBuffer();
         }
@@ -123,6 +131,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private class AuthenticationFailureHandler extends BaseController implements AuthenticationEntryPoint {
         @Override
         public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+            if (LOGGER.isWarnEnabled()) {
+                LOGGER.warn("[{}]越权访问:{}:{}", request.getRemoteAddr(), request.getMethod(), request.getRequestURI());
+            }
             response.getWriter().write(errorMessage(authException.getMessage()));
             response.flushBuffer();
         }
