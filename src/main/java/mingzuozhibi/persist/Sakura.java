@@ -1,13 +1,10 @@
 package mingzuozhibi.persist;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.persistence.*;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Entity
@@ -98,8 +95,6 @@ public class Sakura extends BaseModel implements Comparable<Sakura> {
         Objects.requireNonNull(o);
         return Comparator.comparing(Sakura::getKey).compare(this, o);
     }
-
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
     public JSONObject toJSON() {
         JSONObject object = new JSONObject();
