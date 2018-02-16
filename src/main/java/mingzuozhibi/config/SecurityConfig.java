@@ -23,7 +23,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
@@ -60,11 +60,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/**").hasRole("BASIC")
                 .and()
                 .formLogin()
-                .loginProcessingUrl("/api/session/login")
                 .and()
                 .logout()
                 .logoutUrl("/api/session/logout")
-                .logoutSuccessHandler(new LogoutHandler());
+                .logoutSuccessHandler(new LogoutHandler())
+                .and()
+                .exceptionHandling()
+                .authenticationEntryPoint(new AuthenticationFailureHandler());
 
         http.csrf()
                 .ignoringAntMatchers("/api/session/**")
@@ -102,7 +104,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         }
     }
 
-    private class LoginFailureHandler extends BaseController implements AuthenticationFailureHandler {
+    private class LoginFailureHandler extends BaseController implements org.springframework.security.web.authentication.AuthenticationFailureHandler {
         @Override
         public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
             response.getWriter().write(errorMessage(exception.getMessage()));
@@ -117,6 +119,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             response.flushBuffer();
         }
     }
+
+    private class AuthenticationFailureHandler extends BaseController implements AuthenticationEntryPoint {
+        @Override
+        public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+            response.getWriter().write(errorMessage(authException.getMessage()));
+            response.flushBuffer();
+        }
+    }
+
 
     @RestController
     public class SessionController extends BaseController {
