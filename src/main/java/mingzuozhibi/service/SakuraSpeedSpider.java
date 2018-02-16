@@ -71,7 +71,6 @@ public class SakuraSpeedSpider {
             LOGGER.debug("不需要更新[{}]列表", sakura.getTitle());
             return;
         }
-        LOGGER.info("正在更新[{}]列表", sakura.getTitle());
         LinkedList<Disc> toAdd = new LinkedList<>();
         table.select("tr").stream().skip(1).forEach(tr -> {
             String href = tr.child(5).child(0).attr("href");
@@ -94,6 +93,7 @@ public class SakuraSpeedSpider {
             toAdd.stream().filter(disc -> !discSet.contains(disc))
                     .forEach(sakuraDiscs::add);
         }
+        LOGGER.debug("成功更新[{}]列表", sakura.getTitle());
     }
 
     private Disc getOrCreateDisc(String asin, Element tr) {
