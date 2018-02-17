@@ -5,6 +5,7 @@ import mingzuozhibi.persist.Sakura;
 import mingzuozhibi.support.Dao;
 import mingzuozhibi.support.JsonArg;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,11 +35,8 @@ public class SakuraController extends BaseController {
             data.put(sakura.toJSON().put("discs", buildDiscs(sakura, columns)));
         });
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("[{}]get:/api/sakuras, 共{}个列表, 请求参数: {}",
-                    getWebDetails().getRemoteAddress(), sakuras.size(), discColumns);
-            sakuras.forEach(sakura -> {
-                LOGGER.debug("列表[{}]共{}个碟片", sakura.getTitle(), sakura.getDiscs().size());
-            });
+            LOGGER.debug("[{}][{}][GET][/api/sakuras][size={}][discColumns={}]",
+                    getRemoteAddress(), getCurrentName(), sakuras.size(), discColumns);
         }
         return objectResult(data);
     }
@@ -51,7 +49,8 @@ public class SakuraController extends BaseController {
         sakuras.forEach(sakura -> data.put(sakura.toJSON()));
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.info("用户[{}]获取Sakura列表: size={}", getCurrentName(), data.length());
+            LOGGER.debug("[{}][{}][GET][/api/basic/sakuras][size={}]",
+                    getRemoteAddress(), getCurrentName(), data.length());
         }
         return objectResult(data);
     }
@@ -67,10 +66,12 @@ public class SakuraController extends BaseController {
         Sakura sakura = new Sakura(key, title);
         dao.save(sakura);
 
+        JSONObject json = sakura.toJSON();
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("用户[{}]创建了新的Sakura列表: {}", getCurrentName(), sakura.toJSON());
+            LOGGER.info("[{}][{}][POST][/api/basic/sakuras][json={}]",
+                    getRemoteAddress(), getCurrentName(), json);
         }
-        return objectResult(sakura.toJSON());
+        return objectResult(json);
     }
 
     private JSONArray buildDiscs(Sakura sakura, Set<String> columns) {

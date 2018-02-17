@@ -4,6 +4,7 @@ import mingzuozhibi.action.BaseController;
 import mingzuozhibi.action.SessionController;
 import mingzuozhibi.persist.User;
 import mingzuozhibi.support.Dao;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -29,17 +30,19 @@ public class CustomAuthenticationHandler extends BaseController implements Authe
             dao.lookup(User.class, "username", getCurrentName())
                     .setLastLoggedIn(LocalDateTime.now().withNano(0));
         });
+
+        JSONObject json = SessionController.getJSON(authentication);
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("[{}]登入成功:{}", getWebDetails().getRemoteAddress(), SessionController.getJSON(authentication));
+            LOGGER.info("[{}][登入成功][json={}]", request.getRemoteAddr(), json);
         }
-        responseObject(response, SessionController.getJSON(authentication));
+        responseObject(response, json);
     }
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("[{}]登入失败:[username={}]",
-                    request.getRemoteAddr(), request.getAttribute("username"));
+            LOGGER.info("[{}][登入失败][username={}][message={}]",
+                    request.getRemoteAddr(), request.getAttribute("username"), exception.getMessage());
         }
         responseError(response, exception.getMessage());
     }

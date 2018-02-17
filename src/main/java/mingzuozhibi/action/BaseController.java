@@ -58,8 +58,17 @@ public class BaseController {
         return (WebAuthenticationDetails) getAuthentication().getDetails();
     }
 
+    protected String getRemoteAddress() {
+        return getWebDetails().getRemoteAddress();
+    }
+
+    protected String getSessionId() {
+        return getWebDetails().getSessionId();
+    }
+
     protected String getCurrentName() {
-        return getAuthentication().getName();
+        String name = getAuthentication().getName();
+        return name == null || name.equals("anonymousUser") ? "Guest" : name;
     }
 
 }

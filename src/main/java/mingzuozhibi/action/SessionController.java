@@ -16,7 +16,12 @@ public class SessionController extends BaseController {
     public String current() {
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication authentication = context.getAuthentication();
-        return objectResult(getJSON(authentication));
+
+        JSONObject json = getJSON(authentication);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("[{}][状态获取][json={}]", getWebDetails().getRemoteAddress(), json);
+        }
+        return objectResult(json);
     }
 
     public static JSONObject getJSON(Authentication authentication) {

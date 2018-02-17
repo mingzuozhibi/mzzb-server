@@ -4,6 +4,7 @@ import mingzuozhibi.persist.User;
 import mingzuozhibi.support.Dao;
 import mingzuozhibi.support.JsonArg;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,9 +25,10 @@ public class UserController extends BaseController {
         dao.findAll(User.class).forEach(user -> {
             array.put(user.toJSON());
         });
+
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("[{}]get:/api/admin/users, size={}",
-                    getWebDetails().getRemoteAddress(), array.length());
+            LOGGER.debug("[{}][{}][GET][/api/admin/users][size={}]",
+                    getRemoteAddress(), getCurrentName(), array.length());
         }
         return objectResult(array);
     }
@@ -41,11 +43,13 @@ public class UserController extends BaseController {
         }
         User user = new User(username, password);
         dao.save(user);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("[{}]post:/api/admin/users: {}",
-                    getWebDetails().getRemoteAddress(), user.toJSON());
+
+        JSONObject json = user.toJSON();
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("[{}][{}][POST][/api/admin/users][json={}]",
+                    getRemoteAddress(), getCurrentName(), json);
         }
-        return objectResult(user.toJSON());
+        return objectResult(json);
     }
 
     @Transactional
@@ -56,20 +60,23 @@ public class UserController extends BaseController {
             @JsonArg("$.password") String password,
             @JsonArg("$.enabled") boolean enabled) {
         User user = dao.get(User.class, id);
+
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("[{}]post:/api/admin/users/{}:Before:{}",
-                    getWebDetails().getRemoteAddress(), id, user.toJSON());
+            LOGGER.debug("[{}][{}][POST][/api/admin/users/{}][Before:{}]",
+                    getWebDetails().getRemoteAddress(), getCurrentName(), id, user.toJSON());
         }
         user.setUsername(username);
         user.setEnabled(enabled);
         if (password != null && !password.isEmpty()) {
             user.setPassword(password);
         }
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("[{}]post:/api/admin/users/{}:Modify:{}",
-                    getWebDetails().getRemoteAddress(), id, user.toJSON());
+
+        JSONObject json = user.toJSON();
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("[{}][{}][POST][/api/admin/users/{}][Modify:{}]",
+                    getWebDetails().getRemoteAddress(), getCurrentName(), id, json);
         }
-        return objectResult(user.toJSON());
+        return objectResult(json);
     }
 
 }

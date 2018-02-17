@@ -15,7 +15,8 @@ public class CustomAuthenticationEntryPoint extends BaseController implements Au
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         if (LOGGER.isWarnEnabled()) {
-            LOGGER.warn("[{}]越权访问:{}:{}", request.getRemoteAddr(), request.getMethod(), request.getRequestURI());
+            LOGGER.warn("[{}][越权访问][method={}][uri={}]",
+                    request.getRemoteAddr(), request.getMethod(), request.getRequestURI());
         }
         responseError(response, authException.getMessage());
     }
