@@ -10,6 +10,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class BaseController {
 
@@ -45,8 +46,9 @@ public class BaseController {
     protected void responseError(HttpServletResponse response, String message) throws IOException {
         String content = errorMessage(message);
         response.setContentType(MEDIA_TYPE);
-        response.setContentLength(content.length());
-        response.getWriter().write(content);
+        byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
+        response.setContentLength(bytes.length);
+        response.getOutputStream().write(bytes);
         response.flushBuffer();
     }
 
