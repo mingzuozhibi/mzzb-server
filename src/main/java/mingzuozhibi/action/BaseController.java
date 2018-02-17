@@ -8,6 +8,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 public class BaseController {
 
     protected static final String MEDIA_TYPE = MediaType.APPLICATION_JSON_UTF8_VALUE;
@@ -29,6 +32,22 @@ public class BaseController {
         root.put("success", false);
         root.put("message", message);
         return root.toString();
+    }
+
+    protected void responseObject(HttpServletResponse response, Object object) throws IOException {
+        String content = objectResult(object);
+        response.setContentType(MEDIA_TYPE);
+        response.setContentLength(content.length());
+        response.getWriter().write(content);
+        response.flushBuffer();
+    }
+
+    protected void responseError(HttpServletResponse response, String message) throws IOException {
+        String content = errorMessage(message);
+        response.setContentType(MEDIA_TYPE);
+        response.setContentLength(content.length());
+        response.getWriter().write(content);
+        response.flushBuffer();
     }
 
     protected Authentication getAuthentication() {

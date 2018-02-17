@@ -17,7 +17,7 @@ public class CustomAuthenticationEntryPoint extends BaseController implements Au
         if (LOGGER.isWarnEnabled()) {
             LOGGER.warn("[{}]越权访问:{}:{}", request.getRemoteAddr(), request.getMethod(), request.getRequestURI());
         }
-        response.getWriter().write(errorMessage(authException.getMessage()));
-        response.flushBuffer();
+        responseError(response, authException.getMessage());
     }
+
 }
