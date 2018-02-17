@@ -8,6 +8,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 public class BaseController {
 
     protected static final String MEDIA_TYPE = MediaType.APPLICATION_JSON_UTF8_VALUE;
@@ -31,6 +35,14 @@ public class BaseController {
         return root.toString();
     }
 
+    protected void responseText(HttpServletResponse response, String content) throws IOException {
+        response.setContentType(MEDIA_TYPE);
+        byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
+        response.setContentLength(bytes.length);
+        response.getOutputStream().write(bytes);
+        response.flushBuffer();
+    }
+
     protected Authentication getAuthentication() {
         return SecurityContextHolder.getContext().getAuthentication();
     }
@@ -39,8 +51,17 @@ public class BaseController {
         return (WebAuthenticationDetails) getAuthentication().getDetails();
     }
 
+    protected String getRemoteAddress() {
+        return getWebDetails().getRemoteAddress();
+    }
+
+    protected String getSessionId() {
+        return getWebDetails().getSessionId();
+    }
+
     protected String getCurrentName() {
-        return getAuthentication().getName();
+        String name = getAuthentication().getName();
+        return name == null || name.equals("anonymousUser") ? "Guest" : name;
     }
 
 }
