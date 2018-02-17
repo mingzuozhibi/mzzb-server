@@ -46,47 +46,47 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         auth.userDetailsService(userDetailsService);
     }
 
-    protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
-                .antMatchers("/api/admin/**").hasRole("ADMIN")
-                .antMatchers("/api/basic/**").hasRole("BASIC")
-                .antMatchers("/api/session").permitAll()
-                .antMatchers(HttpMethod.GET).permitAll()
-                .antMatchers("/api/**").hasRole("BASIC");
+        protected void configure(HttpSecurity http) throws Exception {
+            http.authorizeRequests()
+                    .antMatchers("/api/admin/**").hasRole("ADMIN")
+                    .antMatchers("/api/basic/**").hasRole("BASIC")
+                    .antMatchers("/api/session").permitAll()
+                    .antMatchers(HttpMethod.GET).permitAll()
+                    .antMatchers("/api/**").hasRole("BASIC");
 
-        http.formLogin();
+            http.formLogin();
 
-        http.logout()
-                .logoutUrl("/api/session/logout")
-                .addLogoutHandler(customLogoutHandler)
-                .logoutSuccessHandler(customLogoutHandler);
+            http.logout()
+                    .logoutUrl("/api/session/logout")
+                    .addLogoutHandler(customLogoutHandler)
+                    .logoutSuccessHandler(customLogoutHandler);
 
-        http.exceptionHandling()
-                .accessDeniedHandler(customAuthenticationEntryPoint)
-                .authenticationEntryPoint(customAuthenticationEntryPoint);
+            http.exceptionHandling()
+                    .accessDeniedHandler(customAuthenticationEntryPoint)
+                    .authenticationEntryPoint(customAuthenticationEntryPoint);
 
-        http.csrf()
-                .ignoringAntMatchers("/api/session/**")
-                .ignoringAntMatchers("/actuator/**", "/loggers/**", "/jolokia/**");
+            http.csrf()
+                    .ignoringAntMatchers("/api/session/**")
+                    .ignoringAntMatchers("/actuator/**", "/loggers/**", "/jolokia/**");
 
-        http.addFilterBefore(new AcceptHeaderLocaleFilter(), UsernamePasswordAuthenticationFilter.class);
+            http.addFilterBefore(new AcceptHeaderLocaleFilter(), UsernamePasswordAuthenticationFilter.class);
 
-        http.addFilterAt(customAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+            http.addFilterAt(customAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
-        http.addFilterAfter(new CsrfTokenResponseHeaderBindingFilter(), CsrfFilter.class);
+            http.addFilterAfter(new CsrfTokenResponseHeaderBindingFilter(), CsrfFilter.class);
 
-        Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
-        logger.info("设置安全策略");
-    }
+            Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+            logger.info("设置安全策略");
+        }
 
-    private CustomAuthenticationFilter customAuthenticationFilter() throws Exception {
-        CustomAuthenticationFilter filter = new CustomAuthenticationFilter();
-        filter.setAuthenticationSuccessHandler(customAuthenticationHandler);
-        filter.setAuthenticationFailureHandler(customAuthenticationHandler);
-        filter.setAuthenticationManager(authenticationManagerBean());
-        filter.setFilterProcessesUrl("/api/session/login");
-        return filter;
-    }
+        private CustomAuthenticationFilter customAuthenticationFilter() throws Exception {
+            CustomAuthenticationFilter filter = new CustomAuthenticationFilter();
+            filter.setAuthenticationSuccessHandler(customAuthenticationHandler);
+            filter.setAuthenticationFailureHandler(customAuthenticationHandler);
+            filter.setAuthenticationManager(authenticationManager());
+            filter.setFilterProcessesUrl("/api/session/login");
+            return filter;
+        }
 
     private static class AcceptHeaderLocaleFilter implements Filter {
         private AcceptHeaderLocaleResolver localeResolver;

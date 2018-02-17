@@ -35,16 +35,7 @@ public class BaseController {
         return root.toString();
     }
 
-    protected void responseObject(HttpServletResponse response, Object object) throws IOException {
-        String content = objectResult(object);
-        response.setContentType(MEDIA_TYPE);
-        response.setContentLength(content.length());
-        response.getWriter().write(content);
-        response.flushBuffer();
-    }
-
-    protected void responseError(HttpServletResponse response, String message) throws IOException {
-        String content = errorMessage(message);
+    protected void responseText(HttpServletResponse response, String content) throws IOException {
         response.setContentType(MEDIA_TYPE);
         byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
         response.setContentLength(bytes.length);

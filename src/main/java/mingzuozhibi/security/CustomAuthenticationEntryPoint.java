@@ -27,7 +27,7 @@ public class CustomAuthenticationEntryPoint extends BaseController implements Au
                 message = "你必须登入才能访问这些资源";
             }
         }
-        responseError(response, message);
+        responseText(response, errorMessage(message));
     }
 
     @Override
@@ -36,6 +36,6 @@ public class CustomAuthenticationEntryPoint extends BaseController implements Au
             LOGGER.warn("[{}][越权访问][method={}][uri={}]",
                     request.getRemoteAddr(), request.getMethod(), request.getRequestURI());
         }
-        responseError(response, accessDeniedException.getMessage());
+        responseText(response, errorMessage(accessDeniedException.getMessage()));
     }
 }

@@ -35,7 +35,7 @@ public class CustomAuthenticationHandler extends BaseController implements Authe
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("[{}][登入成功][json={}]", request.getRemoteAddr(), json);
         }
-        responseObject(response, json);
+        responseText(response, objectResult(json));
     }
 
     @Override
@@ -44,6 +44,6 @@ public class CustomAuthenticationHandler extends BaseController implements Authe
             LOGGER.info("[{}][登入失败][username={}][message={}]",
                     request.getRemoteAddr(), request.getAttribute("username"), exception.getMessage());
         }
-        responseError(response, exception.getMessage());
+        responseText(response, errorMessage(exception.getMessage()));
     }
 }

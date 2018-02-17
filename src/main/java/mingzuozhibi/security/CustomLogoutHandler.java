@@ -22,6 +22,6 @@ public class CustomLogoutHandler extends BaseController implements LogoutHandler
 
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-        responseObject(response, SessionController.getJSON(null));
+        responseText(response, objectResult(SessionController.getJSON(null)));
     }
 }
