@@ -27,7 +27,7 @@ public class CustomAuthenticationHandler extends BaseController implements Authe
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         dao.execute(session -> {
-            dao.lookup(User.class, "username", getCurrentName())
+            dao.lookup(User.class, "username", getUserName())
                     .setLastLoggedIn(LocalDateTime.now().withNano(0));
         });
 

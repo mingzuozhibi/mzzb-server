@@ -19,7 +19,8 @@ public class SessionController extends BaseController {
 
         JSONObject json = getJSON(authentication);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("[{}][状态获取][json={}]", getWebDetails().getRemoteAddress(), json);
+            LOGGER.debug("[{}][状态获取][json={}]",
+                    getAttributes().getRequest().getRemoteAddr(), json);
         }
         return objectResult(json);
     }
