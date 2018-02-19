@@ -16,7 +16,7 @@ public class CustomLogoutHandler extends BaseController implements LogoutHandler
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("[{}][登出成功][username={}]", request.getRemoteAddr(), authentication.getName());
+            LOGGER.info("[{}][登出成功][username={}]", request.getRemoteAddr(), getUserName());
         }
     }
 

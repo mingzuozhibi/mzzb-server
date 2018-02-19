@@ -6,11 +6,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 public class BaseController {
 
@@ -43,25 +47,43 @@ public class BaseController {
         response.flushBuffer();
     }
 
-    protected Authentication getAuthentication() {
-        return SecurityContextHolder.getContext().getAuthentication();
+    protected Optional<Authentication> getAuthentication() {
+        return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication());
     }
 
-    protected WebAuthenticationDetails getWebDetails() {
-        return (WebAuthenticationDetails) getAuthentication().getDetails();
+    protected String getUserName() {
+        return getAuthentication().map(Authentication::getName)
+                .filter(name -> !name.equals("anonymousUser"))
+                .orElse("Guest");
     }
 
-    protected String getRemoteAddress() {
-        return getWebDetails().getRemoteAddress();
+    protected ServletRequestAttributes getAttributes() {
+        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+        return ((ServletRequestAttributes) attributes);
+
     }
 
-    protected String getSessionId() {
-        return getWebDetails().getSessionId();
+    private String getCommon() {
+        HttpServletRequest request = getAttributes().getRequest();
+        String common = String.format("[%s][%s][%s][%s]",
+                request.getRemoteAddr(), getUserName(), request.getMethod(), request.getRequestURI());
+        return common.replace("{}", "\\{}");
     }
 
-    protected String getCurrentName() {
-        String name = getAuthentication().getName();
-        return name == null || name.equals("anonymousUser") ? "Guest" : name;
+    protected void debugRequest(String format, Object... args) {
+        LOGGER.debug(getCommon() + format, args);
+    }
+
+    protected void infoRequest(String format, Object... args) {
+        LOGGER.info(getCommon() + format, args);
+    }
+
+    protected void warnRequest(String format, Object... args) {
+        LOGGER.warn(getCommon() + format, args);
+    }
+
+    protected void errorRequest(String format, Object... args) {
+        LOGGER.error(getCommon() + format, args);
     }
 
 }

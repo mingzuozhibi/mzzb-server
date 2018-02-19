@@ -4,7 +4,6 @@ import mingzuozhibi.persist.User;
 import mingzuozhibi.support.Dao;
 import mingzuozhibi.support.JsonArg;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,8 +26,7 @@ public class UserController extends BaseController {
         });
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("[{}][{}][GET][/api/admin/users][size={}]",
-                    getRemoteAddress(), getCurrentName(), array.length());
+            debugRequest("[size={}]", array.length());
         }
         return objectResult(array);
     }
@@ -44,12 +42,10 @@ public class UserController extends BaseController {
         User user = new User(username, password);
         dao.save(user);
 
-        JSONObject json = user.toJSON();
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("[{}][{}][POST][/api/admin/users][json={}]",
-                    getRemoteAddress(), getCurrentName(), json);
+            infoRequest("[json={}]", user.toJSON());
         }
-        return objectResult(json);
+        return objectResult(user.toJSON());
     }
 
     @Transactional
@@ -62,8 +58,7 @@ public class UserController extends BaseController {
         User user = dao.get(User.class, id);
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("[{}][{}][POST][/api/admin/users/{}][Before:{}]",
-                    getWebDetails().getRemoteAddress(), getCurrentName(), id, user.toJSON());
+            debugRequest("[Before:{}]", user.toJSON());
         }
         user.setUsername(username);
         user.setEnabled(enabled);
@@ -71,12 +66,10 @@ public class UserController extends BaseController {
             user.setPassword(password);
         }
 
-        JSONObject json = user.toJSON();
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("[{}][{}][POST][/api/admin/users/{}][Modify:{}]",
-                    getWebDetails().getRemoteAddress(), getCurrentName(), id, json);
+        if (LOGGER.isDebugEnabled()) {
+            debugRequest("[Modify:{}]", user.toJSON());
         }
-        return objectResult(json);
+        return objectResult(user.toJSON());
     }
 
 }
