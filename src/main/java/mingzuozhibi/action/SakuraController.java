@@ -55,11 +55,12 @@ public class SakuraController extends BaseController {
     @PostMapping(value = "/api/basic/sakuras", produces = MEDIA_TYPE)
     public String saveBasicSakura(
             @JsonArg("$.key") String key,
-            @JsonArg("$.title") String title) {
+            @JsonArg("$.title") String title,
+            @JsonArg("$.viewType") String viewType) {
         if (dao.lookup(Sakura.class, "key", key) != null) {
             return errorMessage("该Sakura列表已存在");
         }
-        Sakura sakura = new Sakura(key, title);
+        Sakura sakura = new Sakura(key, title, Sakura.ViewType.valueOf(viewType));
         dao.save(sakura);
 
         if (LOGGER.isInfoEnabled()) {

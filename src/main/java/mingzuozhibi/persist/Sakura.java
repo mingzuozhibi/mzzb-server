@@ -4,32 +4,38 @@ import org.json.JSONObject;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.*;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static mingzuozhibi.support.Constants.SakuraTop100Key;
+import static mingzuozhibi.support.Constants.SakuraTop100Title;
 
 @Entity
 public class Sakura extends BaseModel implements Comparable<Sakura> {
 
-    public static final String TOP100 = "9999-99";
+    public enum ViewType {
+        SakuraList, PublicList, PrivateList
+    }
 
     private String key;
     private String title;
     private boolean enabled;
-    private LocalDateTime sakuraUpdateDate;
+    private ViewType viewType;
+    private LocalDateTime modifyTime;
     private List<Disc> discs = new LinkedList<>();
 
     public Sakura() {
     }
 
-    public Sakura(String key, String title) {
-        if (key.isEmpty()) {
-            this.key = TOP100;
-            this.title = "日亚实时TOP100";
-        } else {
-            this.key = key;
-            this.title = Optional.ofNullable(title).orElseGet(() -> titleOfKey(key));
-        }
-        enabled = true;
+    public Sakura(String key, String title, ViewType viewType) {
+        this.key = key;
+        this.enabled = true;
+        this.viewType = viewType;
+        this.title = title == null ? titleOfKey(key) : title;
     }
 
     @Column(name = "`key`", length = 100, nullable = false, unique = true)
@@ -59,13 +65,22 @@ public class Sakura extends BaseModel implements Comparable<Sakura> {
         this.enabled = enabled;
     }
 
-    @Column
-    public LocalDateTime getSakuraUpdateDate() {
-        return sakuraUpdateDate;
+    @Column(nullable = false)
+    public ViewType getViewType() {
+        return viewType;
     }
 
-    public void setSakuraUpdateDate(LocalDateTime sakuraUpdateDate) {
-        this.sakuraUpdateDate = sakuraUpdateDate;
+    public void setViewType(ViewType viewType) {
+        this.viewType = viewType;
+    }
+
+    @Column
+    public LocalDateTime getModifyTime() {
+        return modifyTime;
+    }
+
+    public void setModifyTime(LocalDateTime modifyTime) {
+        this.modifyTime = modifyTime;
     }
 
     @ManyToMany
@@ -82,12 +97,7 @@ public class Sakura extends BaseModel implements Comparable<Sakura> {
 
     @Transient
     public boolean isTop100() {
-        return TOP100.equals(getKey());
-    }
-
-    @Transient
-    public static String titleOfKey(String key) {
-        return key.substring(0, 4) + "年" + key.substring(5) + "月新番";
+        return SakuraTop100Key.equals(getKey());
     }
 
     @Override
@@ -102,10 +112,21 @@ public class Sakura extends BaseModel implements Comparable<Sakura> {
         object.put("key", getKey());
         object.put("title", getTitle());
         object.put("enabled", isEnabled());
-        object.put("sakuraUpdateDate", Optional.ofNullable(sakuraUpdateDate)
-                .map(date -> date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
-                .orElse(0L));
+        object.put("viewType", getViewType());
+        object.put("modifyTime", toEpochMilli(modifyTime));
         return object;
+    }
+
+    private static String titleOfKey(String key) {
+        Objects.requireNonNull(key);
+        if (key.equals(SakuraTop100Key)) {
+            return SakuraTop100Title;
+        }
+        Matcher matcher = Pattern.compile("^(\\d{4})-(\\d{2})$").matcher(key);
+        if (matcher.find()) {
+            return String.format("%s年%s月新番", matcher.group(1), matcher.group(2));
+        }
+        return "未命名列表";
     }
 
 }

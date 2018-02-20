@@ -18,18 +18,18 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Stream;
 
+import static mingzuozhibi.persist.Sakura.ViewType.SakuraList;
 import static mingzuozhibi.service.SakuraSpeedSpider.Util.*;
+import static mingzuozhibi.support.Constants.SakuraTop100Key;
 
 @Service
 public class SakuraSpeedSpider {
 
     private static final String SAKURA_SPEED_URL = "http://rankstker.net/index_news.cgi";
-    public static final Logger LOGGER = LoggerFactory.getLogger(SakuraSpeedSpider.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SakuraSpeedSpider.class);
 
     @Autowired
     private Dao dao;
@@ -43,48 +43,55 @@ public class SakuraSpeedSpider {
         }
     }
 
-    private void updateSakura(Element table, String updateText) {
+    private void updateSakura(Element table, String timeText) {
         dao.execute(session -> {
-            Sakura sakura = getOrCreateSakura(table.parent().id());
-            if (!updateText.equals("更新中")) {
-                updateSakura(table, sakura, parseUpdate(updateText));
-            } else {
+            Sakura sakura = getOrCreateSakura(findSakuraKey(table));
+            if (timeText.equals("更新中")) {
                 LOGGER.info("发现sakura网站更新中");
+                return;
             }
+            LocalDateTime time = parseTime(timeText);
+            if (time.equals(sakura.getModifyTime())) {
+                LOGGER.debug("不需要更新[{}]列表", sakura.getTitle());
+                return;
+            }
+            sakura.setEnabled(true);
+            sakura.setViewType(SakuraList);
+            sakura.setModifyTime(time);
+            updateSakuraDiscs(sakura, table.select("tr").stream().skip(1));
         });
     }
 
+    private String findSakuraKey(Element table) {
+        return Optional.ofNullable(table.parent().id())
+                .filter(key -> !key.isEmpty())
+                .orElse(SakuraTop100Key);
+    }
+
     private Sakura getOrCreateSakura(String key) {
-        String searchKey = key.isEmpty() ? Sakura.TOP100 : key;
-        Sakura sakura = dao.lookup(Sakura.class, "key", searchKey);
+        Sakura sakura = dao.lookup(Sakura.class, "key", key);
         if (sakura == null) {
-            sakura = new Sakura(key, null);
+            sakura = new Sakura(key, null, SakuraList);
             dao.save(sakura);
             LOGGER.info("发现新的Sakura列表, title={}", sakura.getTitle());
         }
         return sakura;
     }
 
-    private void updateSakura(Element table, Sakura sakura, LocalDateTime updateTime) {
-        LocalDateTime sakuraUpdateDate = sakura.getSakuraUpdateDate();
-        if (sakuraUpdateDate != null && updateTime.compareTo(sakuraUpdateDate) == 0) {
-            LOGGER.debug("不需要更新[{}]列表", sakura.getTitle());
-            return;
-        }
+    private void updateSakuraDiscs(Sakura sakura, Stream<Element> tableRows) {
         LinkedList<Disc> toAdd = new LinkedList<>();
-        table.select("tr").stream().skip(1).forEach(tr -> {
+        tableRows.forEach(tr -> {
             String href = tr.child(5).child(0).attr("href");
             String asin = href.substring(href.length() - 10);
             Disc disc = getOrCreateDisc(asin, tr);
 
             String[] sakuraRank = tr.child(0).text().split("/");
-            disc.setThisRank(parseNumber(sakuraRank[0]));
-            disc.setPrevRank(parseNumber(sakuraRank[1]));
-            disc.setTotalPt(parseNumber(tr.child(2).text()));
-            disc.setNicoBook(parseNumber(tr.child(3).text()));
+            disc.setThisRank(parseInteger(sakuraRank[0]));
+            disc.setPrevRank(parseInteger(sakuraRank[1]));
+            disc.setTotalPt(parseInteger(tr.child(2).text()));
+            disc.setNicoBook(parseInteger(tr.child(3).text()));
             toAdd.add(disc);
         });
-        sakura.setSakuraUpdateDate(updateTime);
         if (sakura.isTop100()) {
             sakura.setDiscs(toAdd);
         } else {
@@ -99,64 +106,52 @@ public class SakuraSpeedSpider {
     private Disc getOrCreateDisc(String asin, Element tr) {
         Disc disc = dao.lookup(Disc.class, "asin", asin);
         if (disc == null) {
-            String title = nameOfDisc(tr.child(5).text());
+            String title = titleOfDisc(tr.child(5).text());
             String typeIcon = tr.child(1).text();
             String dateText = tr.child(4).text();
-            LocalDate releaseDate = parseRelease(fixYear(dateText));
+            LocalDate releaseDate = parseDate(fixYear(dateText));
             disc = new Disc(asin, title, parseDiscType(typeIcon),
                     UpdateType.Sakura, isAmazonLimit(title), releaseDate);
-            disc.setTitlePc(titleOfDisc(title));
+            disc.setTitlePc(titlePcOfDisc(title));
             LOGGER.info("发现了新的碟片, title={}", disc.getTitle());
         }
         dao.save(disc);
         return disc;
     }
 
-    private String fixYear(String dateText) {
-        if (dateText.length() == 8) {
-            dateText = "20" + dateText;
-        }
-        return dateText;
-    }
-
-    private DiscType parseDiscType(String type) {
-        switch (type) {
-            case "★":
-                return DiscType.Bluray;
-            case "○":
-                return DiscType.Dvd;
-            case "◎":
-                return DiscType.Box;
-            default:
-                return DiscType.Other;
-        }
-    }
-
     public static abstract class Util {
 
-        private static final DateTimeFormatter UPDATE_TIME;
-        private static final DateTimeFormatter RELEASE_DATE;
+        private static final DateTimeFormatter TimeFormatter;
+        private static final DateTimeFormatter DateFormatter;
 
         static {
-            UPDATE_TIME = DateTimeFormatter.ofPattern("yyyy年M月d日 H時m分s秒");
-            RELEASE_DATE = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+            TimeFormatter = DateTimeFormatter.ofPattern("yyyy年M月d日 H時m分s秒");
+            DateFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
         }
 
-        public static LocalDate parseRelease(String dateText) {
-            return LocalDate.parse(dateText, RELEASE_DATE);
+        public static LocalDate parseDate(String dateText) {
+            return LocalDate.parse(dateText, DateFormatter);
         }
 
-        public static LocalDateTime parseUpdate(String timeText) {
-            return LocalDateTime.parse(timeText, UPDATE_TIME).minusHours(1);
+        public static LocalDateTime parseTime(String timeText) {
+            return LocalDateTime.parse(timeText, TimeFormatter).minusHours(1);
         }
 
-        public static String nameOfDisc(String discText) {
+        public static Integer parseInteger(String input) {
+            try {
+                return Integer.parseInt(input.replaceAll("[^-\\d]+", ""));
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+
+        public static String titleOfDisc(String discText) {
             discText = discText.replace("【予約不可】", "");
             discText = discText.replace("【更新停止】", "");
             return discText;
         }
 
-        public static String titleOfDisc(String discName) {
+        public static String titlePcOfDisc(String discName) {
             discName = discName.replace("【Blu-ray】", " [Blu-ray]");
             discName = discName.replace("【DVD】", " [DVD]");
             if (isAmazonLimit(discName)) {
@@ -170,16 +165,24 @@ public class SakuraSpeedSpider {
             return japan.startsWith("【Amazon.co.jp限定】");
         }
 
-        public static int parseNumber(String number) {
-            int result = 0;
-            for (int i = 0; i < number.length(); i++) {
-                char ch = number.charAt(i);
-                if (Character.isDigit(ch)) {
-                    result *= 10;
-                    result += ch - '0';
-                }
+        public static String fixYear(String dateText) {
+            if (dateText.length() == 8) {
+                dateText = "20" + dateText;
             }
-            return result;
+            return dateText;
+        }
+
+        public static DiscType parseDiscType(String type) {
+            switch (type) {
+                case "★":
+                    return DiscType.Bluray;
+                case "○":
+                    return DiscType.Dvd;
+                case "◎":
+                    return DiscType.Box;
+                default:
+                    return DiscType.Other;
+            }
         }
     }
 }

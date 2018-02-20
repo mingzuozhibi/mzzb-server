@@ -4,13 +4,10 @@ import org.json.JSONObject;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 @Entity
@@ -36,22 +33,22 @@ public class Disc extends BaseModel {
     private boolean amazonLimit;
     private UpdateType updateType;
     private LocalDate releaseDate;
-    private LocalDateTime createDate;
-    private LocalDateTime modifyDate;
-    private User modifyUser;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
+    private LocalDateTime modifyTime;
 
     public Disc() {
     }
 
-    public Disc(String asin, String title, DiscType discType, UpdateType updateType, boolean amazonLimit, LocalDate releaseDate) {
+    public Disc(String asin, String title, DiscType discType, UpdateType updateType,
+                boolean amazonLimit, LocalDate releaseDate) {
         this.asin = asin;
         this.title = title;
         this.discType = discType;
         this.updateType = updateType;
         this.amazonLimit = amazonLimit;
         this.releaseDate = releaseDate;
-        this.createDate = LocalDateTime.now().withNano(0);
-        this.modifyDate = LocalDateTime.now().withNano(0);
+        this.createTime = LocalDateTime.now().withNano(0);
     }
 
     @Column(length = 20, nullable = false, unique = true)
@@ -163,30 +160,30 @@ public class Disc extends BaseModel {
     }
 
     @Column(nullable = false)
-    public LocalDateTime getCreateDate() {
-        return createDate;
+    public LocalDateTime getCreateTime() {
+        return createTime;
     }
 
-    public void setCreateDate(LocalDateTime createDate) {
-        this.createDate = createDate;
+    public void setCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
     }
 
     @Column
-    public LocalDateTime getModifyDate() {
-        return modifyDate;
+    public LocalDateTime getUpdateTime() {
+        return updateTime;
     }
 
-    public void setModifyDate(LocalDateTime modifyDate) {
-        this.modifyDate = modifyDate;
+    public void setUpdateTime(LocalDateTime updateTime) {
+        this.updateTime = updateTime;
     }
 
-    @ManyToOne
-    public User getModifyUser() {
-        return modifyUser;
+    @Column
+    public LocalDateTime getModifyTime() {
+        return modifyTime;
     }
 
-    public void setModifyUser(User modifyUser) {
-        this.modifyUser = modifyUser;
+    public void setModifyTime(LocalDateTime modifyTime) {
+        this.modifyTime = modifyTime;
     }
 
     @Transient
@@ -207,9 +204,6 @@ public class Disc extends BaseModel {
         return Objects.hash(asin);
     }
 
-    private final DateTimeFormatter formatterTime = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-    private final DateTimeFormatter formatterDate = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-
     public JSONObject toJSON(Set<String> columns) {
         JSONObject object = new JSONObject();
         if (columns.contains("id"))
@@ -223,27 +217,25 @@ public class Disc extends BaseModel {
         if (columns.contains("titleMo"))
             object.put("titleMo", getTitleMo());
         if (columns.contains("thisRank"))
-            object.put("thisRank", String.valueOf(getThisRank()));
+            object.put("thisRank", getThisRank());
         if (columns.contains("prevRank"))
-            object.put("prevRank", String.valueOf(getPrevRank()));
+            object.put("prevRank", getPrevRank());
         if (columns.contains("nicoBook"))
-            object.put("nicoBook", String.valueOf(getNicoBook()));
+            object.put("nicoBook", getNicoBook());
         if (columns.contains("totalPt"))
-            object.put("totalPt", String.valueOf(getTotalPt()));
+            object.put("totalPt", getTotalPt());
         if (columns.contains("discType"))
             object.put("discType", getDiscType().name());
         if (columns.contains("updateType"))
             object.put("updateType", getUpdateType().name());
         if (columns.contains("releaseDate"))
-            object.put("releaseDate", getReleaseDate().format(formatterDate));
-        if (columns.contains("createDate"))
-            object.put("createDate", getCreateDate().format(formatterTime));
-        if (columns.contains("modifyDate"))
-            object.put("modifyDate", Optional.ofNullable(getModifyDate())
-                    .map(formatterTime::format).orElse("从未修改"));
-        if (columns.contains("modifyUser"))
-            object.put("modifyUser", Optional.ofNullable(getModifyUser())
-                    .map(User::getUsername).orElse("无"));
+            object.put("releaseDate", formatDate(getReleaseDate()));
+        if (columns.contains("createTime"))
+            object.put("createTime", toEpochMilli(getCreateTime()));
+        if (columns.contains("updateTime"))
+            object.put("updateTime", toEpochMilli(getUpdateTime()));
+        if (columns.contains("mofidyTime"))
+            object.put("mofidyTime", toEpochMilli(getModifyTime()));
         if (columns.contains("surplusDays"))
             object.put("surplusDays", getSurplusDays());
         return object;
