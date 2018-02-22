@@ -8,10 +8,7 @@ import org.hibernate.criterion.Restrictions;
 import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,7 +27,7 @@ public class SakuraController extends BaseController {
     @GetMapping(value = "/api/sakuras", produces = MEDIA_TYPE)
     public String listSakura(@RequestParam("discColumns") String discColumns) {
         JSONArray data = new JSONArray();
-        
+
         @SuppressWarnings("unchecked")
         List<Sakura> sakuras = dao.query(session -> {
             return session.createCriteria(Sakura.class)
@@ -85,6 +82,29 @@ public class SakuraController extends BaseController {
                 .filter(disc -> disc.getUpdateType() != Disc.UpdateType.None)
                 .forEach(disc -> discs.put(disc.toJSON(columns)));
         return discs;
+    }
+
+    @Transactional
+    @PostMapping(value = "/api/basic/sakuras/{id}", produces = MEDIA_TYPE)
+    public String editAdminUser(
+            @PathVariable("id") Long id,
+            @JsonArg("$.key") String key,
+            @JsonArg("$.title") String title,
+            @JsonArg("$.viewType") String viewType,
+            @JsonArg("$.enabled") boolean enabled) {
+        Sakura sakura = dao.get(Sakura.class, id);
+
+        if (LOGGER.isDebugEnabled()) {
+            debugRequest("[Before:{}]", sakura.toJSON());
+        }
+        sakura.setKey(key);
+        sakura.setTitle(title);
+        sakura.setViewType(Sakura.ViewType.valueOf(viewType));
+        sakura.setEnabled(enabled);
+        if (LOGGER.isDebugEnabled()) {
+            debugRequest("[Modify:{}]", sakura.toJSON());
+        }
+        return objectResult(sakura.toJSON());
     }
 
 }
