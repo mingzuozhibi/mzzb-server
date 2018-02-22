@@ -4,6 +4,7 @@ import mingzuozhibi.persist.Disc;
 import mingzuozhibi.persist.Sakura;
 import mingzuozhibi.support.Dao;
 import mingzuozhibi.support.JsonArg;
+import org.hibernate.criterion.Restrictions;
 import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static mingzuozhibi.persist.Sakura.ViewType.SakuraList;
+
 @RestController
 public class SakuraController extends BaseController {
 
@@ -27,7 +30,14 @@ public class SakuraController extends BaseController {
     @GetMapping(value = "/api/sakuras", produces = MEDIA_TYPE)
     public String listSakura(@RequestParam("discColumns") String discColumns) {
         JSONArray data = new JSONArray();
-        List<Sakura> sakuras = dao.findBy(Sakura.class, "enabled", true);
+        
+        @SuppressWarnings("unchecked")
+        List<Sakura> sakuras = dao.query(session -> {
+            return session.createCriteria(Sakura.class)
+                    .add(Restrictions.eq("viewType", SakuraList))
+                    .add(Restrictions.eq("enabled", true))
+                    .list();
+        });
 
         Set<String> columns = Arrays.stream(discColumns.split(",")).collect(Collectors.toSet());
         sakuras.forEach(sakura -> {
