@@ -107,11 +107,11 @@ public class User extends BaseModel implements Serializable {
         JSONObject object = new JSONObject();
         object.put("id", getId());
         object.put("username", getUsername());
-        object.put("enabled", enabled);
-        object.put("registerDate", registerDate.format(formatterTime));
-        String loginTime = Optional.ofNullable(lastLoggedIn)
-                .map(formatterTime::format).orElse("从未登录");
-        object.put("lastLoggedIn", loginTime);
+        object.put("enabled", isEnabled());
+        object.put("registerDate", getRegisterDate().format(formatterTime));
+        Optional.ofNullable(getLastLoggedIn()).ifPresent(lastLoggedIn -> {
+            object.put("lastLoggedIn", lastLoggedIn.format(formatterTime));
+        });
         return object;
     }
 

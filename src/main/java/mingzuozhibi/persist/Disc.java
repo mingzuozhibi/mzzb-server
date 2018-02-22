@@ -8,6 +8,7 @@ import javax.persistence.Transient;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 @Entity
@@ -233,9 +234,13 @@ public class Disc extends BaseModel {
         if (columns.contains("createTime"))
             object.put("createTime", toEpochMilli(getCreateTime()));
         if (columns.contains("updateTime"))
-            object.put("updateTime", toEpochMilli(getUpdateTime()));
+            Optional.ofNullable(getUpdateTime()).ifPresent(updateTime -> {
+                object.put("updateTime", toEpochMilli(updateTime));
+            });
         if (columns.contains("mofidyTime"))
-            object.put("mofidyTime", toEpochMilli(getModifyTime()));
+            Optional.ofNullable(getModifyTime()).ifPresent(modifyTime -> {
+                object.put("modifyTime", toEpochMilli(modifyTime));
+            });
         if (columns.contains("surplusDays"))
             object.put("surplusDays", getSurplusDays());
         return object;
