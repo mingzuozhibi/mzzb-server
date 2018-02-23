@@ -52,9 +52,7 @@ public class BaseController {
     }
 
     protected String getUserName() {
-        return getAuthentication().map(Authentication::getName)
-                .filter(name -> !name.equals("anonymousUser"))
-                .orElse("Guest");
+        return getAuthentication().map(Authentication::getName).orElse("null");
     }
 
     protected ServletRequestAttributes getAttributes() {
