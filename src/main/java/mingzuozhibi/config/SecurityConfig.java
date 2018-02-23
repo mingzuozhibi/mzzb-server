@@ -1,7 +1,7 @@
 package mingzuozhibi.config;
 
 import com.allanditzel.springframework.security.web.csrf.CsrfTokenResponseHeaderBindingFilter;
-import mingzuozhibi.security.CustomAuthenticationEntryPoint;
+import mingzuozhibi.security.CustomAccessDeniedHandler;
 import mingzuozhibi.security.CustomAuthenticationFilter;
 import mingzuozhibi.security.CustomAuthenticationHandler;
 import mingzuozhibi.security.CustomLogoutHandler;
@@ -39,7 +39,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private CustomAuthenticationHandler customAuthenticationHandler;
 
     @Autowired
-    private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private CustomAccessDeniedHandler customAccessDeniedHandler;
 
 
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -62,8 +62,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .logoutSuccessHandler(customLogoutHandler);
 
             http.exceptionHandling()
-                    .accessDeniedHandler(customAuthenticationEntryPoint)
-                    .authenticationEntryPoint(customAuthenticationEntryPoint);
+                    .accessDeniedHandler(customAccessDeniedHandler)
+                    .authenticationEntryPoint(customAccessDeniedHandler);
 
             http.csrf()
                     .ignoringAntMatchers("/api/session/**")
