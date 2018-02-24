@@ -6,6 +6,7 @@ import mingzuozhibi.support.Dao;
 import mingzuozhibi.support.JsonArg;
 import org.hibernate.criterion.Restrictions;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -20,12 +21,15 @@ import static mingzuozhibi.persist.Sakura.ViewType.SakuraList;
 @RestController
 public class SakuraController extends BaseController {
 
+    public static final String DEFAULT_DISC_COLUMNS = "id,thisRank,prevRank,totalPt,title";
+
     @Autowired
     private Dao dao;
 
     @Transactional
     @GetMapping(value = "/api/sakuras", produces = MEDIA_TYPE)
-    public String listSakura(@RequestParam("discColumns") String discColumns) {
+    public String listSakura(
+            @RequestParam(name = "discColumns", defaultValue = DEFAULT_DISC_COLUMNS) String discColumns) {
         JSONArray data = new JSONArray();
 
         @SuppressWarnings("unchecked")
@@ -44,6 +48,27 @@ public class SakuraController extends BaseController {
             debugRequest("[size={}][discColumns={}]", sakuras.size(), discColumns);
         }
         return objectResult(data);
+    }
+
+    @Transactional
+    @GetMapping(value = "/api/sakuras/{id}", produces = MEDIA_TYPE)
+    public String viewSakura(
+            @PathVariable("id") Long id,
+            @RequestParam(name = "discColumns", defaultValue = DEFAULT_DISC_COLUMNS) String discColumns) {
+        Sakura sakura = dao.get(Sakura.class, id);
+        if (sakura == null) {
+            return errorMessage("指定的Sakura不存在");
+        }
+
+        JSONObject object = sakura.toJSON();
+
+        Set<String> columns = Arrays.stream(discColumns.split(",")).collect(Collectors.toSet());
+        object.put("discs", buildDiscs(sakura, columns));
+
+        if (LOGGER.isDebugEnabled()) {
+            debugRequest("[size={}][discColumns={}]", sakura.getDiscs().size(), discColumns);
+        }
+        return objectResult(object);
     }
 
     @Transactional
