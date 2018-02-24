@@ -49,7 +49,6 @@
         <appender-ref ref="FILE"/>
     </root>
 
-    <logger name="mingzuozhibi" level="ALL"/>
-    <logger name="org.springframework" level="WARN"/>
+    <logger name="mingzuozhibi" level="DEBUG"/>
 
 </configuration>

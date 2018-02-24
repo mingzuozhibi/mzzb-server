@@ -11,9 +11,6 @@ spring:
     properties:
       hibernate:
         current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
-  data:
-    rest:
-      base-path: /api
   profiles:
     active:
       - dev
@@ -26,8 +23,6 @@ spring:
     username: mzzb_dev
     password: mzzb_dev
   jpa:
-    hibernate:
-      ddl-auto: update
     show-sql: false
     properties:
       hibernate:
@@ -41,27 +36,17 @@ spring:
     username: mzzb_pro
     password: mzzb_pro
   jpa:
-    hibernate:
-      ddl-auto: update
     show-sql: false
   boot:
     admin:
       url: http://localhost:9091
       username: "${security.user.name}"       #These two are needed so that the client
       password: "${security.user.password}"   #can register at the protected server api
-      client:
-        metadata:
-          user.name: "${security.user.name}"          #These two are needed so that the server
-          user.password: "${security.user.password}"  #can access the proteceted client endpoints
 
 logging:
-  file: "target/webapp.log"
-
-security:
-  user:
-    name: admin
-    password: fuhaiwei
+  file: target/webapp.log
 
 management:
   security:
     enabled: false
+  context-path: /management

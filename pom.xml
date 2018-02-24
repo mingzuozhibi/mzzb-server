@@ -5,7 +5,7 @@
 
     <groupId>mingzuozhibi</groupId>
     <artifactId>mzzb-server</artifactId>
-    <version>0.8.2</version>
+    <version>0.8.3</version>
     <packaging>jar</packaging>
 
     <name>mzzb-server</name>
@@ -62,7 +62,7 @@
         <dependency>
             <groupId>de.codecentric</groupId>
             <artifactId>spring-boot-admin-starter-client</artifactId>
-            <version>1.5.6</version>
+            <version>1.5.7</version>
         </dependency>
 
         <dependency>
@@ -100,10 +100,26 @@
     </dependencies>
 
     <build>
+        <finalName>${project.artifactId}</finalName>
         <plugins>
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                            <goal>build-info</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>mingzuozhibi.MzzbServerApplication</mainClass>
+                </configuration>
             </plugin>
         </plugins>
     </build>

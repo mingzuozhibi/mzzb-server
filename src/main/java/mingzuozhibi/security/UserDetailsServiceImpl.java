@@ -19,13 +19,12 @@ import javax.annotation.PostConstruct;
 import java.io.Serializable;
 
 @Service
-@PropertySource("file:config/setting.properties")
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     private Dao dao;
     private PassUtil passUtil;
 
-    @Value("${security.admin.password}")
+    @Value("${mzzb.admin.password}")
     private String securityAdminPassword;
 
     @Autowired

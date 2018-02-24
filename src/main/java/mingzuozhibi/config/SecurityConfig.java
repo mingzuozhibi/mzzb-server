@@ -18,29 +18,31 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private CustomAccessDeniedHandler customAccessDeniedHandler;
 
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
+        http
+
+                .authorizeRequests()
                 .antMatchers("/api/admin/**").hasRole("ADMIN")
                 .antMatchers("/api/basic/**").hasRole("BASIC")
                 .antMatchers("/api/session/**").permitAll()
                 .antMatchers(HttpMethod.GET).permitAll()
-                .antMatchers("/api/**").hasRole("BASIC");
+                .antMatchers("/api/**").hasRole("BASIC")
 
-        http.anonymous()
+                .and().anonymous()
                 .principal("Guest")
-                .authorities("NONE");
+                .authorities("NONE")
 
-        http.exceptionHandling()
+                .and().exceptionHandling()
                 .accessDeniedHandler(customAccessDeniedHandler)
-                .authenticationEntryPoint(customAccessDeniedHandler);
+                .authenticationEntryPoint(customAccessDeniedHandler)
 
-        http.csrf()
+                .and().csrf()
                 .ignoringAntMatchers("/api/session/**")
-                .ignoringAntMatchers("/actuator/**", "/loggers/**", "/jolokia/**");
+                .ignoringAntMatchers("/management/**")
 
-        http.addFilterAfter(new CsrfTokenResponseHeaderBindingFilter(), CsrfFilter.class);
+                .and().addFilterAfter(new CsrfTokenResponseHeaderBindingFilter(), CsrfFilter.class);
 
         Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
-        logger.info("设置安全策略");
+        logger.info("设置Security安全策略");
     }
 
 }
