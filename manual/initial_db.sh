@@ -5,4 +5,4 @@ basepath=$(cd `dirname $0`; pwd)/..
 
 # 进入manual目录
 cd ${basepath}/manual
-mysql -uroot -p < ./sql/initial_db_and_user.sql
+mysql -uroot -p < ./initial_db.sql

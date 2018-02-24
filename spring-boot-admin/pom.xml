@@ -5,7 +5,7 @@
 
     <groupId>mingzuozhibi</groupId>
     <artifactId>spring-boot-admin</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.1.0</version>
     <packaging>jar</packaging>
 
     <name>spring-boot-admin</name>
@@ -36,17 +36,17 @@
         <dependency>
             <groupId>de.codecentric</groupId>
             <artifactId>spring-boot-admin-server</artifactId>
-            <version>1.5.6</version>
+            <version>1.5.7</version>
         </dependency>
         <dependency>
             <groupId>de.codecentric</groupId>
             <artifactId>spring-boot-admin-server-ui</artifactId>
-            <version>1.5.6</version>
+            <version>1.5.7</version>
         </dependency>
         <dependency>
             <groupId>de.codecentric</groupId>
             <artifactId>spring-boot-admin-server-ui-login</artifactId>
-            <version>1.5.6</version>
+            <version>1.5.7</version>
         </dependency>
     </dependencies>
 

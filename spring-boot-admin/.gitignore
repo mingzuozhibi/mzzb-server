@@ -1,5 +1,2 @@
-.idea
-*.iml
-record
 target
 config/application.properties
