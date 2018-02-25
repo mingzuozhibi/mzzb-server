@@ -29,13 +29,14 @@ public class SakuraController extends BaseController {
     @Transactional
     @GetMapping(value = "/api/sakuras", produces = MEDIA_TYPE)
     public String listSakura(
-            @RequestParam(name = "discColumns", defaultValue = DEFAULT_DISC_COLUMNS) String discColumns) {
+            @RequestParam(name = "discColumns", defaultValue = DEFAULT_DISC_COLUMNS) String discColumns,
+            @RequestParam(name = "viewType", defaultValue = "SakuraList") String viewType) {
         JSONArray data = new JSONArray();
 
         @SuppressWarnings("unchecked")
         List<Sakura> sakuras = dao.query(session -> {
             return session.createCriteria(Sakura.class)
-                    .add(Restrictions.eq("viewType", SakuraList))
+                    .add(Restrictions.eq("viewType", Sakura.ViewType.valueOf(viewType)))
                     .add(Restrictions.eq("enabled", true))
                     .list();
         });
