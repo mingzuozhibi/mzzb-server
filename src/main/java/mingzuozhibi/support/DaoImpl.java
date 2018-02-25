@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
 import javax.transaction.Transactional;
-import java.io.Serializable;
 import java.util.List;
 import java.util.function.Consumer;
 
