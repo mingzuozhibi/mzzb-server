@@ -35,7 +35,9 @@ public class SakuraSpeedSpider {
     private Dao dao;
 
     public void fetch() throws IOException {
-        Document document = Jsoup.connect(SAKURA_SPEED_URL).get();
+        Document document = Jsoup.connect(SAKURA_SPEED_URL)
+                .timeout(30000)
+                .get();
         Elements tables = document.select("table");
         Elements fonts = document.select("b>font[color=red]");
         for (int i = 0; i < tables.size(); i++) {

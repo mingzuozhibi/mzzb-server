@@ -2,6 +2,7 @@ package mingzuozhibi.action;
 
 import mingzuozhibi.persist.Disc;
 import mingzuozhibi.persist.Sakura;
+import mingzuozhibi.persist.Sakura.ViewType;
 import mingzuozhibi.support.Dao;
 import mingzuozhibi.support.JsonArg;
 import org.hibernate.criterion.Restrictions;
@@ -16,12 +17,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static mingzuozhibi.persist.Sakura.ViewType.SakuraList;
-
 @RestController
 public class SakuraController extends BaseController {
 
-    public static final String DEFAULT_DISC_COLUMNS = "id,thisRank,prevRank,totalPt,title";
+    public static final String DISC_COLUMNS = "id,thisRank,prevRank,totalPt,title";
 
     @Autowired
     private Dao dao;
@@ -29,21 +28,26 @@ public class SakuraController extends BaseController {
     @Transactional
     @GetMapping(value = "/api/sakuras", produces = MEDIA_TYPE)
     public String listSakura(
-            @RequestParam(name = "discColumns", defaultValue = DEFAULT_DISC_COLUMNS) String discColumns,
-            @RequestParam(name = "viewType", defaultValue = "SakuraList") String viewType) {
+            @RequestParam(name = "hasDiscs", defaultValue = "true") boolean hasDiscs,
+            @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS) String discColumns,
+            @RequestParam(name = "viewType", defaultValue = "SakuraList") ViewType viewType) {
         JSONArray data = new JSONArray();
 
         @SuppressWarnings("unchecked")
         List<Sakura> sakuras = dao.query(session -> {
             return session.createCriteria(Sakura.class)
-                    .add(Restrictions.eq("viewType", Sakura.ViewType.valueOf(viewType)))
+                    .add(Restrictions.eq("viewType", viewType))
                     .add(Restrictions.eq("enabled", true))
                     .list();
         });
 
         Set<String> columns = Arrays.stream(discColumns.split(",")).collect(Collectors.toSet());
         sakuras.forEach(sakura -> {
-            data.put(sakura.toJSON().put("discs", buildDiscs(sakura, columns)));
+            JSONObject object = sakura.toJSON();
+            if (hasDiscs) {
+                object.put("discs", buildDiscs(sakura, columns));
+            }
+            data.put(object);
         });
         if (LOGGER.isDebugEnabled()) {
             debugRequest("[size={}][discColumns={}]", sakuras.size(), discColumns);
@@ -55,27 +59,31 @@ public class SakuraController extends BaseController {
     @GetMapping(value = "/api/sakuras/{id}", produces = MEDIA_TYPE)
     public String viewSakura(
             @PathVariable("id") Long id,
-            @RequestParam(name = "discColumns", defaultValue = DEFAULT_DISC_COLUMNS) String discColumns) {
-        return responseViewSakura(dao.get(Sakura.class, id), discColumns);
+            @RequestParam(name = "hasDiscs", defaultValue = "true") boolean hasDiscs,
+            @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS) String discColumns) {
+        return responseViewSakura(dao.get(Sakura.class, id), hasDiscs, discColumns);
     }
 
     @Transactional
     @GetMapping(value = "/api/sakuras/key/{key}", produces = MEDIA_TYPE)
     public String viewSakuraByKey(
             @PathVariable("key") String key,
-            @RequestParam(name = "discColumns", defaultValue = DEFAULT_DISC_COLUMNS) String discColumns) {
-        return responseViewSakura(dao.lookup(Sakura.class, "key", key), discColumns);
+            @RequestParam(name = "hasDiscs", defaultValue = "true") boolean hasDiscs,
+            @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS) String discColumns) {
+        return responseViewSakura(dao.lookup(Sakura.class, "key", key), hasDiscs, discColumns);
     }
 
-    private String responseViewSakura(Sakura sakura, String discColumns) {
+    private String responseViewSakura(Sakura sakura, boolean hasDiscs, String discColumns) {
         if (sakura == null) {
             return errorMessage("指定的Sakura不存在");
         }
 
         JSONObject object = sakura.toJSON();
 
-        Set<String> columns = Arrays.stream(discColumns.split(",")).collect(Collectors.toSet());
-        object.put("discs", buildDiscs(sakura, columns));
+        if (hasDiscs) {
+            Set<String> columns = Arrays.stream(discColumns.split(",")).collect(Collectors.toSet());
+            object.put("discs", buildDiscs(sakura, columns));
+        }
 
         if (LOGGER.isDebugEnabled()) {
             debugRequest("[size={}][discColumns={}]", sakura.getDiscs().size(), discColumns);
@@ -100,11 +108,11 @@ public class SakuraController extends BaseController {
     public String saveBasicSakura(
             @JsonArg("$.key") String key,
             @JsonArg("$.title") String title,
-            @JsonArg("$.viewType") String viewType) {
+            @JsonArg("$.viewType") ViewType viewType) {
         if (dao.lookup(Sakura.class, "key", key) != null) {
             return errorMessage("该Sakura列表已存在");
         }
-        Sakura sakura = new Sakura(key, title, Sakura.ViewType.valueOf(viewType));
+        Sakura sakura = new Sakura(key, title, viewType);
         dao.save(sakura);
 
         if (LOGGER.isInfoEnabled()) {
@@ -127,7 +135,7 @@ public class SakuraController extends BaseController {
             @PathVariable("id") Long id,
             @JsonArg("$.key") String key,
             @JsonArg("$.title") String title,
-            @JsonArg("$.viewType") String viewType,
+            @JsonArg("$.viewType") ViewType viewType,
             @JsonArg("$.enabled") boolean enabled) {
         Sakura sakura = dao.get(Sakura.class, id);
 
@@ -136,7 +144,7 @@ public class SakuraController extends BaseController {
         }
         sakura.setKey(key);
         sakura.setTitle(title);
-        sakura.setViewType(Sakura.ViewType.valueOf(viewType));
+        sakura.setViewType(viewType);
         sakura.setEnabled(enabled);
         if (LOGGER.isDebugEnabled()) {
             debugRequest("[Modify:{}]", sakura.toJSON());
