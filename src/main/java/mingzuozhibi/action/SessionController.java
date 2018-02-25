@@ -1,5 +1,6 @@
 package mingzuozhibi.action;
 
+import mingzuozhibi.persist.AutoLogin;
 import mingzuozhibi.persist.User;
 import mingzuozhibi.support.Dao;
 import mingzuozhibi.support.JsonArg;
@@ -44,6 +45,42 @@ public class SessionController extends BaseController {
     public String sessionQuery() {
         JSONObject session = buildSession();
 
+        if (!session.getBoolean("isLogged")) {
+            String header = getAttributes().getRequest().getHeader("X-AUTO-LOGIN");
+            if (header != null && header.length() == 36) {
+                AutoLogin autoLogin = dao.lookup(AutoLogin.class, "token", header);
+                String username = autoLogin.getUser().getUsername();
+
+                if (autoLogin.getExpired().isAfter(LocalDateTime.now())) {
+                    if (autoLogin.getUser().isEnabled()) {
+                        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+                        doLoginSuccess(header, userDetails);
+
+                        onLoginSuccess(username, true);
+
+
+
+                        session = buildSession();
+
+                        if (LOGGER.isInfoEnabled()) {
+                            infoRequest("[用户自动登入: session={}]", session);
+                        }
+
+                        return objectResult(session);
+                    } else {
+                        if (LOGGER.isDebugEnabled()) {
+                            debugRequest("[用户已被停用: username={}]", username);
+                        }
+                    }
+                } else {
+                    if (LOGGER.isDebugEnabled()) {
+                        debugRequest("[用户登入过期: username={}]", username);
+                    }
+                }
+            }
+        }
+
         if (LOGGER.isDebugEnabled()) {
             debugRequest("[获取当前登入状态: session={}]", session);
         }
@@ -58,19 +95,10 @@ public class SessionController extends BaseController {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             if (userDetails.getPassword().equals(password)) {
                 if (userDetails.isEnabled()) {
-                    UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                            userDetails, password, userDetails.getAuthorities());
-                    token.setDetails(new WebAuthenticationDetails(getAttributes().getRequest()));
 
-                    SecurityContext context = SecurityContextHolder.getContext();
-                    context.setAuthentication(token);
+                    doLoginSuccess(password, userDetails);
 
-                    getAttributes().getRequest().changeSessionId();
-
-                    dao.execute(session -> {
-                        dao.lookup(User.class, "username", username)
-                                .setLastLoggedIn(LocalDateTime.now().withNano(0));
-                    });
+                    onLoginSuccess(username, false);
 
                     JSONObject session = buildSession();
                     if (LOGGER.isInfoEnabled()) {
@@ -97,10 +125,36 @@ public class SessionController extends BaseController {
         }
     }
 
+    private void doLoginSuccess(String password, UserDetails userDetails) {
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
+                userDetails, password, userDetails.getAuthorities());
+        token.setDetails(new WebAuthenticationDetails(getAttributes().getRequest()));
+
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(token);
+
+        getAttributes().getRequest().changeSessionId();
+    }
+
+    private void onLoginSuccess(String username, boolean isAutoLogin) {
+        String header = UUID.randomUUID().toString();
+        getAttributes().getResponse().addHeader("X-AUTO-LOGIN", header);
+
+        dao.execute(session -> {
+            User user = dao.lookup(User.class, "username", username);
+            user.setLastLoggedIn(LocalDateTime.now().withNano(0));
+
+            if (!isAutoLogin) {
+                LocalDateTime expired = LocalDateTime.now().withNano(0).plusDays(14);
+                dao.save(new AutoLogin(user, header, expired));
+            }
+        });
+    }
+
     @PostMapping(value = "/api/session/logout", produces = MEDIA_TYPE)
     public String sessionLogout() {
         SecurityContext context = SecurityContextHolder.getContext();
-        String username = context.getAuthentication().getName();
+        Authentication authentication = context.getAuthentication();
 
         context.setAuthentication(new AnonymousAuthenticationToken(
                 UUID.randomUUID().toString(), "Guest", GUEST_AUTHORITIES)
@@ -108,8 +162,17 @@ public class SessionController extends BaseController {
 
         getAttributes().getRequest().getSession().invalidate();
 
+        getAttributes().getResponse().addHeader("X-AUTO-LOGIN", "");
+
+        dao.execute(session -> {
+            User user = dao.lookup(User.class, "username", authentication.getName());
+            dao.findBy(AutoLogin.class, "user", user).forEach(autoLogin -> {
+                dao.delete(autoLogin);
+            });
+        });
+
         if (LOGGER.isInfoEnabled()) {
-            infoRequest("[用户成功登出: username={}]", username);
+            infoRequest("[用户成功登出: username={}]", authentication.getName());
         }
         return objectResult(buildSession());
     }
