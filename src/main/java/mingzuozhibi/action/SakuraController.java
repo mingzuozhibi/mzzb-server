@@ -55,7 +55,18 @@ public class SakuraController extends BaseController {
     public String viewSakura(
             @PathVariable("id") Long id,
             @RequestParam(name = "discColumns", defaultValue = DEFAULT_DISC_COLUMNS) String discColumns) {
-        Sakura sakura = dao.get(Sakura.class, id);
+        return responseViewSakura(dao.get(Sakura.class, id), discColumns);
+    }
+
+    @Transactional
+    @GetMapping(value = "/api/sakuras/key/{key}", produces = MEDIA_TYPE)
+    public String viewSakuraByKey(
+            @PathVariable("key") String key,
+            @RequestParam(name = "discColumns", defaultValue = DEFAULT_DISC_COLUMNS) String discColumns) {
+        return responseViewSakura(dao.lookup(Sakura.class, "key", key), discColumns);
+    }
+
+    private String responseViewSakura(Sakura sakura, String discColumns) {
         if (sakura == null) {
             return errorMessage("指定的Sakura不存在");
         }
