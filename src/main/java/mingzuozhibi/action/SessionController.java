@@ -43,48 +43,73 @@ public class SessionController extends BaseController {
 
     @GetMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionQuery() {
-        JSONObject session = buildSession();
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication authentication = context.getAuthentication();
 
-        if (!session.getBoolean("isLogged")) {
-            String header = getAttributes().getRequest().getHeader("X-AUTO-LOGIN");
-            if (header != null && header.length() == 36) {
-                AutoLogin autoLogin = dao.lookup(AutoLogin.class, "token", header);
-                String username = autoLogin.getUser().getUsername();
+        if (!isLogged(authentication)) {
+            if (checkAutoLogin()) {
 
-                if (autoLogin.getExpired().isAfter(LocalDateTime.now())) {
-                    if (autoLogin.getUser().isEnabled()) {
-                        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                String username = authentication.getName();
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                doLoginSuccess(userDetails.getPassword(), userDetails);
+                onLoginSuccess(username, false);
 
-                        doLoginSuccess(header, userDetails);
-
-                        onLoginSuccess(username, true);
-
-
-
-                        session = buildSession();
-
-                        if (LOGGER.isInfoEnabled()) {
-                            infoRequest("[用户自动登入: session={}]", session);
-                        }
-
-                        return objectResult(session);
-                    } else {
-                        if (LOGGER.isDebugEnabled()) {
-                            debugRequest("[用户已被停用: username={}]", username);
-                        }
-                    }
-                } else {
-                    if (LOGGER.isDebugEnabled()) {
-                        debugRequest("[用户登入过期: username={}]", username);
-                    }
+                if (LOGGER.isInfoEnabled()) {
+                    infoRequest("[用户自动登入: 已成功自动登入][username={}]", username);
                 }
+            } else {
+                getAttributes().getResponse().addHeader("X-AUTO-LOGIN", "");
             }
         }
-
+        
+        JSONObject session = buildSession();
         if (LOGGER.isDebugEnabled()) {
             debugRequest("[获取当前登入状态: session={}]", session);
         }
         return objectResult(session);
+    }
+
+    private boolean checkAutoLogin() {
+        String header = getAttributes().getRequest().getHeader("X-AUTO-LOGIN");
+        if (header == null || header.isEmpty()) {
+            if (LOGGER.isDebugEnabled()) {
+                debugRequest("[用户自动登入: 未发现有效的X-AUTO-LOGIN]");
+            }
+            return false;
+        }
+
+        if (header.length() != 36) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[用户自动登入: 异常的X-AUTO-LOGIN][token={}]", header);
+            }
+            return false;
+        }
+
+        AutoLogin autoLogin = dao.lookup(AutoLogin.class, "token", header);
+        if (autoLogin == null) {
+            if (LOGGER.isDebugEnabled()) {
+                debugRequest("[用户自动登入: 服务器未找到相应数据][token={}]", header);
+            }
+            return false;
+        }
+
+        String username = autoLogin.getUser().getUsername();
+        if (autoLogin.getExpired().isBefore(LocalDateTime.now())) {
+            if (LOGGER.isDebugEnabled()) {
+                debugRequest("[用户自动登入: TOKEN已过期][username={}][expired={}]",
+                        username, autoLogin.getExpired());
+            }
+            return false;
+        }
+
+        if (!autoLogin.getUser().isEnabled()) {
+            if (LOGGER.isInfoEnabled()) {
+                infoRequest("[用户自动登入: 用户已被停用][username={}]", username);
+            }
+            return false;
+        }
+
+        return true;
     }
 
     @PostMapping(value = "/api/session/login", produces = MEDIA_TYPE)
@@ -93,30 +118,29 @@ public class SessionController extends BaseController {
             @JsonArg("$.password") String password) {
         try {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if (userDetails.getPassword().equals(password)) {
-                if (userDetails.isEnabled()) {
-
-                    doLoginSuccess(password, userDetails);
-
-                    onLoginSuccess(username, false);
-
-                    JSONObject session = buildSession();
-                    if (LOGGER.isInfoEnabled()) {
-                        infoRequest("[用户成功登入: session={}]", session);
-                    }
-                    return objectResult(session);
-                } else {
-                    if (LOGGER.isDebugEnabled()) {
-                        debugRequest("[用户已被停用: username={}]", username);
-                    }
-                    return errorMessage("用户已被停用");
-                }
-            } else {
+            if (!userDetails.getPassword().equals(password)) {
                 if (LOGGER.isDebugEnabled()) {
                     debugRequest("[用户密码错误: username={}]", username);
                 }
                 return errorMessage("用户密码错误");
             }
+
+            if (!userDetails.isEnabled()) {
+                if (LOGGER.isDebugEnabled()) {
+                    debugRequest("[用户已被停用: username={}]", username);
+                }
+                return errorMessage("用户已被停用");
+            }
+
+            doLoginSuccess(password, userDetails);
+            onLoginSuccess(username, true);
+
+            JSONObject session = buildSession();
+            if (LOGGER.isInfoEnabled()) {
+                infoRequest("[用户成功登入: session={}]", session);
+            }
+            return objectResult(session);
+
         } catch (UsernameNotFoundException e) {
             if (LOGGER.isDebugEnabled()) {
                 debugRequest("[用户名称不存在: username={}]", username);
@@ -136,15 +160,15 @@ public class SessionController extends BaseController {
         getAttributes().getRequest().changeSessionId();
     }
 
-    private void onLoginSuccess(String username, boolean isAutoLogin) {
-        String header = UUID.randomUUID().toString();
-        getAttributes().getResponse().addHeader("X-AUTO-LOGIN", header);
-
+    private void onLoginSuccess(String username, boolean putAutoLoginToken) {
         dao.execute(session -> {
             User user = dao.lookup(User.class, "username", username);
             user.setLastLoggedIn(LocalDateTime.now().withNano(0));
 
-            if (!isAutoLogin) {
+            if (putAutoLoginToken) {
+                String header = UUID.randomUUID().toString();
+                getAttributes().getResponse().addHeader("X-AUTO-LOGIN", header);
+
                 LocalDateTime expired = LocalDateTime.now().withNano(0).plusDays(14);
                 dao.save(new AutoLogin(user, header, expired));
             }
@@ -160,16 +184,19 @@ public class SessionController extends BaseController {
                 UUID.randomUUID().toString(), "Guest", GUEST_AUTHORITIES)
         );
 
-        getAttributes().getRequest().getSession().invalidate();
-
-        getAttributes().getResponse().addHeader("X-AUTO-LOGIN", "");
-
         dao.execute(session -> {
             User user = dao.lookup(User.class, "username", authentication.getName());
             dao.findBy(AutoLogin.class, "user", user).forEach(autoLogin -> {
+                if (LOGGER.isDebugEnabled()) {
+                    debugRequest("[用户登出: 删除自动登入数据][token={}]", autoLogin.getToken());
+                }
                 dao.delete(autoLogin);
             });
         });
+
+        getAttributes().getResponse().addHeader("X-AUTO-LOGIN", "");
+
+        getAttributes().getRequest().getSession().invalidate();
 
         if (LOGGER.isInfoEnabled()) {
             infoRequest("[用户成功登出: username={}]", authentication.getName());
