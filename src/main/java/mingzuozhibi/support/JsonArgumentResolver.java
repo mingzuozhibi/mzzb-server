@@ -27,7 +27,13 @@ public class JsonArgumentResolver implements HandlerMethodArgumentResolver {
         if (StringUtils.isEmpty(arg)) {
             arg = parameter.getParameterName();
         }
-        return JsonPath.parse(body).read(arg, parameter.getParameterType());
+        Class<?> parameterType = parameter.getParameterType();
+        if (parameterType.isEnum()) {
+            String read = JsonPath.parse(body).read(arg, String.class);
+            return parameterType.getMethod("valueOf", String.class).invoke(null, read);
+        } else {
+            return JsonPath.parse(body).read(arg, parameterType);
+        }
     }
 
     private String getRequestBody(NativeWebRequest webRequest) {
