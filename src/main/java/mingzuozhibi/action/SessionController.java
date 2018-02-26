@@ -46,22 +46,10 @@ public class SessionController extends BaseController {
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication authentication = context.getAuthentication();
 
-        if (!isLogged(authentication)) {
-            if (checkAutoLogin()) {
-
-                String username = authentication.getName();
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                doLoginSuccess(userDetails.getPassword(), userDetails);
-                onLoginSuccess(username, false);
-
-                if (LOGGER.isInfoEnabled()) {
-                    infoRequest("[用户自动登入: 已成功自动登入][username={}]", username);
-                }
-            } else {
-                getAttributes().getResponse().addHeader("X-AUTO-LOGIN", "");
-            }
+        if (!isLogged(authentication) && !checkAutoLogin()) {
+            getAttributes().getResponse().addHeader("X-AUTO-LOGIN", "");
         }
-        
+
         JSONObject session = buildSession();
         if (LOGGER.isDebugEnabled()) {
             debugRequest("[获取当前登入状态: session={}]", session);
@@ -107,6 +95,14 @@ public class SessionController extends BaseController {
                 infoRequest("[用户自动登入: 用户已被停用][username={}]", username);
             }
             return false;
+        }
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        doLoginSuccess(userDetails.getPassword(), userDetails);
+        onLoginSuccess(username, false);
+
+        if (LOGGER.isInfoEnabled()) {
+            infoRequest("[用户自动登入: 已成功自动登入][username={}]", username);
         }
 
         return true;
