@@ -66,7 +66,7 @@ public class UserController extends BaseController {
             List<AutoLogin> autoLogins = dao.findBy(AutoLogin.class, "user", user);
             autoLogins.forEach(autoLogin -> {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("[清理自动登入数据][autoLoginId={}]", autoLogin.getId());
+                    debugRequest("[清理自动登入数据][autoLoginId={}]", autoLogin.getId());
                 }
                 dao.delete(autoLogin);
             });

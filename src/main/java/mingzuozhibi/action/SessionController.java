@@ -227,7 +227,7 @@ public class SessionController extends BaseController {
             httpSession.setAttribute("autoLoginId", autoLogin.getId());
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("[已设置自动登入][autoLoginId={}]", autoLogin.getId());
+                debugRequest("[已设置自动登入][autoLoginId={}]", autoLogin.getId());
             }
         }
 
