@@ -1,10 +1,8 @@
 package mingzuozhibi.action;
 
 import mingzuozhibi.persist.User;
-import mingzuozhibi.support.Dao;
 import mingzuozhibi.support.JsonArg;
 import org.json.JSONArray;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,9 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class UserController extends BaseController {
-
-    @Autowired
-    private Dao dao;
 
     @Transactional
     @GetMapping(value = "/api/admin/users", produces = MEDIA_TYPE)

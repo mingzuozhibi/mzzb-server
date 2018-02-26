@@ -3,12 +3,10 @@ package mingzuozhibi.action;
 import mingzuozhibi.persist.Disc;
 import mingzuozhibi.persist.Sakura;
 import mingzuozhibi.persist.Sakura.ViewType;
-import mingzuozhibi.support.Dao;
 import mingzuozhibi.support.JsonArg;
 import org.hibernate.criterion.Restrictions;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,9 +19,6 @@ import java.util.stream.Collectors;
 public class SakuraController extends BaseController {
 
     public static final String DISC_COLUMNS = "id,thisRank,prevRank,totalPt,title";
-
-    @Autowired
-    private Dao dao;
 
     @Transactional
     @GetMapping(value = "/api/sakuras", produces = MEDIA_TYPE)

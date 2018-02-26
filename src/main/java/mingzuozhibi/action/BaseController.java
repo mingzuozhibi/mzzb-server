@@ -1,25 +1,35 @@
 package mingzuozhibi.action;
 
+import mingzuozhibi.persist.AutoLogin;
+import mingzuozhibi.security.UserDetailsImpl;
+import mingzuozhibi.support.Dao;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public class BaseController {
 
     protected static final String MEDIA_TYPE = MediaType.APPLICATION_JSON_UTF8_VALUE;
     protected Logger LOGGER;
+
+    @Autowired
+    protected Dao dao;
 
     public BaseController() {
         LOGGER = LoggerFactory.getLogger(this.getClass());

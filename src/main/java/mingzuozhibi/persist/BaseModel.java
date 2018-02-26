@@ -1,6 +1,7 @@
 package mingzuozhibi.persist;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -8,7 +9,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @MappedSuperclass
-public abstract class BaseModel {
+public abstract class BaseModel implements Serializable {
 
     private static final DateTimeFormatter formatterDate = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
