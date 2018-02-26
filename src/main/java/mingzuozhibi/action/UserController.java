@@ -1,5 +1,6 @@
 package mingzuozhibi.action;
 
+import mingzuozhibi.persist.AutoLogin;
 import mingzuozhibi.persist.User;
 import mingzuozhibi.support.JsonArg;
 import org.json.JSONArray;
@@ -8,6 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 public class UserController extends BaseController {
@@ -59,6 +62,14 @@ public class UserController extends BaseController {
         user.setEnabled(enabled);
         if (password != null && !password.isEmpty()) {
             user.setPassword(password);
+
+            List<AutoLogin> autoLogins = dao.findBy(AutoLogin.class, "user", user);
+            autoLogins.forEach(autoLogin -> {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("[清理自动登入数据][autoLoginId={}]", autoLogin.getId());
+                }
+                dao.delete(autoLogin);
+            });
         }
 
         if (LOGGER.isDebugEnabled()) {
