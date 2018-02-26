@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 
 import static mingzuozhibi.persist.Sakura.ViewType.SakuraList;
 import static mingzuozhibi.service.SakuraSpeedSpider.Util.*;
-import static mingzuozhibi.support.Constants.SakuraTop100Key;
 
 @Service
 public class SakuraSpeedSpider {
@@ -67,7 +66,7 @@ public class SakuraSpeedSpider {
     private String findSakuraKey(Element table) {
         return Optional.ofNullable(table.parent().id())
                 .filter(key -> !key.isEmpty())
-                .orElse(SakuraTop100Key);
+                .orElse("9999-99");
     }
 
     private Sakura getOrCreateSakura(String key) {
@@ -94,7 +93,7 @@ public class SakuraSpeedSpider {
             disc.setNicoBook(parseInteger(tr.child(3).text()));
             toAdd.add(disc);
         });
-        if (sakura.isTop100()) {
+        if ("9999-99".equals(sakura.getKey())) {
             sakura.setDiscs(toAdd);
         } else {
             List<Disc> sakuraDiscs = sakura.getDiscs();

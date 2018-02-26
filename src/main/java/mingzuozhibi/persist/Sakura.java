@@ -8,9 +8,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static mingzuozhibi.support.Constants.SakuraTop100Key;
-import static mingzuozhibi.support.Constants.SakuraTop100Title;
-
 @Entity
 public class Sakura extends BaseModel implements Comparable<Sakura> {
 
@@ -92,11 +89,6 @@ public class Sakura extends BaseModel implements Comparable<Sakura> {
         this.discs = discs;
     }
 
-    @Transient
-    public boolean isTop100() {
-        return SakuraTop100Key.equals(getKey());
-    }
-
     @Override
     public int compareTo(Sakura o) {
         Objects.requireNonNull(o);
@@ -118,8 +110,8 @@ public class Sakura extends BaseModel implements Comparable<Sakura> {
 
     private static String titleOfKey(String key) {
         Objects.requireNonNull(key);
-        if (key.equals(SakuraTop100Key)) {
-            return SakuraTop100Title;
+        if (key.equals("9999-99")) {
+            return "日亚实时TOP100";
         }
         Matcher matcher = Pattern.compile("^(\\d{4})-(\\d{2})$").matcher(key);
         if (matcher.find()) {
