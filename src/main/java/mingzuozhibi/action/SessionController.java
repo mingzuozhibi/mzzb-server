@@ -61,7 +61,7 @@ public class SessionController extends BaseController {
                 getAttributes().getResponse().addHeader("X-AUTO-LOGIN", "");
             }
         }
-        
+
         JSONObject session = buildSession();
         if (LOGGER.isDebugEnabled()) {
             debugRequest("[获取当前登入状态: session={}]", session);
