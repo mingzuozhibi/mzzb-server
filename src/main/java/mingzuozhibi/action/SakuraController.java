@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class SakuraController extends BaseController {
 
     public static final String DISC_COLUMNS = "id,thisRank,prevRank,totalPt,title";
+    public static final String DISC_COLUMNS_ADMIN = "id,asic,thisRank,surplusDays,title";
 
     @Transactional
     @GetMapping(value = "/api/sakuras", produces = MEDIA_TYPE)
@@ -88,7 +89,7 @@ public class SakuraController extends BaseController {
 
     @Transactional
     @GetMapping(value = "/api/basic/sakuras", produces = MEDIA_TYPE)
-    public String listBasicSakura() {
+    public String listAdminSakura() {
         JSONArray array = new JSONArray();
         dao.findAll(Sakura.class).forEach(sakura -> array.put(sakura.toJSON()));
 
@@ -99,8 +100,17 @@ public class SakuraController extends BaseController {
     }
 
     @Transactional
+    @GetMapping(value = "/api/basic/sakuras/key/{key}", produces = MEDIA_TYPE)
+    public String viewAdminSakuraByKey(
+            @PathVariable("key") String key,
+            @RequestParam(name = "hasDiscs", defaultValue = "false") boolean hasDiscs,
+            @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS_ADMIN) String discColumns) {
+        return responseViewSakura(dao.lookup(Sakura.class, "key", key), hasDiscs, discColumns);
+    }
+
+    @Transactional
     @PostMapping(value = "/api/basic/sakuras", produces = MEDIA_TYPE)
-    public String saveBasicSakura(
+    public String saveAdminSakura(
             @JsonArg("$.key") String key,
             @JsonArg("$.title") String title,
             @JsonArg("$.viewType") ViewType viewType) {
