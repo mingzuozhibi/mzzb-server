@@ -30,6 +30,20 @@ public class UserController extends BaseController {
     }
 
     @Transactional
+    @GetMapping(value = "/api/admin/users/{id}", produces = MEDIA_TYPE)
+    public String listAdminUser(@PathVariable("id") Long id) {
+        User user = dao.get(User.class, id);
+        if (user == null) {
+            return errorMessage("指定的用户不存在");
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            debugRequest("[user={}]", user.toJSON());
+        }
+        return objectResult(user.toJSON());
+    }
+
+    @Transactional
     @PostMapping(value = "/api/admin/users", produces = MEDIA_TYPE)
     public String saveAdminUser(
             @JsonArg("$.username") String username,
