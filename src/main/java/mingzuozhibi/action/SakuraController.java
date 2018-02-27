@@ -71,7 +71,7 @@ public class SakuraController extends BaseController {
 
     private String responseViewSakura(Sakura sakura, boolean hasDiscs, String discColumns) {
         if (sakura == null) {
-            return errorMessage("指定的Sakura不存在");
+            return errorMessage("指定的列表不存在");
         }
 
         JSONObject object = sakura.toJSON();
@@ -115,7 +115,7 @@ public class SakuraController extends BaseController {
             @JsonArg("$.title") String title,
             @JsonArg("$.viewType") ViewType viewType) {
         if (dao.lookup(Sakura.class, "key", key) != null) {
-            return errorMessage("该Sakura列表已存在");
+            return errorMessage("该列表已存在");
         }
         Sakura sakura = new Sakura(key, title, viewType);
         dao.save(sakura);
