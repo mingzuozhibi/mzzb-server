@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class SakuraController extends BaseController {
 
     public static final String DISC_COLUMNS = "id,thisRank,prevRank,totalPt,title";
-    public static final String DISC_COLUMNS_ADMIN = "id,asic,thisRank,surplusDays,title";
+    public static final String DISC_COLUMNS_ADMIN = "id,asin,thisRank,surplusDays,title";
 
     @Transactional
     @GetMapping(value = "/api/sakuras", produces = MEDIA_TYPE)
