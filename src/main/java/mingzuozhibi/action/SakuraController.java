@@ -10,24 +10,29 @@ import org.json.JSONObject;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
 public class SakuraController extends BaseController {
 
-    public static final String DISC_COLUMNS = "id,thisRank,prevRank,totalPt,title";
-    public static final String DISC_COLUMNS_ADMIN = "id,asin,thisRank,surplusDays,title";
+    private final static String DISC_COLUMNS = "id,thisRank,prevRank,totalPt,title";
+    private final static String DISC_COLUMNS_ADMIN = "id,asin,thisRank,surplusDays,title";
+    private final static String FIND_ONE_KEYS = "key";
+
+    private static Set<String> DISC_COLUMNS_SET = buildSet(DISC_COLUMNS);
+    private static Set<String> DISC_COLUMNS_ADMIN_SET = buildSet(DISC_COLUMNS_ADMIN);
+    private static Set<String> FIND_ONE_KEYS_SET = buildSet(FIND_ONE_KEYS);
 
     @Transactional
     @GetMapping(value = "/api/sakuras", produces = MEDIA_TYPE)
-    public String listSakura(
+    public String findAll(
+            @RequestParam(name = "viewType", defaultValue = "SakuraList") ViewType viewType,
             @RequestParam(name = "hasDiscs", defaultValue = "true") boolean hasDiscs,
-            @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS) String discColumns,
-            @RequestParam(name = "viewType", defaultValue = "SakuraList") ViewType viewType) {
-        JSONArray data = new JSONArray();
+            @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS) String discColumns) {
 
         @SuppressWarnings("unchecked")
         List<Sakura> sakuras = dao.query(session -> {
@@ -37,93 +42,29 @@ public class SakuraController extends BaseController {
                     .list();
         });
 
-        Set<String> columns = Arrays.stream(discColumns.split(",")).collect(Collectors.toSet());
-        sakuras.forEach(sakura -> {
-            JSONObject object = sakura.toJSON();
-            if (hasDiscs) {
-                object.put("discs", buildDiscs(sakura, columns));
-            }
-            data.put(object);
-        });
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[size={}][discColumns={}]", sakuras.size(), discColumns);
-        }
-        return objectResult(data);
+        return responseAll(sakuras, hasDiscs, discColumns);
     }
 
-    @Transactional
-    @GetMapping(value = "/api/sakuras/{id}", produces = MEDIA_TYPE)
-    public String viewSakura(
-            @PathVariable("id") Long id,
-            @RequestParam(name = "hasDiscs", defaultValue = "true") boolean hasDiscs,
-            @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS) String discColumns) {
-        return responseViewSakura(dao.get(Sakura.class, id), hasDiscs, discColumns);
-    }
+    private String responseAll(List<Sakura> sakuras, boolean hasDiscs, String discColumns) {
+        JSONArray result = new JSONArray();
 
-    @Transactional
-    @GetMapping(value = "/api/sakuras/key/{key}", produces = MEDIA_TYPE)
-    public String viewSakuraByKey(
-            @PathVariable("key") String key,
-            @RequestParam(name = "hasDiscs", defaultValue = "true") boolean hasDiscs,
-            @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS) String discColumns) {
-        return responseViewSakura(dao.lookup(Sakura.class, "key", key), hasDiscs, discColumns);
-    }
-
-    private String responseViewSakura(Sakura sakura, boolean hasDiscs, String discColumns) {
-        if (sakura == null) {
-            return errorMessage("指定的列表不存在");
-        }
-
-        JSONObject object = sakura.toJSON();
-
+        AtomicInteger discConut = new AtomicInteger();
         if (hasDiscs) {
-            Set<String> columns = Arrays.stream(discColumns.split(",")).collect(Collectors.toSet());
-            object.put("discs", buildDiscs(sakura, columns));
+            Set<String> columns = getColumns(discColumns);
+            sakuras.forEach(sakura -> {
+                discConut.addAndGet(sakura.getDiscs().size());
+                result.put(sakura.toJSON().put("discs", buildDiscs(sakura, columns)));
+            });
+        } else {
+            sakuras.forEach(sakura -> {
+                result.put(sakura.toJSON());
+            });
         }
 
         if (LOGGER.isDebugEnabled()) {
-            debugRequest("[size={}][discColumns={}]", sakura.getDiscs().size(), discColumns);
+            debugRequest("[查询多个列表成功][列表数量={}][碟片数量={}]", sakuras.size(), discConut.get());
         }
-        return objectResult(object);
-    }
-
-    @Transactional
-    @GetMapping(value = "/api/basic/sakuras", produces = MEDIA_TYPE)
-    public String listAdminSakura() {
-        JSONArray array = new JSONArray();
-        dao.findAll(Sakura.class).forEach(sakura -> array.put(sakura.toJSON()));
-
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[size={}]", array.length());
-        }
-        return objectResult(array);
-    }
-
-    @Transactional
-    @GetMapping(value = "/api/basic/sakuras/key/{key}", produces = MEDIA_TYPE)
-    public String viewAdminSakuraByKey(
-            @PathVariable("key") String key,
-            @RequestParam(name = "hasDiscs", defaultValue = "false") boolean hasDiscs,
-            @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS_ADMIN) String discColumns) {
-        return responseViewSakura(dao.lookup(Sakura.class, "key", key), hasDiscs, discColumns);
-    }
-
-    @Transactional
-    @PostMapping(value = "/api/basic/sakuras", produces = MEDIA_TYPE)
-    public String saveAdminSakura(
-            @JsonArg("$.key") String key,
-            @JsonArg("$.title") String title,
-            @JsonArg("$.viewType") ViewType viewType) {
-        if (dao.lookup(Sakura.class, "key", key) != null) {
-            return errorMessage("该列表已存在");
-        }
-        Sakura sakura = new Sakura(key, title, viewType);
-        dao.save(sakura);
-
-        if (LOGGER.isInfoEnabled()) {
-            infoRequest("[json={}]", sakura.toJSON());
-        }
-        return objectResult(sakura.toJSON());
+        return objectResult(result);
     }
 
     private JSONArray buildDiscs(Sakura sakura, Set<String> columns) {
@@ -134,27 +75,182 @@ public class SakuraController extends BaseController {
         return discs;
     }
 
+    private Set<String> getColumns(String discColumns) {
+        switch (discColumns) {
+            case DISC_COLUMNS:
+                return DISC_COLUMNS_SET;
+            case DISC_COLUMNS_ADMIN:
+                return DISC_COLUMNS_ADMIN_SET;
+            default:
+                return buildSet(discColumns);
+        }
+    }
+
+    private static Set<String> buildSet(String discColumns) {
+        return Stream.of(discColumns.split(",")).collect(Collectors.toSet());
+    }
+
+    @Transactional
+    @GetMapping(value = "/api/sakuras/{key}/{value}", produces = MEDIA_TYPE)
+    public String findOne(
+            @PathVariable("key") String key,
+            @PathVariable("value") String value,
+            @RequestParam(name = "hasDiscs", defaultValue = "true") boolean hasDiscs,
+            @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS) String discColumns) {
+
+        if (!FIND_ONE_KEYS_SET.contains(key)) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[查询单个列表][不支持的查询属性][key={}]", key);
+            }
+            return errorMessage("不支持的查询属性");
+        }
+
+        Sakura sakura = dao.lookup(Sakura.class, key, value);
+
+        if (sakura == null) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[查询单个列表][指定的列表不存在][key={}][value={}]", key, value);
+            }
+            return errorMessage("指定的列表不存在");
+        }
+
+        return responseOne(sakura, hasDiscs, discColumns);
+    }
+
+    private String responseOne(Sakura sakura, boolean hasDiscs, String discColumns) {
+        JSONObject result = sakura.toJSON();
+        if (hasDiscs) {
+            result.put("discs", buildDiscs(sakura, getColumns(discColumns)));
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            debugRequest("[查询单个列表成功][列表信息={}][碟片数量={}]",
+                    sakura.toJSON(), hasDiscs ? sakura.getDiscs().size() : 0);
+        }
+        return objectResult(result);
+    }
+
+    @Transactional
+    @GetMapping(value = "/api/sakuras/{id}", produces = MEDIA_TYPE)
+    public String getOne(
+            @PathVariable("id") Long id,
+            @RequestParam(name = "hasDiscs", defaultValue = "true") boolean hasDiscs,
+            @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS) String discColumns) {
+
+        Sakura sakura = dao.get(Sakura.class, id);
+
+        if (sakura == null) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[查询单个列表][指定的列表不存在][Id={}]", id);
+            }
+            return errorMessage("指定的列表不存在");
+        }
+
+        return responseOne(sakura, hasDiscs, discColumns);
+    }
+
+    @Transactional
+    @GetMapping(value = "/api/basic/sakuras", produces = MEDIA_TYPE)
+    public String adminFindAll() {
+
+        return responseAll(dao.findAll(Sakura.class), false, null);
+    }
+
+    @Transactional
+    @GetMapping(value = "/api/basic/sakuras/{key}/{value}", produces = MEDIA_TYPE)
+    public String adminFindOne(
+            @PathVariable("key") String key,
+            @PathVariable("value") String value,
+            @RequestParam(name = "hasDiscs", defaultValue = "false") boolean hasDiscs,
+            @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS_ADMIN) String discColumns) {
+
+        return findOne(key, value, hasDiscs, discColumns);
+    }
+
+    @Transactional
+    @PostMapping(value = "/api/basic/sakuras", produces = MEDIA_TYPE)
+    public String adminAddOne(
+            @JsonArg("$.key") String key,
+            @JsonArg("$.title") String title,
+            @JsonArg("$.viewType") ViewType viewType) {
+        if (key.isEmpty()) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[添加单个列表][列表索引不能为空]");
+            }
+            return errorMessage("列表索引不能为空");
+        }
+
+        if (title.isEmpty()) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[添加单个列表][列表标题不能为空]");
+            }
+            return errorMessage("列表标题不能为空");
+        }
+
+        if (dao.lookup(Sakura.class, "key", key) != null) {
+            if (LOGGER.isInfoEnabled()) {
+                infoRequest("[添加单个列表][指定的列表索引已存在][Key={}]", key);
+            }
+            return errorMessage("指定的列表索引已存在");
+        }
+
+        Sakura sakura = new Sakura(key, title, viewType);
+        dao.save(sakura);
+
+        JSONObject result = sakura.toJSON();
+        if (LOGGER.isInfoEnabled()) {
+            infoRequest("[添加单个列表成功][列表信息={}]", result);
+        }
+        return objectResult(result);
+    }
+
     @Transactional
     @PostMapping(value = "/api/basic/sakuras/{id}", produces = MEDIA_TYPE)
-    public String editAdminUser(
+    public String adminSetOne(
             @PathVariable("id") Long id,
             @JsonArg("$.key") String key,
             @JsonArg("$.title") String title,
             @JsonArg("$.viewType") ViewType viewType,
             @JsonArg("$.enabled") boolean enabled) {
+
+        if (key.isEmpty()) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[编辑单个列表][列表索引不能为空]");
+            }
+            return errorMessage("列表索引不能为空");
+        }
+
+        if (title.isEmpty()) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[编辑单个列表][列表标题不能为空]");
+            }
+            return errorMessage("列表标题不能为空");
+        }
+
         Sakura sakura = dao.get(Sakura.class, id);
 
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[Before:{}]", sakura.toJSON());
+        if (dao.lookup(Sakura.class, "key", key) == null) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[编辑单个列表][指定的列表索引不存在][Key={}]", key);
+            }
+            return errorMessage("指定的列表索引不存在");
         }
+
+        JSONObject before = sakura.toJSON();
+        if (LOGGER.isDebugEnabled()) {
+            debugRequest("[编辑单个列表][修改前={}]", before);
+        }
+
         sakura.setKey(key);
         sakura.setTitle(title);
         sakura.setViewType(viewType);
         sakura.setEnabled(enabled);
+
+        JSONObject result = sakura.toJSON();
         if (LOGGER.isDebugEnabled()) {
-            debugRequest("[Modify:{}]", sakura.toJSON());
+            debugRequest("[编辑单个列表][修改后={}]", result);
         }
-        return objectResult(sakura.toJSON());
+        return objectResult(result);
     }
 
 }
