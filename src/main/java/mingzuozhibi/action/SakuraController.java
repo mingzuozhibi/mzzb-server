@@ -253,4 +253,80 @@ public class SakuraController extends BaseController {
         return objectResult(result);
     }
 
+    @Transactional
+    @PostMapping(value = "/api/basic/sakuras/{id}/discs/{discId}", produces = MEDIA_TYPE)
+    public String adminListPush(
+            @PathVariable("id") Long id,
+            @PathVariable("discId") Long discId,
+            @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS_ADMIN) String discColumns) {
+
+        Sakura sakura = dao.get(Sakura.class, id);
+
+        if (sakura == null) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[添加碟片到列表][指定的列表不存在][Id={}]", id);
+            }
+            return errorMessage("指定的列表不存在");
+        }
+
+        Disc disc = dao.get(Disc.class, discId);
+
+        if (disc == null) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[添加碟片到列表][指定的碟片不存在][Id={}]", discId);
+            }
+            return errorMessage("指定的碟片不存在");
+        }
+
+        if (sakura.getDiscs().stream().anyMatch(d -> d.getId().equals(discId))) {
+            if (LOGGER.isInfoEnabled()) {
+                infoRequest("[添加碟片到列表][指定的碟片已存在于列表][ASIN={}][列表={}]",
+                        disc.getAsin(), sakura.getTitle());
+            }
+            return errorMessage("指定的碟片已存在于列表");
+        }
+
+        sakura.getDiscs().add(disc);
+
+        if (LOGGER.isInfoEnabled()) {
+            infoRequest("[添加碟片到列表成功][ASIN={}][列表={}]", disc.getAsin(), sakura.getTitle());
+        }
+        return objectResult(disc.toJSON(getColumns(discColumns)));
+    }
+
+    @Transactional
+    @DeleteMapping(value = "/api/basic/sakuras/{id}/discs/{discId}", produces = MEDIA_TYPE)
+    public String adminListDrop(
+            @PathVariable("id") Long id,
+            @PathVariable("discId") Long discId,
+            @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS_ADMIN) String discColumns) {
+
+        Sakura sakura = dao.get(Sakura.class, id);
+
+        if (sakura == null) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[从列表移除碟片][指定的列表不存在][Id={}]", id);
+            }
+            return errorMessage("指定的列表不存在");
+        }
+
+        Disc disc = sakura.getDiscs().stream()
+                .filter(d -> d.getId().equals(discId))
+                .findFirst().orElse(null);
+
+        if (disc == null) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[从列表移除碟片][指定的碟片不存在于列表][Id={}]", discId);
+            }
+            return errorMessage("指定的碟片不存在于列表");
+        }
+
+        sakura.getDiscs().remove(disc);
+
+        if (LOGGER.isInfoEnabled()) {
+            infoRequest("[从列表移除碟片成功][ASIN={}][列表={}]", disc.getAsin(), sakura.getTitle());
+        }
+        return objectResult(disc.toJSON(getColumns(discColumns)));
+    }
+
 }
