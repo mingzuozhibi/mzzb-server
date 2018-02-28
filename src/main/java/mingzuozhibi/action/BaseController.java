@@ -1,7 +1,5 @@
 package mingzuozhibi.action;
 
-import mingzuozhibi.persist.AutoLogin;
-import mingzuozhibi.security.UserDetailsImpl;
 import mingzuozhibi.support.Dao;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -10,17 +8,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Optional;
 
 public class BaseController {
@@ -35,10 +31,10 @@ public class BaseController {
         LOGGER = LoggerFactory.getLogger(this.getClass());
     }
 
-    protected String objectResult(Object object) {
+    protected String objectResult(Object result) {
         JSONObject root = new JSONObject();
         root.put("success", true);
-        root.put("data", object);
+        root.put("data", result);
         return root.toString();
     }
 
@@ -73,9 +69,29 @@ public class BaseController {
 
     private String getCommon() {
         HttpServletRequest request = getAttributes().getRequest();
-        String common = String.format("[%s][%s][%s][%s]",
-                request.getRemoteAddr(), getUserName(), request.getMethod(), request.getRequestURI());
+        String common = String.format("[%s][%s][%s][%s][%s]",
+                request.getRemoteAddr(), getUserName(), request.getMethod(),
+                request.getRequestURI(), paramString(request));
         return common.replace("{}", "\\{}");
+    }
+
+    private String paramString(HttpServletRequest request) {
+        StringBuilder builder = new StringBuilder();
+        request.getParameterMap().forEach((key, arr) -> {
+            if (arr.length == 0) {
+                builder.append(key).append('&');
+            } else if (arr.length == 1) {
+                builder.append(key).append('=').append(arr[0]).append('&');
+            } else {
+                builder.append(key).append('=').append(Arrays.toString(arr)).append('&');
+            }
+        });
+        if (builder.length() > 0) {
+            builder.deleteCharAt(builder.length() - 1);
+        } else {
+            builder.append("NoParam");
+        }
+        return builder.toString();
     }
 
     protected void debugRequest(String format, Object... args) {

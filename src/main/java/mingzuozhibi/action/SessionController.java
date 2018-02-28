@@ -58,23 +58,23 @@ public class SessionController extends BaseController {
 
         User user = dao.lookup(User.class, "username", username);
         if (user == null) {
-            if (LOGGER.isDebugEnabled()) {
-                debugRequest("[用户名称不存在: username={}]", username);
+            if (LOGGER.isInfoEnabled()) {
+                infoRequest("[用户名称不存在: username={}]", username);
             }
             return errorMessage("用户名称不存在");
         }
 
         UserDetails userDetails = new UserDetailsImpl(user);
         if (!userDetails.getPassword().equals(password)) {
-            if (LOGGER.isDebugEnabled()) {
-                debugRequest("[用户密码错误: username={}]", username);
+            if (LOGGER.isInfoEnabled()) {
+                infoRequest("[用户密码错误: username={}]", username);
             }
             return errorMessage("用户密码错误");
         }
 
         if (!userDetails.isEnabled()) {
-            if (LOGGER.isDebugEnabled()) {
-                debugRequest("[用户已被停用: username={}]", username);
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[用户已被停用: username={}]", username);
             }
             return errorMessage("用户已被停用");
         }
