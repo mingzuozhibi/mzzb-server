@@ -11,4 +11,6 @@ public @interface JsonArg {
 
     String value() default "";
 
+    String defaults() default "";
+
 }

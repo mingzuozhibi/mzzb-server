@@ -1,7 +1,9 @@
 package mingzuozhibi.support;
 
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 import org.apache.commons.io.IOUtils;
+import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.core.MethodParameter;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -23,17 +25,32 @@ public class JsonArgumentResolver implements HandlerMethodArgumentResolver {
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
                                   NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
         String body = getRequestBody(webRequest);
-        String arg = parameter.getParameterAnnotation(JsonArg.class).value();
-        if (StringUtils.isEmpty(arg)) {
-            arg = parameter.getParameterName();
+        String arg = getParameterName(parameter);
+        String defaults = getDefaults(parameter);
+        return readObject(body, arg, defaults, parameter.getParameterType());
+    }
+
+    private <T> T readObject(String body, String name, String defaults, Class<T> requiredType) {
+        SimpleTypeConverter converter = new SimpleTypeConverter();
+        try {
+            Class<?> readType = requiredType.isEnum() ? String.class : requiredType;
+            Object read = JsonPath.parse(body).read(name, readType);
+            return converter.convertIfNecessary(read, requiredType);
+        } catch (PathNotFoundException e) {
+            return converter.convertIfNecessary(defaults, requiredType);
         }
-        Class<?> parameterType = parameter.getParameterType();
-        if (parameterType.isEnum()) {
-            String read = JsonPath.parse(body).read(arg, String.class);
-            return parameterType.getMethod("valueOf", String.class).invoke(null, read);
-        } else {
-            return JsonPath.parse(body).read(arg, parameterType);
+    }
+
+    private String getParameterName(MethodParameter parameter) {
+        String name = parameter.getParameterAnnotation(JsonArg.class).value();
+        if (StringUtils.isEmpty(name)) {
+            name = parameter.getParameterName();
         }
+        return name;
+    }
+
+    private String getDefaults(MethodParameter parameter) {
+        return parameter.getParameterAnnotation(JsonArg.class).defaults();
     }
 
     private String getRequestBody(NativeWebRequest webRequest) {
