@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -51,7 +52,7 @@ public class SessionController extends BaseController {
         return objectResult(session);
     }
 
-    @PostMapping(value = "/api/session/login", produces = MEDIA_TYPE)
+    @PostMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionLogin(
             @JsonArg("$.username") String username,
             @JsonArg("$.password") String password) {
@@ -89,7 +90,7 @@ public class SessionController extends BaseController {
         return objectResult(session);
     }
 
-    @PostMapping(value = "/api/session/logout", produces = MEDIA_TYPE)
+    @DeleteMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionLogout() {
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication authentication = context.getAuthentication();

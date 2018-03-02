@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Entity
-public class Sakura extends BaseModel implements Comparable<Sakura> {
+public class DiscList extends BaseModel implements Comparable<DiscList> {
 
     public enum ViewType {
         SakuraList, PublicList, PrivateList
@@ -22,14 +22,14 @@ public class Sakura extends BaseModel implements Comparable<Sakura> {
     private LocalDateTime modifyTime;
     private List<Disc> discs = new LinkedList<>();
 
-    public Sakura() {
+    public DiscList() {
     }
 
-    public Sakura(String key, String title, ViewType viewType) {
+    public DiscList(String key, String title, boolean enabled, ViewType viewType) {
         this.key = key;
-        this.enabled = true;
-        this.viewType = viewType;
         this.title = title == null ? titleOfKey(key) : title;
+        this.enabled = enabled;
+        this.viewType = viewType;
     }
 
     @Column(name = "`key`", length = 100, nullable = false, unique = true)
@@ -90,9 +90,9 @@ public class Sakura extends BaseModel implements Comparable<Sakura> {
     }
 
     @Override
-    public int compareTo(Sakura o) {
+    public int compareTo(DiscList o) {
         Objects.requireNonNull(o);
-        return Comparator.comparing(Sakura::getKey).compare(this, o);
+        return Comparator.comparing(DiscList::getKey).compare(this, o);
     }
 
     public JSONObject toJSON() {

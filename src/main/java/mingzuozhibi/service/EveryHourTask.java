@@ -2,7 +2,7 @@ package mingzuozhibi.service;
 
 import mingzuozhibi.persist.AutoLogin;
 import mingzuozhibi.persist.Disc;
-import mingzuozhibi.persist.Sakura;
+import mingzuozhibi.persist.DiscList;
 import mingzuozhibi.support.Dao;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static mingzuozhibi.persist.Sakura.ViewType.SakuraList;
+import static mingzuozhibi.persist.DiscList.ViewType.SakuraList;
 
 @Service
 public class EveryHourTask {
@@ -55,30 +55,30 @@ public class EveryHourTask {
 
     private void removeReleasedTenDaysDiscsFromSakura() {
         @SuppressWarnings("unchecked")
-        List<Sakura> sakuras = dao.query(session -> {
-            return session.createCriteria(Sakura.class)
+        List<DiscList> discLists = dao.query(session -> {
+            return session.createCriteria(DiscList.class)
                     .add(Restrictions.ne("key", "9999-99"))
                     .add(Restrictions.eq("enabled", true))
                     .add(Restrictions.eq("viewType", SakuraList))
                     .list();
         });
 
-        sakuras.forEach(sakura -> {
-            List<Disc> toDelete = sakura.getDiscs().stream()
+        discLists.forEach(discList -> {
+            List<Disc> toDelete = discList.getDiscs().stream()
                     .filter(this::isReleasedTenDays)
                     .collect(Collectors.toList());
-            sakura.getDiscs().removeAll(toDelete);
+            discList.getDiscs().removeAll(toDelete);
 
-            if (sakura.getDiscs().isEmpty()) {
-                sakura.setEnabled(false);
+            if (discList.getDiscs().isEmpty()) {
+                discList.setEnabled(false);
             }
 
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("[定时任务][移除过期的Sakura碟片][sakura={}, delete={}]",
-                        sakura.getTitle(), toDelete.size());
+                        discList.getTitle(), toDelete.size());
                 toDelete.forEach(disc -> LOGGER.info("[移除碟片][sakura={}, disc={}]",
-                        sakura.getTitle(), disc.getTitle()));
-                if (!sakura.isEnabled() && toDelete.size() > 0) {
+                        discList.getTitle(), disc.getTitle()));
+                if (!discList.isEnabled() && toDelete.size() > 0) {
                     LOGGER.info("[Sakura列表为空: setEnabled(false)]");
                 }
             }

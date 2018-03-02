@@ -5,11 +5,9 @@ import mingzuozhibi.persist.User;
 import mingzuozhibi.support.JsonArg;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -17,7 +15,8 @@ import java.util.List;
 public class UserController extends BaseController {
 
     @Transactional
-    @GetMapping(value = "/api/admin/users", produces = MEDIA_TYPE)
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping(value = "/api/users", produces = MEDIA_TYPE)
     public String findAll() {
         JSONArray result = new JSONArray();
         dao.findAll(User.class).forEach(user -> {
@@ -31,17 +30,19 @@ public class UserController extends BaseController {
     }
 
     @Transactional
-    @PostMapping(value = "/api/admin/users", produces = MEDIA_TYPE)
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping(value = "/api/users", produces = MEDIA_TYPE)
     public String addOne(
-            @JsonArg("$.username") String username,
-            @JsonArg("$.password") String password) {
+            @JsonArg String username,
+            @JsonArg String password,
+            @JsonArg(defaults = "true") boolean enabled) {
         if (dao.lookup(User.class, "username", username) != null) {
             if (LOGGER.isInfoEnabled()) {
                 infoRequest("[添加单个用户][该用户名已存在][用户名={}]", username);
             }
             return errorMessage("该用户名已存在");
         }
-        User user = new User(username, password);
+        User user = new User(username, password, enabled);
         dao.save(user);
 
         JSONObject result = user.toJSON();
@@ -52,8 +53,9 @@ public class UserController extends BaseController {
     }
 
     @Transactional
-    @GetMapping(value = "/api/admin/users/{id}", produces = MEDIA_TYPE)
-    public String getOne(@PathVariable("id") Long id) {
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping(value = "/api/users/{id}", produces = MEDIA_TYPE)
+    public String getOne(@PathVariable Long id) {
         User user = dao.get(User.class, id);
         if (user == null) {
             if (LOGGER.isWarnEnabled()) {
@@ -70,12 +72,13 @@ public class UserController extends BaseController {
     }
 
     @Transactional
-    @PostMapping(value = "/api/admin/users/{id}", produces = MEDIA_TYPE)
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping(value = "/api/users/{id}", produces = MEDIA_TYPE)
     public String setOne(
-            @PathVariable("id") Long id,
-            @JsonArg("$.username") String username,
-            @JsonArg("$.password") String password,
-            @JsonArg("$.enabled") boolean enabled) {
+            @PathVariable Long id,
+            @JsonArg String username,
+            @JsonArg String password,
+            @JsonArg boolean enabled) {
 
         User user = dao.get(User.class, id);
 

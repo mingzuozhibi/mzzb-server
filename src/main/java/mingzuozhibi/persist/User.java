@@ -25,10 +25,10 @@ public class User extends BaseModel implements Serializable {
     public User() {
     }
 
-    public User(String username, String password) {
+    public User(String username, String password, boolean enabled) {
         this.username = username;
         this.password = password;
-        this.enabled = true;
+        this.enabled = enabled;
         this.registerDate = LocalDateTime.now().withNano(0);
         this.roles.add("ROLE_BASIC");
     }
