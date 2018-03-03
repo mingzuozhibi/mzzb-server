@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,18 +18,13 @@ import java.util.stream.Collectors;
 import static mingzuozhibi.persist.disc.Sakura.ViewType.SakuraList;
 
 @Service
-public class EveryHourTask {
+public class HourlyMission {
 
     @Autowired
     private Dao dao;
-    public static final Logger LOGGER = LoggerFactory.getLogger(EveryHourTask.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(HourlyMission.class);
 
-    @Transactional
-    public void run() {
-        doEveryHourTask();
-    }
-
-    private void doEveryHourTask() {
+    public void doMission() {
         dao.execute(session -> {
             removeReleasedTenDaysDiscsFromSakura();
             removeExpiredAutoLoginData();
