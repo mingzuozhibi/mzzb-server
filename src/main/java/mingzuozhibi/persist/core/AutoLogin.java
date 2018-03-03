@@ -1,4 +1,6 @@
-package mingzuozhibi.persist;
+package mingzuozhibi.persist.core;
+
+import mingzuozhibi.persist.BaseModel;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

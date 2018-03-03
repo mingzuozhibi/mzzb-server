@@ -1,6 +1,6 @@
 package mingzuozhibi.support;
 
-import mingzuozhibi.persist.User;
+import mingzuozhibi.persist.core.User;
 import org.springframework.stereotype.Service;
 
 import java.security.MessageDigest;

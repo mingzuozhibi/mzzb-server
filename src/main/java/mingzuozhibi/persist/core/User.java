@@ -1,5 +1,6 @@
-package mingzuozhibi.persist;
+package mingzuozhibi.persist.core;
 
+import mingzuozhibi.persist.BaseModel;
 import org.json.JSONObject;
 
 import javax.persistence.*;
