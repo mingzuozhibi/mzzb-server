@@ -48,7 +48,7 @@ public class SakuraController extends BaseController {
         });
 
         if (LOGGER.isDebugEnabled()) {
-            debugRequest("[查询多个列表成功][列表数量={}]", sakuras.size());
+            debugRequest("[获取多个列表成功][列表数量={}]", sakuras.size());
         }
         return objectResult(result);
     }
@@ -60,15 +60,104 @@ public class SakuraController extends BaseController {
 
         if (sakura == null) {
             if (LOGGER.isWarnEnabled()) {
-                warnRequest("[查询单个列表][指定的列表不存在][key={}]", key);
+                warnRequest("[获取列表失败][指定的列表索引不存在][key={}]", key);
             }
-            return errorMessage("指定的列表不存在");
+            return errorMessage("指定的列表索引不存在");
         }
 
         JSONObject result = sakura.toJSON();
 
         if (LOGGER.isDebugEnabled()) {
-            debugRequest("[查询单个列表成功][列表信息={}]", sakura.toJSON());
+            debugRequest("[获取列表成功][列表信息={}]", sakura.toJSON());
+        }
+        return objectResult(result);
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('BASIC')")
+    @PostMapping(value = "/api/sakuras", produces = MEDIA_TYPE)
+    public String addOne(
+            @JsonArg String key,
+            @JsonArg String title,
+            @JsonArg(defaults = "true") boolean enabled,
+            @JsonArg(defaults = "PublicList") ViewType viewType) {
+        if (key.isEmpty()) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[创建列表失败][列表索引不能为空]");
+            }
+            return errorMessage("列表索引不能为空");
+        }
+
+        if (title.isEmpty()) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[创建列表失败][列表标题不能为空]");
+            }
+            return errorMessage("列表标题不能为空");
+        }
+
+        if (dao.lookup(Sakura.class, "key", key) != null) {
+            if (LOGGER.isInfoEnabled()) {
+                infoRequest("[创建列表失败][该列表索引已存在][Key={}]", key);
+            }
+            return errorMessage("该列表索引已存在");
+        }
+
+        Sakura sakura = new Sakura(key, title, enabled, viewType);
+        dao.save(sakura);
+
+        JSONObject result = sakura.toJSON();
+        if (LOGGER.isInfoEnabled()) {
+            infoRequest("[创建列表成功][列表信息={}]", result);
+        }
+        return objectResult(result);
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('BASIC')")
+    @PutMapping(value = "/api/sakuras/{id}", produces = MEDIA_TYPE)
+    public String setOne(
+            @PathVariable("id") Long id,
+            @JsonArg("$.key") String key,
+            @JsonArg("$.title") String title,
+            @JsonArg("$.viewType") ViewType viewType,
+            @JsonArg("$.enabled") boolean enabled) {
+
+        if (key.isEmpty()) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[编辑列表失败][列表索引不能为空]");
+            }
+            return errorMessage("列表索引不能为空");
+        }
+
+        if (title.isEmpty()) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[编辑列表失败][列表标题不能为空]");
+            }
+            return errorMessage("列表标题不能为空");
+        }
+
+        Sakura sakura = dao.get(Sakura.class, id);
+
+        if (dao.lookup(Sakura.class, "key", key) == null) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[编辑列表失败][指定的列表索引不存在][Key={}]", key);
+            }
+            return errorMessage("指定的列表索引不存在");
+        }
+
+        JSONObject before = sakura.toJSON();
+        if (LOGGER.isDebugEnabled()) {
+            debugRequest("[编辑列表开始][修改前={}]", before);
+        }
+
+        sakura.setKey(key);
+        sakura.setTitle(title);
+        sakura.setViewType(viewType);
+        sakura.setEnabled(enabled);
+
+        JSONObject result = sakura.toJSON();
+        if (LOGGER.isDebugEnabled()) {
+            debugRequest("[编辑列表成功][修改后={}]", result);
         }
         return objectResult(result);
     }
@@ -82,9 +171,9 @@ public class SakuraController extends BaseController {
 
         if (sakura == null) {
             if (LOGGER.isWarnEnabled()) {
-                warnRequest("[查询列表碟片][指定的列表不存在][key={}]", key);
+                warnRequest("[获取列表碟片失败][指定的列表索引不存在][key={}]", key);
             }
-            return errorMessage("指定的列表不存在");
+            return errorMessage("指定的列表索引不存在");
         }
 
         JSONObject result = sakura.toJSON();
@@ -96,7 +185,7 @@ public class SakuraController extends BaseController {
         result.put("discs", discs);
 
         if (LOGGER.isDebugEnabled()) {
-            debugRequest("[查询列表碟片成功][列表标题={}][碟片数量={}]",
+            debugRequest("[获取列表碟片成功][列表标题={}][碟片数量={}]",
                     sakura.getTitle(), sakura.getDiscs().size());
         }
         return objectResult(result);
@@ -119,95 +208,6 @@ public class SakuraController extends BaseController {
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
-    @PostMapping(value = "/api/sakuras", produces = MEDIA_TYPE)
-    public String addOne(
-            @JsonArg String key,
-            @JsonArg String title,
-            @JsonArg(defaults = "true") boolean enabled,
-            @JsonArg(defaults = "PublicList") ViewType viewType) {
-        if (key.isEmpty()) {
-            if (LOGGER.isWarnEnabled()) {
-                warnRequest("[添加单个列表][列表索引不能为空]");
-            }
-            return errorMessage("列表索引不能为空");
-        }
-
-        if (title.isEmpty()) {
-            if (LOGGER.isWarnEnabled()) {
-                warnRequest("[添加单个列表][列表标题不能为空]");
-            }
-            return errorMessage("列表标题不能为空");
-        }
-
-        if (dao.lookup(Sakura.class, "key", key) != null) {
-            if (LOGGER.isInfoEnabled()) {
-                infoRequest("[添加单个列表][指定的列表索引已存在][Key={}]", key);
-            }
-            return errorMessage("指定的列表索引已存在");
-        }
-
-        Sakura sakura = new Sakura(key, title, enabled, viewType);
-        dao.save(sakura);
-
-        JSONObject result = sakura.toJSON();
-        if (LOGGER.isInfoEnabled()) {
-            infoRequest("[添加单个列表成功][列表信息={}]", result);
-        }
-        return objectResult(result);
-    }
-
-    @Transactional
-    @PreAuthorize("hasRole('BASIC')")
-    @PutMapping(value = "/api/sakuras/{id}", produces = MEDIA_TYPE)
-    public String setOne(
-            @PathVariable("id") Long id,
-            @JsonArg("$.key") String key,
-            @JsonArg("$.title") String title,
-            @JsonArg("$.viewType") ViewType viewType,
-            @JsonArg("$.enabled") boolean enabled) {
-
-        if (key.isEmpty()) {
-            if (LOGGER.isWarnEnabled()) {
-                warnRequest("[编辑单个列表][列表索引不能为空]");
-            }
-            return errorMessage("列表索引不能为空");
-        }
-
-        if (title.isEmpty()) {
-            if (LOGGER.isWarnEnabled()) {
-                warnRequest("[编辑单个列表][列表标题不能为空]");
-            }
-            return errorMessage("列表标题不能为空");
-        }
-
-        Sakura sakura = dao.get(Sakura.class, id);
-
-        if (dao.lookup(Sakura.class, "key", key) == null) {
-            if (LOGGER.isWarnEnabled()) {
-                warnRequest("[编辑单个列表][指定的列表索引不存在][Key={}]", key);
-            }
-            return errorMessage("指定的列表索引不存在");
-        }
-
-        JSONObject before = sakura.toJSON();
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[编辑单个列表][修改前={}]", before);
-        }
-
-        sakura.setKey(key);
-        sakura.setTitle(title);
-        sakura.setViewType(viewType);
-        sakura.setEnabled(enabled);
-
-        JSONObject result = sakura.toJSON();
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[编辑单个列表][修改后={}]", result);
-        }
-        return objectResult(result);
-    }
-
-    @Transactional
-    @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/api/sakuras/{id}/discs/{discId}", produces = MEDIA_TYPE)
     public String pushDiscs(
             @PathVariable("id") Long id,
@@ -218,23 +218,23 @@ public class SakuraController extends BaseController {
 
         if (sakura == null) {
             if (LOGGER.isWarnEnabled()) {
-                warnRequest("[添加碟片到列表][指定的列表不存在][Id={}]", id);
+                warnRequest("[添加碟片到列表失败][指定的列表Id不存在][Id={}]", id);
             }
-            return errorMessage("指定的列表不存在");
+            return errorMessage("指定的列表Id不存在");
         }
 
         Disc disc = dao.get(Disc.class, discId);
 
         if (disc == null) {
             if (LOGGER.isWarnEnabled()) {
-                warnRequest("[添加碟片到列表][指定的碟片不存在][Id={}]", discId);
+                warnRequest("[添加碟片到列表失败][指定的碟片Id不存在][Id={}]", discId);
             }
-            return errorMessage("指定的碟片不存在");
+            return errorMessage("指定的碟片Id不存在");
         }
 
         if (sakura.getDiscs().stream().anyMatch(d -> d.getId().equals(discId))) {
             if (LOGGER.isInfoEnabled()) {
-                infoRequest("[添加碟片到列表][指定的碟片已存在于列表][ASIN={}][列表={}]",
+                infoRequest("[添加碟片到列表失败][指定的碟片已存在于列表][ASIN={}][列表={}]",
                         disc.getAsin(), sakura.getTitle());
             }
             return errorMessage("指定的碟片已存在于列表");
@@ -260,9 +260,9 @@ public class SakuraController extends BaseController {
 
         if (sakura == null) {
             if (LOGGER.isWarnEnabled()) {
-                warnRequest("[从列表移除碟片][指定的列表不存在][Id={}]", id);
+                warnRequest("[从列表移除碟片失败][指定的列表Id不存在][Id={}]", id);
             }
-            return errorMessage("指定的列表不存在");
+            return errorMessage("指定的列表Id不存在");
         }
 
         Disc disc = sakura.getDiscs().stream()
@@ -271,7 +271,7 @@ public class SakuraController extends BaseController {
 
         if (disc == null) {
             if (LOGGER.isWarnEnabled()) {
-                warnRequest("[从列表移除碟片][指定的碟片不存在于列表][Id={}]", discId);
+                warnRequest("[从列表移除碟片失败][指定的碟片不存在于列表][Id={}]", discId);
             }
             return errorMessage("指定的碟片不存在于列表");
         }

@@ -24,7 +24,7 @@ public class UserController extends BaseController {
         });
 
         if (LOGGER.isDebugEnabled()) {
-            debugRequest("[获取用户列表成功][用户数量={}]", result.length());
+            debugRequest("[获取多个用户成功][用户数量={}]", result.length());
         }
         return objectResult(result);
     }
@@ -38,16 +38,16 @@ public class UserController extends BaseController {
             @JsonArg(defaults = "true") boolean enabled) {
         if (dao.lookup(User.class, "username", username) != null) {
             if (LOGGER.isInfoEnabled()) {
-                infoRequest("[添加单个用户][该用户名已存在][用户名={}]", username);
+                infoRequest("[创建用户失败][该同户名称已存在][用户名={}]", username);
             }
-            return errorMessage("该用户名已存在");
+            return errorMessage("该同户名称已存在");
         }
         User user = new User(username, password, enabled);
         dao.save(user);
 
         JSONObject result = user.toJSON();
         if (LOGGER.isInfoEnabled()) {
-            infoRequest("[添加单个用户成功][用户信息={}]", result);
+            infoRequest("[创建用户成功][用户信息={}]", result);
         }
         return objectResult(result);
     }
@@ -59,14 +59,14 @@ public class UserController extends BaseController {
         User user = dao.get(User.class, id);
         if (user == null) {
             if (LOGGER.isWarnEnabled()) {
-                warnRequest("[获取单个用户][指定的用户不存在][Id={}]", id);
+                warnRequest("[获取用户失败][指定的用户Id不存在][Id={}]", id);
             }
-            return errorMessage("指定的用户不存在");
+            return errorMessage("指定的用户Id不存在");
         }
 
         JSONObject result = user.toJSON();
         if (LOGGER.isDebugEnabled()) {
-            debugRequest("[获取单个用户成功][用户信息={}]", result);
+            debugRequest("[获取用户成功][用户信息={}]", result);
         }
         return objectResult(result);
     }
@@ -84,14 +84,14 @@ public class UserController extends BaseController {
 
         if (user == null) {
             if (LOGGER.isWarnEnabled()) {
-                warnRequest("[获取单个用户][指定的用户不存在][Id={}]", id);
+                warnRequest("[编辑用户失败][指定的用户Id不存在][Id={}]", id);
             }
-            return errorMessage("指定的用户不存在");
+            return errorMessage("指定的用户Id不存在");
         }
 
         if (LOGGER.isDebugEnabled()) {
             JSONObject before = user.toJSON();
-            debugRequest("[编辑单个用户][修改前={}]", before);
+            debugRequest("[编辑用户开始][修改前={}]", before);
         }
 
         user.setUsername(username);
@@ -103,7 +103,7 @@ public class UserController extends BaseController {
 
         JSONObject result = user.toJSON();
         if (LOGGER.isDebugEnabled()) {
-            debugRequest("[编辑单个用户][修改后={}]", result);
+            debugRequest("[编辑用户成功][修改后={}]", result);
         }
         return objectResult(result);
     }
