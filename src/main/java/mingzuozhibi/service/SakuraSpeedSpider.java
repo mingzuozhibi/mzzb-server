@@ -3,7 +3,7 @@ package mingzuozhibi.service;
 import mingzuozhibi.persist.Disc;
 import mingzuozhibi.persist.Disc.DiscType;
 import mingzuozhibi.persist.Disc.UpdateType;
-import mingzuozhibi.persist.DiscList;
+import mingzuozhibi.persist.Sakura;
 import mingzuozhibi.support.Dao;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Stream;
 
-import static mingzuozhibi.persist.DiscList.ViewType.SakuraList;
+import static mingzuozhibi.persist.Sakura.ViewType.SakuraList;
 import static mingzuozhibi.service.SakuraSpeedSpider.Util.*;
 
 @Service
@@ -46,20 +46,20 @@ public class SakuraSpeedSpider {
 
     private void updateSakura(Element table, String timeText) {
         dao.execute(session -> {
-            DiscList discList = getOrCreateSakura(findSakuraKey(table));
+            Sakura sakura = getOrCreateSakura(findSakuraKey(table));
             if (timeText.equals("更新中")) {
                 LOGGER.info("发现sakura网站更新中");
                 return;
             }
             LocalDateTime time = parseTime(timeText);
-            if (time.equals(discList.getModifyTime())) {
-                LOGGER.debug("不需要更新[{}]列表", discList.getTitle());
+            if (time.equals(sakura.getModifyTime())) {
+                LOGGER.debug("不需要更新[{}]列表", sakura.getTitle());
                 return;
             }
-            discList.setEnabled(true);
-            discList.setViewType(SakuraList);
-            discList.setModifyTime(time);
-            updateSakuraDiscs(discList, table.select("tr").stream().skip(1));
+            sakura.setEnabled(true);
+            sakura.setViewType(SakuraList);
+            sakura.setModifyTime(time);
+            updateSakuraDiscs(sakura, table.select("tr").stream().skip(1));
         });
     }
 
@@ -69,17 +69,17 @@ public class SakuraSpeedSpider {
                 .orElse("9999-99");
     }
 
-    private DiscList getOrCreateSakura(String key) {
-        DiscList discList = dao.lookup(DiscList.class, "key", key);
-        if (discList == null) {
-            discList = new DiscList(key, null, true, SakuraList);
-            dao.save(discList);
-            LOGGER.info("发现新的Sakura列表, title={}", discList.getTitle());
+    private Sakura getOrCreateSakura(String key) {
+        Sakura sakura = dao.lookup(Sakura.class, "key", key);
+        if (sakura == null) {
+            sakura = new Sakura(key, null, true, SakuraList);
+            dao.save(sakura);
+            LOGGER.info("发现新的Sakura列表, title={}", sakura.getTitle());
         }
-        return discList;
+        return sakura;
     }
 
-    private void updateSakuraDiscs(DiscList discList, Stream<Element> tableRows) {
+    private void updateSakuraDiscs(Sakura sakura, Stream<Element> tableRows) {
         LinkedList<Disc> toAdd = new LinkedList<>();
         tableRows.forEach(tr -> {
             String href = tr.child(5).child(0).attr("href");
@@ -93,15 +93,15 @@ public class SakuraSpeedSpider {
             disc.setNicoBook(parseInteger(tr.child(3).text()));
             toAdd.add(disc);
         });
-        if ("9999-99".equals(discList.getKey())) {
-            discList.setDiscs(toAdd);
+        if ("9999-99".equals(sakura.getKey())) {
+            sakura.setDiscs(toAdd);
         } else {
-            List<Disc> sakuraDiscs = discList.getDiscs();
+            List<Disc> sakuraDiscs = sakura.getDiscs();
             Set<Disc> discSet = new HashSet<>(sakuraDiscs);
             toAdd.stream().filter(disc -> !discSet.contains(disc))
                     .forEach(sakuraDiscs::add);
         }
-        LOGGER.debug("成功更新[{}]列表", discList.getTitle());
+        LOGGER.debug("成功更新[{}]列表", sakura.getTitle());
     }
 
     private Disc getOrCreateDisc(String asin, Element tr) {
