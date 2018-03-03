@@ -1,7 +1,7 @@
 package mingzuozhibi.action;
 
-import mingzuozhibi.persist.AutoLogin;
-import mingzuozhibi.persist.User;
+import mingzuozhibi.persist.core.AutoLogin;
+import mingzuozhibi.persist.core.User;
 import mingzuozhibi.security.UserDetailsImpl;
 import mingzuozhibi.support.JsonArg;
 import org.json.JSONArray;

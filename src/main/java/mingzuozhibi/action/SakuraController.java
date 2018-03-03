@@ -1,8 +1,8 @@
 package mingzuozhibi.action;
 
-import mingzuozhibi.persist.Disc;
-import mingzuozhibi.persist.Sakura;
-import mingzuozhibi.persist.Sakura.ViewType;
+import mingzuozhibi.persist.disc.Disc;
+import mingzuozhibi.persist.disc.Sakura;
+import mingzuozhibi.persist.disc.Sakura.ViewType;
 import mingzuozhibi.support.JsonArg;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static mingzuozhibi.persist.Sakura.ViewType.PrivateList;
+import static mingzuozhibi.persist.disc.Sakura.ViewType.PrivateList;
 
 @RestController
 public class SakuraController extends BaseController {

@@ -1,8 +1,8 @@
 package mingzuozhibi.service;
 
-import mingzuozhibi.persist.AutoLogin;
-import mingzuozhibi.persist.Disc;
-import mingzuozhibi.persist.Sakura;
+import mingzuozhibi.persist.core.AutoLogin;
+import mingzuozhibi.persist.disc.Disc;
+import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.support.Dao;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
@@ -10,27 +10,21 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static mingzuozhibi.persist.Sakura.ViewType.SakuraList;
+import static mingzuozhibi.persist.disc.Sakura.ViewType.SakuraList;
 
 @Service
-public class EveryHourTask {
+public class HourlyMission {
 
     @Autowired
     private Dao dao;
-    public static final Logger LOGGER = LoggerFactory.getLogger(EveryHourTask.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(HourlyMission.class);
 
-    @Transactional
-    public void run() {
-        doEveryHourTask();
-    }
-
-    private void doEveryHourTask() {
+    public void doMission() {
         dao.execute(session -> {
             removeReleasedTenDaysDiscsFromSakura();
             removeExpiredAutoLoginData();

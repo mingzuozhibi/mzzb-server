@@ -1,7 +1,7 @@
 package mingzuozhibi.config;
 
 import com.allanditzel.springframework.security.web.csrf.CsrfTokenResponseHeaderBindingFilter;
-import mingzuozhibi.persist.User;
+import mingzuozhibi.persist.core.User;
 import mingzuozhibi.security.CustomAccessDeniedHandler;
 import mingzuozhibi.support.Dao;
 import mingzuozhibi.support.PassUtil;

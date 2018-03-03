@@ -1,9 +1,9 @@
 package mingzuozhibi.service;
 
-import mingzuozhibi.persist.Disc;
-import mingzuozhibi.persist.Disc.DiscType;
-import mingzuozhibi.persist.Disc.UpdateType;
-import mingzuozhibi.persist.Sakura;
+import mingzuozhibi.persist.disc.Disc;
+import mingzuozhibi.persist.disc.Disc.DiscType;
+import mingzuozhibi.persist.disc.Disc.UpdateType;
+import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.support.Dao;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Stream;
 
-import static mingzuozhibi.persist.Sakura.ViewType.SakuraList;
+import static mingzuozhibi.persist.disc.Sakura.ViewType.SakuraList;
 import static mingzuozhibi.service.SakuraSpeedSpider.Util.*;
 
 @Service
