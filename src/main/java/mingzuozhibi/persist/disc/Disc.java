@@ -1,6 +1,7 @@
 package mingzuozhibi.persist.disc;
 
 import mingzuozhibi.persist.BaseModel;
+import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.json.JSONObject;
 
 import javax.persistence.Column;
@@ -13,7 +14,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Entity
-public class Disc extends BaseModel {
+public class Disc extends BaseModel implements Comparable<Disc> {
 
     public enum DiscType {
         Cd, Dvd, Bluray, Box, Other
@@ -204,6 +205,13 @@ public class Disc extends BaseModel {
     @Override
     public int hashCode() {
         return Objects.hash(asin);
+    }
+
+    @Override
+    public int compareTo(Disc other) {
+        CompareToBuilder builder = new CompareToBuilder();
+        builder.append(this.getThisRank(), other.getThisRank());
+        return builder.toComparison();
     }
 
     public JSONObject toJSON(Set<String> columns) {
