@@ -101,7 +101,6 @@ public class AmazonTaskScheduler {
             LocalDateTime startTime = LocalDateTime.now().withNano(0);
 
             LinkedHashSet<Disc> discs = new LinkedHashSet<>();
-            AtomicInteger updateCount = new AtomicInteger(discs.size());
             LinkedHashMap<String, Integer> results = new LinkedHashMap<>();
 
             dao.execute(session -> {
@@ -110,6 +109,7 @@ public class AmazonTaskScheduler {
                 });
             });
 
+            AtomicInteger updateCount = new AtomicInteger(discs.size());
             LOGGER.info("[正在更新Amzon(ALL)数据][共{}个]", discs.size());
             discs.stream().sorted().forEach(disc -> {
                 service.createRankTask(disc.getAsin(), fullUpdate(startTime, discs, updateCount, results));
