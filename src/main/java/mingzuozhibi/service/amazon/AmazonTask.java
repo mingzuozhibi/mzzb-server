@@ -1,30 +1,36 @@
-package mingzuozhibi.persist.task;
+package mingzuozhibi.service.amazon;
 
-import javax.persistence.Column;
+import org.w3c.dom.Document;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class AmazonTask {
 
     private String asin;
-    private String body;
+    private String param;
     private boolean isDone;
+    private Document document;
+
     private int errorCount;
     private int maxRetryCount;
     private String errorMessage;
     private LocalDateTime createTime;
     private LocalDateTime finishTime;
+    private Consumer<AmazonTask> consumer;
 
     public AmazonTask() {
     }
 
-    public AmazonTask(String asin, int maxRetryCount) {
+    public AmazonTask(String asin, String param, Consumer<AmazonTask> consumer, int maxRetryCount) {
         this.asin = asin;
+        this.param = param;
+        this.consumer = consumer;
         this.maxRetryCount = maxRetryCount;
         this.createTime = LocalDateTime.now().withNano(0);
     }
 
-    @Column(length = 10, unique = true, nullable = false)
     public String getAsin() {
         return asin;
     }
@@ -33,16 +39,14 @@ public class AmazonTask {
         this.asin = asin;
     }
 
-    @Column(length = 1000)
-    public String getBody() {
-        return body;
+    public String getParam() {
+        return param;
     }
 
-    public void setBody(String body) {
-        this.body = body;
+    public void setParam(String param) {
+        this.param = param;
     }
 
-    @Column(nullable = false)
     public boolean isDone() {
         return isDone;
     }
@@ -51,7 +55,14 @@ public class AmazonTask {
         isDone = done;
     }
 
-    @Column(nullable = false)
+    public Document getDocument() {
+        return document;
+    }
+
+    public void setDocument(Document document) {
+        this.document = document;
+    }
+
     public int getErrorCount() {
         return errorCount;
     }
@@ -60,7 +71,6 @@ public class AmazonTask {
         this.errorCount = errorCount;
     }
 
-    @Column(nullable = false)
     public int getMaxRetryCount() {
         return maxRetryCount;
     }
@@ -69,7 +79,6 @@ public class AmazonTask {
         this.maxRetryCount = maxRetryCount;
     }
 
-    @Column(length = 1000)
     public String getErrorMessage() {
         return errorMessage;
     }
@@ -78,7 +87,6 @@ public class AmazonTask {
         this.errorMessage = errorMessage;
     }
 
-    @Column(nullable = false)
     public LocalDateTime getCreateTime() {
         return createTime;
     }
@@ -87,13 +95,20 @@ public class AmazonTask {
         this.createTime = createTime;
     }
 
-    @Column
     public LocalDateTime getFinishTime() {
         return finishTime;
     }
 
     public void setFinishTime(LocalDateTime finishTime) {
         this.finishTime = finishTime;
+    }
+
+    public Consumer<AmazonTask> getConsumer() {
+        return consumer;
+    }
+
+    public void setConsumer(Consumer<AmazonTask> consumer) {
+        this.consumer = consumer;
     }
 
     @Override

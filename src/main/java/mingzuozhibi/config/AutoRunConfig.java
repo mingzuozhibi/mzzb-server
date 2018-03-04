@@ -1,7 +1,13 @@
 package mingzuozhibi.config;
 
+import mingzuozhibi.persist.disc.Disc;
+import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.service.HourlyMission;
 import mingzuozhibi.service.SakuraSpeedSpider;
+import mingzuozhibi.service.amazon.AmazonTaskScheduler;
+import mingzuozhibi.service.amazon.DocumentReader;
+import mingzuozhibi.support.Dao;
+import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,11 +16,23 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static mingzuozhibi.persist.disc.Sakura.ViewType.SakuraList;
 
 @Service
 public class AutoRunConfig {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(AutoRunConfig.class);
+
+    @Autowired
+    private Dao dao;
+
+    @Autowired
+    private AmazonTaskScheduler scheduler;
 
     @Autowired
     private HourlyMission hourlyMission;
@@ -27,12 +45,7 @@ public class AutoRunConfig {
      */
     public void runStartupServer() {
         fetchSakuraSpeedData(3);
-        runEveryHourTask();
-    }
-
-    @Scheduled(cron = "10 0/2 * * * ?")
-    public void fetchSakuraSpeedData() {
-        fetchSakuraSpeedData(3);
+        hourlyMission.doMission();
     }
 
     @Scheduled(cron = "0 2 * * * ?")
@@ -40,6 +53,11 @@ public class AutoRunConfig {
         LOGGER.info("每小时任务开始");
         hourlyMission.doMission();
         LOGGER.info("每小时任务完成");
+    }
+
+    @Scheduled(cron = "10 0/2 * * * ?")
+    public void fetchSakuraSpeedData() {
+        fetchSakuraSpeedData(3);
     }
 
     public void fetchSakuraSpeedData(int retry) {
@@ -58,6 +76,11 @@ public class AutoRunConfig {
             LOGGER.warn("抓取Sakura(Speed)数据遇到意外错误, Message={}", e.getMessage());
             LOGGER.debug("抓取Sakura(Speed)数据遇到意外错误", e);
         }
+    }
+
+    @Scheduled(cron = "40 0/2 * * * ?")
+    public void fetchAmazonData() {
+        scheduler.fetchData();
     }
 
 }
