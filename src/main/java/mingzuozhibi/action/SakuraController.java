@@ -22,11 +22,11 @@ import static mingzuozhibi.persist.disc.Sakura.ViewType.PrivateList;
 @RestController
 public class SakuraController extends BaseController {
 
-    private final static String DISC_COLUMNS = "id,thisRank,prevRank,totalPt,title";
-    private final static String DISC_COLUMNS_ADMIN = "id,asin,thisRank,surplusDays,title";
+    public final static String DISC_COLUMNS = "id,thisRank,prevRank,totalPt,title";
+    public final static String DISC_COLUMNS_ADMIN = "id,asin,thisRank,surplusDays,title";
 
-    private static Set<String> DISC_COLUMNS_SET = buildSet(DISC_COLUMNS);
-    private static Set<String> DISC_COLUMNS_ADMIN_SET = buildSet(DISC_COLUMNS_ADMIN);
+    public static Set<String> DISC_COLUMNS_SET = buildSet(DISC_COLUMNS);
+    public static Set<String> DISC_COLUMNS_ADMIN_SET = buildSet(DISC_COLUMNS_ADMIN);
 
     @Transactional
     @GetMapping(value = "/api/sakuras", produces = MEDIA_TYPE)
