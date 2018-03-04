@@ -34,7 +34,6 @@ public class AmazonTaskService {
     private ArrayBlockingQueue<AmazonTask> doneTasks = new ArrayBlockingQueue<>(1000, true);
 
     private final Object taskLock = new Object();
-    private final Object doneLock = new Object();
 
     @PostConstruct
     public void init() {
