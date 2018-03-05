@@ -69,9 +69,9 @@ public class AmazonTaskScheduler {
                     amazonFetchStatus = startFullUpdate;
                 }
             });
-            LOGGER.debug("[正在检测Amzon(Hot)数据][{}][{}->{}][还剩{}个][disc={}]",
+            LOGGER.debug("[正在检测Amzon(Hot)数据][{}][{}->{}][还剩{}个][asin={}]",
                     Objects.equals(disc.getThisRank(), newRank.get()) ? "无变化" : "有变化",
-                    disc.getThisRank(), newRank.get(), updateCount.get(), disc.getTitle());
+                    disc.getThisRank(), newRank.get(), updateCount.get(), disc.getAsin());
             if (updateCount.get() == 0) {
                 service.debugStatus();
                 if (amazonFetchStatus == startFullUpdate) {
