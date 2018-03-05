@@ -2,16 +2,12 @@ package mingzuozhibi.persist;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @MappedSuperclass
 public abstract class BaseModel implements Serializable {
-
-    private static final DateTimeFormatter formatterDate = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
     private Long id;
     private Long version;
@@ -41,7 +37,4 @@ public abstract class BaseModel implements Serializable {
                 .orElse(0L);
     }
 
-    protected String formatDate(LocalDate localDate) {
-        return localDate.format(formatterDate);
-    }
 }
