@@ -125,9 +125,27 @@ public class AmazonTaskService {
         nodifyTaskLock();
     }
 
-    public void printFetchers() {
+    public void infoStatus() {
         fetchers.forEach(fetcher -> {
             LOGGER.info("[Amazon更新服务][更新器tag:{}][创建时间:{}][运行时间:{}秒][运行效率:{}毫秒/任务]" +
+                            "[总共任务:{}][失败任务:{}][总共连接:{}][503失败:{}][400失败:{}][doc失败:{}][其他失败:{}]",
+                    fetcher.getAssociateTag(),
+                    fetcher.getCreateTime(),
+                    fetcher.getConnectTime() / 1000,
+                    fetcher.computeCostPerTask(),
+                    fetcher.getTotalTaskCount(),
+                    fetcher.getErrorTaskCount(),
+                    fetcher.getTotalConnectCount(),
+                    fetcher.getEr503ConnectCount(),
+                    fetcher.getEr400ConnectCount(),
+                    fetcher.getErdocConnectCount(),
+                    fetcher.getErrorConnectCount());
+        });
+    }
+
+    public void debugStatus() {
+        fetchers.forEach(fetcher -> {
+            LOGGER.debug("[Amazon更新服务][更新器tag:{}][创建时间:{}][运行时间:{}秒][运行效率:{}毫秒/任务]" +
                             "[总共任务:{}][失败任务:{}][总共连接:{}][503失败:{}][400失败:{}][doc失败:{}][其他失败:{}]",
                     fetcher.getAssociateTag(),
                     fetcher.getCreateTime(),

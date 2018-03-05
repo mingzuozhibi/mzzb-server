@@ -2,6 +2,8 @@ package mingzuozhibi.service;
 
 import mingzuozhibi.persist.core.AutoLogin;
 import mingzuozhibi.persist.disc.Disc;
+import mingzuozhibi.persist.disc.Disc.UpdateType;
+import mingzuozhibi.persist.disc.Record;
 import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.support.Dao;
 import org.hibernate.criterion.Restrictions;
@@ -24,64 +26,90 @@ public class HourlyMission {
     private Dao dao;
     public static final Logger LOGGER = LoggerFactory.getLogger(HourlyMission.class);
 
-    public void doMission() {
+    public void removeExpiredAutoLoginData() {
         dao.execute(session -> {
-            removeReleasedTenDaysDiscsFromSakura();
-            removeExpiredAutoLoginData();
-        });
-    }
-
-    private void removeExpiredAutoLoginData() {
-        @SuppressWarnings("unchecked")
-        List<AutoLogin> expired = dao.query(session -> {
-            return session.createCriteria(AutoLogin.class)
+            @SuppressWarnings("unchecked")
+            List<AutoLogin> expired = session.createCriteria(AutoLogin.class)
                     .add(Restrictions.lt("expired", LocalDateTime.now()))
                     .list();
-        });
-        expired.forEach(autoLogin -> {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("[定时任务][移除过期的AutoLogin数据][id={}, username={}]",
-                        autoLogin.getId(), autoLogin.getUser().getUsername());
-            }
-            dao.delete(autoLogin);
+
+            expired.forEach(autoLogin -> {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("[定时任务][移除过期的AutoLogin数据][id={}, username={}]",
+                            autoLogin.getId(), autoLogin.getUser().getUsername());
+                }
+                dao.delete(autoLogin);
+            });
         });
     }
 
-    private void removeReleasedTenDaysDiscsFromSakura() {
-        @SuppressWarnings("unchecked")
-        List<Sakura> sakuras = dao.query(session -> {
-            return session.createCriteria(Sakura.class)
+    public void removeExpiredDiscsFromList() {
+        dao.execute(session -> {
+            @SuppressWarnings("unchecked")
+            List<Sakura> sakuras = session.createCriteria(Sakura.class)
                     .add(Restrictions.ne("key", "9999-99"))
                     .add(Restrictions.eq("enabled", true))
                     .add(Restrictions.eq("viewType", SakuraList))
                     .list();
-        });
 
-        sakuras.forEach(sakura -> {
-            List<Disc> toDelete = sakura.getDiscs().stream()
-                    .filter(this::isReleasedTenDays)
-                    .collect(Collectors.toList());
-            sakura.getDiscs().removeAll(toDelete);
+            sakuras.forEach(sakura -> {
+                List<Disc> toDelete = sakura.getDiscs().stream()
+                        .filter(this::notSakuraUpdateType)
+                        .filter(this::isReleasedSevenDays)
+                        .collect(Collectors.toList());
+                sakura.getDiscs().removeAll(toDelete);
 
-            if (sakura.getDiscs().isEmpty()) {
-                sakura.setEnabled(false);
-            }
-
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("[定时任务][移除过期的Sakura碟片][sakura={}, delete={}]",
-                        sakura.getTitle(), toDelete.size());
-                toDelete.forEach(disc -> LOGGER.info("[移除碟片][sakura={}, disc={}]",
-                        sakura.getTitle(), disc.getTitle()));
-                if (!sakura.isEnabled() && toDelete.size() > 0) {
-                    LOGGER.info("[Sakura列表为空: setEnabled(false)]");
+                if (sakura.getDiscs().isEmpty()) {
+                    sakura.setEnabled(false);
                 }
-            }
+
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("[定时任务][移除过期的Sakura碟片][sakura={}, delete={}]",
+                            sakura.getTitle(), toDelete.size());
+                    toDelete.forEach(disc -> LOGGER.info("[移除碟片][sakura={}, disc={}]",
+                            sakura.getTitle(), disc.getTitle()));
+                    if (!sakura.isEnabled() && toDelete.size() > 0) {
+                        LOGGER.info("[Sakura列表为空: setEnabled(false)]");
+                    }
+                }
+            });
         });
     }
 
-    private boolean isReleasedTenDays(Disc disc) {
-        LocalDate releaseTenDays = disc.getReleaseDate().plusDays(10);
+
+    public void recordNotSakuraDiscsRank() {
+        LocalDate date = LocalDate.now();
+        int hour = LocalDateTime.now().getHour();
+        dao.execute(session -> {
+            @SuppressWarnings("unchecked")
+            List<Disc> discs = session.createCriteria(Disc.class)
+                    .add(Restrictions.ne("updateType", UpdateType.Sakura))
+                    .add(Restrictions.gt("releaseDate", date.minusDays(7)))
+                    .list();
+
+            LOGGER.info("[定时任务][记录非Sakura碟片排名][碟片数量为:{}]", discs.size());
+
+            discs.forEach(disc -> {
+                Record record = (Record) session.createCriteria(Record.class)
+                        .add(Restrictions.eq("disc", disc))
+                        .add(Restrictions.eq("date", date))
+                        .uniqueResult();
+                if (record == null) {
+                    record = new Record(disc, date);
+                    dao.save(record);
+                }
+                record.setRank(hour, disc.getThisRank());
+            });
+        });
+    }
+
+    private boolean isReleasedSevenDays(Disc disc) {
+        LocalDate releaseTenDays = disc.getReleaseDate().plusDays(7);
         return LocalDate.now().isAfter(releaseTenDays);
+    }
+
+    private boolean notSakuraUpdateType(Disc disc) {
+        return disc.getUpdateType() != UpdateType.Sakura;
     }
 
 }

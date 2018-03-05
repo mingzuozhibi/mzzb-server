@@ -73,7 +73,7 @@ public class AmazonTaskScheduler {
                     Objects.equals(disc.getThisRank(), newRank.get()) ? "无变化" : "有变化",
                     disc.getThisRank(), newRank.get(), updateCount.get(), disc.getTitle());
             if (updateCount.get() == 0) {
-                service.printFetchers();
+                service.debugStatus();
                 if (amazonFetchStatus == startFullUpdate) {
                     startFullUpdate();
                 }
@@ -162,7 +162,7 @@ public class AmazonTaskScheduler {
             }
         });
         LOGGER.info("[成功更新Amzon(ALL)数据]");
-        service.printFetchers();
+        service.infoStatus();
         amazonFetchStatus = AmazonFetchStatus.waitingForUpdate;
     }
 

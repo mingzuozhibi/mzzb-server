@@ -64,13 +64,18 @@ public class BaseController {
     protected ServletRequestAttributes getAttributes() {
         RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
         return ((ServletRequestAttributes) attributes);
+    }
 
+    private String getRemoteAddr() {
+        HttpServletRequest request = getAttributes().getRequest();
+        String xRealIp = request.getHeader("X-Real-IP");
+        return xRealIp != null ? xRealIp : request.getRemoteAddr();
     }
 
     private String getCommon() {
         HttpServletRequest request = getAttributes().getRequest();
         String common = String.format("[%s][%s][%s][%s][%s]",
-                request.getRemoteAddr(), getUserName(), request.getMethod(),
+                getRemoteAddr(), getUserName(), request.getMethod(),
                 request.getRequestURI(), paramString(request));
         return common.replace("{}", "\\{}");
     }
