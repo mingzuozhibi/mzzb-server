@@ -1,13 +1,9 @@
 package mingzuozhibi.config;
 
-import mingzuozhibi.persist.disc.Disc;
-import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.service.HourlyMission;
 import mingzuozhibi.service.SakuraSpeedSpider;
 import mingzuozhibi.service.amazon.AmazonTaskScheduler;
-import mingzuozhibi.service.amazon.DocumentReader;
 import mingzuozhibi.support.Dao;
-import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static mingzuozhibi.persist.disc.Sakura.ViewType.SakuraList;
 
 @Service
 public class AutoRunConfig {
@@ -45,13 +35,15 @@ public class AutoRunConfig {
      */
     public void runStartupServer() {
         fetchSakuraSpeedData(3);
-        hourlyMission.doMission();
+        hourlyMission.removeExpiredDiscsFromList();
+        hourlyMission.removeExpiredAutoLoginData();
     }
 
     @Scheduled(cron = "0 2 * * * ?")
     public void runEveryHourTask() {
         LOGGER.info("每小时任务开始");
-        hourlyMission.doMission();
+        hourlyMission.removeExpiredDiscsFromList();
+        hourlyMission.removeExpiredAutoLoginData();
         LOGGER.info("每小时任务完成");
     }
 
