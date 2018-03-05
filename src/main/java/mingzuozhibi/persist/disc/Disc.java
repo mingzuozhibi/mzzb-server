@@ -240,6 +240,8 @@ public class Disc extends BaseModel implements Comparable<Disc> {
             object.put("nicoBook", getNicoBook());
         if (columns.contains("totalPt"))
             object.put("totalPt", getTotalPt());
+        if (columns.contains("amazonLimit"))
+            object.put("amazonLimit", isAmazonLimit());
         if (columns.contains("discType"))
             object.put("discType", getDiscType().name());
         if (columns.contains("updateType"))
