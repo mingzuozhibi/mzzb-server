@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static mingzuozhibi.action.DiscController.buildSet;
 import static mingzuozhibi.persist.disc.Sakura.ViewType.PrivateList;
 
 @RestController
@@ -230,10 +231,6 @@ public class SakuraController extends BaseController {
             default:
                 return buildSet(discColumns);
         }
-    }
-
-    private static Set<String> buildSet(String discColumns) {
-        return Stream.of(discColumns.split(",")).collect(Collectors.toSet());
     }
 
     @Transactional

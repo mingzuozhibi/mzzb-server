@@ -71,7 +71,7 @@ public class Disc extends BaseModel implements Comparable<Disc> {
         this.title = title;
     }
 
-    @Column(length = 300)
+    @Column(length = 500)
     public String getTitlePc() {
         return titlePc;
     }
@@ -240,12 +240,14 @@ public class Disc extends BaseModel implements Comparable<Disc> {
             object.put("nicoBook", getNicoBook());
         if (columns.contains("totalPt"))
             object.put("totalPt", getTotalPt());
+        if (columns.contains("amazonLimit"))
+            object.put("amazonLimit", isAmazonLimit());
         if (columns.contains("discType"))
             object.put("discType", getDiscType().name());
         if (columns.contains("updateType"))
             object.put("updateType", getUpdateType().name());
         if (columns.contains("releaseDate"))
-            object.put("releaseDate", formatDate(getReleaseDate()));
+            object.put("releaseDate", getReleaseDate().toString());
         if (columns.contains("createTime"))
             object.put("createTime", toEpochMilli(getCreateTime()));
         if (columns.contains("updateTime"))
