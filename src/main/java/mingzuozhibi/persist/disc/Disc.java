@@ -1,7 +1,6 @@
 package mingzuozhibi.persist.disc;
 
 import mingzuozhibi.persist.BaseModel;
-import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.json.JSONObject;
 
 import javax.persistence.Column;
@@ -9,7 +8,6 @@ import javax.persistence.Entity;
 import javax.persistence.Transient;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -209,16 +207,17 @@ public class Disc extends BaseModel implements Comparable<Disc> {
     }
 
     @Override
-    public int compareTo(Disc other) {
-        Objects.requireNonNull(other);
-        CompareToBuilder builder = new CompareToBuilder();
-        builder.append(this.getThisRank(), other.getThisRank(), (Comparator<Integer>) (o1, o2) -> {
-            if (o1 == null && o2 == null) {
-                return 0;
-            }
-            return o1 == null ? 1 : o2 == null ? -1 : o1.compareTo(o2);
-        });
-        return builder.toComparison();
+    public int compareTo(Disc disc) {
+        Objects.requireNonNull(disc);
+        Integer rank1 = this.getThisRank();
+        Integer rank2 = disc.getThisRank();
+        boolean empty1 = rank1 == null;
+        boolean empty2 = rank2 == null;
+        if (!empty1 && !empty2) {
+            return rank1.compareTo(rank2);
+        } else {
+            return empty1 && empty2 ? 0 : empty1 ? 1 : -1;
+        }
     }
 
     public JSONObject toJSON(Set<String> columns) {

@@ -49,7 +49,7 @@ public class AmazonTaskScheduler {
         Set<Disc> discs = new LinkedHashSet<>();
         dao.execute(session -> {
             findActiveSakura(session).forEach(sakura -> {
-                findAmazonDiscs(sakura).limit(5).forEach(discs::add);
+                findAmazonDiscs(sakura).sorted().limit(5).forEach(discs::add);
             });
         });
         LOGGER.debug("[正在检测Amzon(Hot)数据][共{}个]", discs.size());
@@ -61,6 +61,7 @@ public class AmazonTaskScheduler {
 
     private Consumer<AmazonTask> checkHotCB(AtomicInteger updateCount, Disc disc) {
         return task -> {
+            updateCount.decrementAndGet();
             AtomicReference<Integer> newRank = new AtomicReference<>();
             getRank(task).ifPresent(rank -> {
                 newRank.set(rank);
@@ -68,8 +69,9 @@ public class AmazonTaskScheduler {
                     amazonFetchStatus = startFullUpdate;
                 }
             });
-            LOGGER.debug("[正在检测Amzon(Hot)数据][{}->{}][还剩{}个]",
-                    disc.getThisRank(), newRank.get(), updateCount.decrementAndGet());
+            LOGGER.debug("[正在检测Amzon(Hot)数据][{}][{}->{}][还剩{}个][disc={}]",
+                    Objects.equals(disc.getThisRank(), newRank.get()) ? "无变化" : "有变化",
+                    disc.getThisRank(), newRank.get(), updateCount.get(), disc.getTitle());
             if (updateCount.get() == 0) {
                 service.printFetchers();
                 if (amazonFetchStatus == startFullUpdate) {
@@ -126,10 +128,10 @@ public class AmazonTaskScheduler {
 
     private Consumer<AmazonTask> fullUpdateCB(LocalDateTime startTime, LinkedHashSet<Disc> discs, AtomicInteger updateCount, LinkedHashMap<String, Integer> results) {
         return task -> {
+            updateCount.decrementAndGet();
             getRank(task).ifPresent(rank -> {
                 results.put(task.getAsin(), rank);
             });
-            updateCount.decrementAndGet();
             if (updateCount.get() % 5 == 0 || updateCount.get() < 10) {
                 LOGGER.info("[正在更新Amzon(ALL)数据][还剩{}个]", updateCount.get());
             } else {

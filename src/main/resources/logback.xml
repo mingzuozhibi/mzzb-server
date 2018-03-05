@@ -50,5 +50,6 @@
     </root>
 
     <logger name="mingzuozhibi" level="DEBUG"/>
+    <logger name="org.springframework" level="WARN"/>
 
 </configuration>
