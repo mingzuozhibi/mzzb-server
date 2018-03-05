@@ -78,8 +78,9 @@ public class HourlyMission {
 
 
     public void recordNotSakuraDiscsRank() {
-        LocalDate date = LocalDate.now();
-        int hour = LocalDateTime.now().getHour();
+        LocalDateTime japanTime = LocalDateTime.now().plusHours(1);
+        LocalDate date = japanTime.toLocalDate();
+        int hour = japanTime.getHour();
         dao.execute(session -> {
             @SuppressWarnings("unchecked")
             List<Disc> discs = session.createCriteria(Disc.class)
@@ -98,7 +99,10 @@ public class HourlyMission {
                     record = new Record(disc, date);
                     dao.save(record);
                 }
-                record.setRank(hour, disc.getThisRank());
+                Integer thisRank = disc.getThisRank();
+                if (thisRank != null) {
+                    record.setRank(hour, thisRank);
+                }
             });
         });
     }
