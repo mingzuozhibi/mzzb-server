@@ -18,7 +18,10 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static mingzuozhibi.persist.disc.Sakura.ViewType.SakuraList;
@@ -80,26 +83,38 @@ public class SakuraSpeedSpider {
     }
 
     private void updateSakuraDiscs(Sakura sakura, Stream<Element> tableRows) {
-        LinkedList<Disc> toAdd = new LinkedList<>();
+        List<Disc> toAdd = new ArrayList<>(sakura.getDiscs().size());
+        boolean isTop100 = "9999-99".equals(sakura.getKey());
         tableRows.forEach(tr -> {
             String href = tr.child(5).child(0).attr("href");
             String asin = href.substring(href.length() - 10);
             Disc disc = getOrCreateDisc(asin, tr);
 
-            String[] sakuraRank = tr.child(0).text().split("/");
-            disc.setThisRank(parseInteger(sakuraRank[0]));
-            disc.setPrevRank(parseInteger(sakuraRank[1]));
-            disc.setTotalPt(parseInteger(tr.child(2).text()));
-            disc.setNicoBook(parseInteger(tr.child(3).text()));
+            if (disc.getUpdateType() == UpdateType.Both && !isTop100) {
+                disc.setUpdateType(UpdateType.Sakura);
+            }
+            if (disc.getUpdateType() == UpdateType.Sakura) {
+                String[] sakuraRank = tr.child(0).text().split("/");
+                disc.setThisRank(parseInteger(sakuraRank[0]));
+                disc.setPrevRank(parseInteger(sakuraRank[1]));
+                disc.setTotalPt(parseInteger(tr.child(2).text()));
+                disc.setNicoBook(parseInteger(tr.child(3).text()));
+            }
             toAdd.add(disc);
         });
-        if ("9999-99".equals(sakura.getKey())) {
+        if (isTop100) {
             sakura.setDiscs(toAdd);
         } else {
-            List<Disc> sakuraDiscs = sakura.getDiscs();
-            Set<Disc> discSet = new HashSet<>(sakuraDiscs);
-            toAdd.stream().filter(disc -> !discSet.contains(disc))
-                    .forEach(sakuraDiscs::add);
+            sakura.getDiscs().forEach(disc -> {
+                if (disc.getUpdateType() == UpdateType.Amazon) {
+                    toAdd.add(disc);
+                }
+                if (disc.getUpdateType() == UpdateType.None) {
+                    toAdd.add(disc);
+                }
+            });
+            toAdd.sort(Comparator.naturalOrder());
+            sakura.setDiscs(toAdd);
         }
         LOGGER.debug("成功更新[{}]列表", sakura.getTitle());
     }
@@ -114,9 +129,9 @@ public class SakuraSpeedSpider {
             disc = new Disc(asin, title, parseDiscType(typeIcon),
                     UpdateType.Sakura, isAmazonLimit(title), releaseDate);
             disc.setTitlePc(titlePcOfDisc(title));
+            dao.save(disc);
             LOGGER.info("发现了新的碟片, title={}", disc.getTitle());
         }
-        dao.save(disc);
         return disc;
     }
 

@@ -46,11 +46,9 @@ public class AmazonTaskService {
             String associateTag = env.getProperty("amazon.userid." + i);
             fetchers.offer(new AmazonTaskFetcher(accessKey, secretKey, associateTag));
         }
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("[AmazonTask调度器][更新器准备就绪，总数量为：{}]", fetchers.size());
-        }
+        LOGGER.info("[Amazon更新服务][更新器已准备就绪，数量为：{}]", fetchers.size());
         service.submit(() -> {
-            LOGGER.info("[AmazonTask调度器][任务添加线程已就绪]");
+            LOGGER.info("[Amazon更新服务][任务添加线程已就绪]");
             while (!service.isShutdown()) {
                 takeFetcher().ifPresent(fetcher -> {
                     AmazonTask discTask = discTasks.poll();
@@ -69,7 +67,7 @@ public class AmazonTaskService {
             }
         });
         service.submit(() -> {
-            LOGGER.info("[AmazonTask调度器][任务执行线程已就绪]");
+            LOGGER.info("[Amazon更新服务][任务执行线程已就绪]");
             while (!service.isShutdown()) {
                 try {
                     AmazonTask doneTask = doneTasks.take();
@@ -127,8 +125,22 @@ public class AmazonTaskService {
         nodifyTaskLock();
     }
 
-    public void clearRankTasks() {
-        rankTasks.clear();
+    public void printFetchers() {
+        fetchers.forEach(fetcher -> {
+            LOGGER.info("[Amazon更新服务][更新器tag:{}][创建时间:{}][运行时间:{}秒][运行效率:{}毫秒/任务]" +
+                            "[总共任务:{}][失败任务:{}][总共连接:{}][503失败:{}][400失败:{}][doc失败:{}][其他失败:{}]",
+                    fetcher.getAssociateTag(),
+                    fetcher.getCreateTime(),
+                    fetcher.getConnectTime() / 1000,
+                    fetcher.computeCostPerTask(),
+                    fetcher.getTotalTaskCount(),
+                    fetcher.getErrorTaskCount(),
+                    fetcher.getTotalConnectCount(),
+                    fetcher.getEr503ConnectCount(),
+                    fetcher.getEr400ConnectCount(),
+                    fetcher.getErdocConnectCount(),
+                    fetcher.getErrorConnectCount());
+        });
     }
 
 }

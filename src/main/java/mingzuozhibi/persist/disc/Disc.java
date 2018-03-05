@@ -9,6 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.Transient;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -209,8 +210,14 @@ public class Disc extends BaseModel implements Comparable<Disc> {
 
     @Override
     public int compareTo(Disc other) {
+        Objects.requireNonNull(other);
         CompareToBuilder builder = new CompareToBuilder();
-        builder.append(this.getThisRank(), other.getThisRank());
+        builder.append(this.getThisRank(), other.getThisRank(), (Comparator<Integer>) (o1, o2) -> {
+            if (o1 == null && o2 == null) {
+                return 0;
+            }
+            return o1 == null ? 1 : o2 == null ? -1 : o1.compareTo(o2);
+        });
         return builder.toComparison();
     }
 

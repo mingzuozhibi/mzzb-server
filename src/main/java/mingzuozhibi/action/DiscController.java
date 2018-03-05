@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static mingzuozhibi.action.SakuraController.DISC_COLUMNS_ADMIN_SET;
 import static mingzuozhibi.persist.disc.Disc.UpdateType.Amazon;
+import static mingzuozhibi.persist.disc.Disc.UpdateType.Both;
 import static mingzuozhibi.service.amazon.DocumentReader.getNode;
 import static mingzuozhibi.service.amazon.DocumentReader.getText;
 
@@ -42,6 +43,7 @@ public class DiscController extends BaseController {
             service.createDiscTask(asin, task -> {
                 if (task.isDone()) {
                     Node node = getNode(task.getDocument(), "Items", "Item", "ItemAttributes");
+                    String rankText = getText(task.getDocument(), "Items", "Item", "SalesRank");
                     if (node != null) {
                         Document itemAttributes = node.getOwnerDocument();
                         String title = getText(itemAttributes, "Title");
@@ -57,7 +59,10 @@ public class DiscController extends BaseController {
                         } else {
                             releaseDate = LocalDate.now();
                         }
-                        Disc newDisc = new Disc(asin, title, type, Amazon, amazon, releaseDate);
+                        Disc newDisc = new Disc(asin, title, type, Both, amazon, releaseDate);
+                        if (rankText != null) {
+                            newDisc.setThisRank(new Integer(rankText));
+                        }
                         dao.save(newDisc);
                         disc.set(newDisc);
                     } else {
