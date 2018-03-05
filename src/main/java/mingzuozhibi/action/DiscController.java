@@ -42,6 +42,7 @@ public class DiscController extends BaseController {
             service.createDiscTask(asin, task -> {
                 if (task.isDone()) {
                     Node node = getNode(task.getDocument(), "Items", "Item", "ItemAttributes");
+                    String rankText = getText(task.getDocument(), "Items", "Item", "SalesRank");
                     if (node != null) {
                         Document itemAttributes = node.getOwnerDocument();
                         String title = getText(itemAttributes, "Title");
@@ -58,6 +59,9 @@ public class DiscController extends BaseController {
                             releaseDate = LocalDate.now();
                         }
                         Disc newDisc = new Disc(asin, title, type, Amazon, amazon, releaseDate);
+                        if (rankText != null) {
+                            newDisc.setThisRank(new Integer(rankText));
+                        }
                         dao.save(newDisc);
                         disc.set(newDisc);
                     } else {
