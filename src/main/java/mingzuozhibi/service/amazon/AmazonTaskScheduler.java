@@ -1,6 +1,7 @@
 package mingzuozhibi.service.amazon;
 
 import mingzuozhibi.persist.disc.Disc;
+import mingzuozhibi.persist.disc.Disc.UpdateType;
 import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.support.Dao;
 import org.hibernate.Session;
@@ -96,7 +97,8 @@ public class AmazonTaskScheduler {
 
     private Stream<Disc> findAmazonDiscs(Sakura sakura) {
         return sakura.getDiscs().stream().filter(disc -> {
-            return disc.getUpdateType() == Disc.UpdateType.Amazon;
+            UpdateType updateType = disc.getUpdateType();
+            return updateType == UpdateType.Amazon || updateType == UpdateType.Both;
         });
     }
 
