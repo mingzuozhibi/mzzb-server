@@ -23,6 +23,7 @@ public class AmazonTaskFetcher {
     private DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
     private SignedRequestsHelper requestsHelper;
+    private String associateTag;
 
     private LocalDateTime createTime;
     private long connectTime;
@@ -36,6 +37,7 @@ public class AmazonTaskFetcher {
 
     public AmazonTaskFetcher(String accessKey, String secretKey, String associateTag) {
         initRequestHelper(accessKey, secretKey, associateTag);
+        this.associateTag = associateTag;
         this.createTime = LocalDateTime.now().withNano(0);
     }
 
@@ -53,34 +55,16 @@ public class AmazonTaskFetcher {
 
     public void fetch(AmazonTask task, Consumer<AmazonTask> consumer) {
         Instant start = Instant.now();
-        long totalConnectCount = this.totalConnectCount;
-        long er503ConnectCount = this.er503ConnectCount;
-        long er400ConnectCount = this.er400ConnectCount;
-        long erdocConnectCount = this.erdocConnectCount;
-        long errorConnectCount = this.errorConnectCount;
 
         run(task, consumer);
 
-        long cost = Instant.now().toEpochMilli() - start.toEpochMilli();
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("[Amazon更新器][done={}][asin={}][cost={}ms][total={}][er503={}][er400={}][erdoc={}][error={}]",
-                    task.isDone(), task.getAsin(), cost,
-                    this.totalConnectCount - totalConnectCount,
-                    this.er503ConnectCount - er503ConnectCount,
-                    this.er400ConnectCount - er400ConnectCount,
-                    this.erdocConnectCount - erdocConnectCount,
-                    this.errorConnectCount - errorConnectCount);
-        }
-
-        this.connectTime += cost;
+        this.connectTime += Instant.now().toEpochMilli() - start.toEpochMilli();
     }
 
     private void run(AmazonTask task, Consumer<AmazonTask> consumer) {
         totalTaskCount++;
         String requestUrl = getRequestUrl(task);
 
-        LOOP:
         while (task.getErrorCount() <= task.getMaxRetryCount()) {
             try {
                 totalConnectCount++;
@@ -90,21 +74,19 @@ public class AmazonTaskFetcher {
                 consumer.accept(task);
                 return;
             } catch (IOException e) {
-                switch (e.getMessage()) {
-                    case "Server returned HTTP response code: 503":
-                        er503ConnectCount++;
-                        threadSleep(1000);
-                        break;
-                    case "Server returned HTTP response code: 400":
-                        er400ConnectCount++;
-                        task.setErrorCount(task.getErrorCount() + 1);
-                        task.setErrorMessage(e.getMessage());
-                        break;
-                    default:
-                        errorConnectCount++;
-                        task.setErrorCount(task.getErrorCount() + 1);
-                        task.setErrorMessage(e.getMessage());
-                        break;
+                if (e.getMessage().startsWith("Server returned HTTP response code: 503")) {
+                    er503ConnectCount++;
+                    threadSleep(1000);
+                    continue;
+                }
+                if (e.getMessage().startsWith("Server returned HTTP response code: 400")) {
+                    er400ConnectCount++;
+                    task.setErrorCount(task.getErrorCount() + 1);
+                    task.setErrorMessage(e.getMessage());
+                } else {
+                    errorConnectCount++;
+                    task.setErrorCount(task.getErrorCount() + 1);
+                    task.setErrorMessage(e.getMessage());
                 }
             } catch (ParserConfigurationException | SAXException e) {
                 erdocConnectCount++;
@@ -138,6 +120,10 @@ public class AmazonTaskFetcher {
         return requestsHelper.sign(params);
     }
 
+    public String getAssociateTag() {
+        return associateTag;
+    }
+
     public LocalDateTime getCreateTime() {
         return createTime;
     }
@@ -166,4 +152,18 @@ public class AmazonTaskFetcher {
         return er503ConnectCount;
     }
 
+    public long getEr400ConnectCount() {
+        return er400ConnectCount;
+    }
+
+    public long getErdocConnectCount() {
+        return erdocConnectCount;
+    }
+
+    public long computeCostPerTask() {
+        if (totalTaskCount == 0) {
+            return 0;
+        }
+        return connectTime / totalTaskCount;
+    }
 }
