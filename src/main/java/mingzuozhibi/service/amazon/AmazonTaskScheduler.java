@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -60,7 +61,7 @@ public class AmazonTaskScheduler {
 
     private Consumer<AmazonTask> checkHotCB(AtomicInteger updateCount, Disc disc) {
         return task -> {
-            AtomicInteger newRank = new AtomicInteger();
+            AtomicReference<Integer> newRank = new AtomicReference<>();
             getRank(task).ifPresent(rank -> {
                 newRank.set(rank);
                 if (!rank.equals(disc.getThisRank())) {
