@@ -49,7 +49,7 @@ public class AmazonTaskScheduler {
         Set<Disc> discs = new LinkedHashSet<>();
         dao.execute(session -> {
             findActiveSakura(session).forEach(sakura -> {
-                findAmazonDiscs(sakura).limit(5).forEach(discs::add);
+                findAmazonDiscs(sakura).sorted().limit(5).forEach(discs::add);
             });
         });
         LOGGER.debug("[正在检测Amzon(Hot)数据][共{}个]", discs.size());
