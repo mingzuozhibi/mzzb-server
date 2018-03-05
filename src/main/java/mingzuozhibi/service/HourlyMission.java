@@ -99,10 +99,7 @@ public class HourlyMission {
                     record = new Record(disc, date);
                     dao.save(record);
                 }
-                Integer thisRank = disc.getThisRank();
-                if (thisRank != null) {
-                    record.setRank(hour, thisRank);
-                }
+                record.setRank(hour, disc.getThisRank());
             });
         });
     }
