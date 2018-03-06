@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 
 import static mingzuozhibi.service.amazon.AmazonTaskScheduler.AmazonFetchStatus.startFullUpdate;
 import static mingzuozhibi.service.amazon.AmazonTaskScheduler.AmazonFetchStatus.startHotUpdate;
+import static mingzuozhibi.service.amazon.AmazonTaskScheduler.AmazonFetchStatus.waitingForUpdate;
 
 @Component
 public class AmazonTaskScheduler {
@@ -81,6 +82,8 @@ public class AmazonTaskScheduler {
                 service.debugStatus();
                 if (amazonFetchStatus == startFullUpdate) {
                     startFullUpdate();
+                } else {
+                    amazonFetchStatus = waitingForUpdate;
                 }
             }
         };
