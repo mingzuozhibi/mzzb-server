@@ -67,8 +67,8 @@ public class Record extends BaseModel {
 
     @Transient
     public void setRank(int hour, Integer rank) {
-        if (rank == null) {
-            return;
+        if (this.rank == null) {
+            this.rank = new DateRank();
         }
         try {
             rankSetters[hour - 1].invoke(this.rank, rank);
@@ -78,6 +78,9 @@ public class Record extends BaseModel {
 
     @Transient
     public Integer getRank(int hour) {
+        if (this.rank == null) {
+            return null;
+        }
         try {
             return (Integer) rankGetters[hour - 1].invoke(this.rank);
         } catch (IllegalAccessException | InvocationTargetException e) {
