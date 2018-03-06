@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static mingzuozhibi.action.SakuraController.DISC_COLUMNS_ADMIN_SET;
 import static mingzuozhibi.persist.disc.Disc.UpdateType.Both;
 import static mingzuozhibi.service.amazon.DocumentReader.getNode;
 import static mingzuozhibi.service.amazon.DocumentReader.getText;
@@ -183,7 +182,7 @@ public class DiscController extends BaseController {
         }
 
         JSONArray result = new JSONArray();
-        result.put(disc.get().toJSON(DISC_COLUMNS_ADMIN_SET));
+        result.put(disc.get().toJSON(COLUMNS_SET));
         return objectResult(result);
     }
 
