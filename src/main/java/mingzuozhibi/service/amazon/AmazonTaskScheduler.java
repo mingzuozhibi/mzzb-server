@@ -33,7 +33,7 @@ public class AmazonTaskScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AmazonTaskScheduler.class);
 
-    private AmazonFetchStatus amazonFetchStatus = AmazonFetchStatus.waitingForUpdate;
+    private transient AmazonFetchStatus amazonFetchStatus = AmazonFetchStatus.waitingForUpdate;
 
     @Autowired
     private AmazonTaskService service;
@@ -42,6 +42,8 @@ public class AmazonTaskScheduler {
     private Dao dao;
 
     public void fetchData() {
+        service.debugStatus();
+        LOGGER.info("[Amazon调度器状态={}]", amazonFetchStatus);
         if (amazonFetchStatus == AmazonFetchStatus.waitingForUpdate) {
             amazonFetchStatus = startHotUpdate;
             checkAmazonHotData();
@@ -49,7 +51,7 @@ public class AmazonTaskScheduler {
     }
 
     private void checkAmazonHotData() {
-        LOGGER.debug("[开始检测Amzon(Hot)数据]");
+        LOGGER.debug("[开始检测Amazon(Hot)数据]");
         Set<Disc> discs = new LinkedHashSet<>();
         dao.execute(session -> {
             findActiveSakura(session).forEach(sakura -> {
@@ -58,7 +60,7 @@ public class AmazonTaskScheduler {
         });
 
         Set<Disc> hotDiscs = discs.stream().sorted().limit(10).collect(Collectors.toSet());
-        LOGGER.debug("[正在检测Amzon(Hot)数据][共{}个]", hotDiscs.size());
+        LOGGER.debug("[开始检测Amazon(Hot)数据][共{}个]", hotDiscs.size());
         AtomicInteger updateCount = new AtomicInteger(hotDiscs.size());
         hotDiscs.forEach(disc -> {
             service.createRankTask(disc.getAsin(), checkHotCB(updateCount, disc));
@@ -75,7 +77,7 @@ public class AmazonTaskScheduler {
                     amazonFetchStatus = startFullUpdate;
                 }
             });
-            LOGGER.debug("[正在检测Amzon(Hot)数据][{}][{}->{}][还剩{}个][asin={}]",
+            LOGGER.debug("[正在检测Amazon(Hot)数据][{}][{}->{}][还剩{}个][asin={}]",
                     Objects.equals(disc.getThisRank(), newRank.get()) ? "无变化" : "有变化",
                     disc.getThisRank(), newRank.get(), updateCount.get(), disc.getAsin());
             if (updateCount.get() == 0) {
@@ -114,7 +116,7 @@ public class AmazonTaskScheduler {
     }
 
     private void startFullUpdate() {
-        LOGGER.info("[开始更新Amzon(ALL)数据]");
+        LOGGER.info("[开始更新Amazon(ALL)数据]");
 
         LocalDateTime startTime = LocalDateTime.now().withNano(0);
 
@@ -128,7 +130,7 @@ public class AmazonTaskScheduler {
         });
 
         AtomicInteger updateCount = new AtomicInteger(discs.size());
-        LOGGER.info("[正在更新Amzon(ALL)数据][共{}个]", discs.size());
+        LOGGER.info("[正在更新Amazon(ALL)数据][共{}个]", discs.size());
         discs.stream().sorted().forEach(disc -> {
             service.createRankTask(disc.getAsin(), fullUpdateCB(startTime, discs, updateCount, results));
         });
@@ -141,9 +143,9 @@ public class AmazonTaskScheduler {
                 results.put(task.getAsin(), rank);
             });
             if (updateCount.get() % 5 == 0 || updateCount.get() < 10) {
-                LOGGER.info("[正在更新Amzon(ALL)数据][还剩{}个]", updateCount.get());
+                LOGGER.info("[正在更新Amazon(ALL)数据][还剩{}个]", updateCount.get());
             } else {
-                LOGGER.debug("[正在更新Amzon(ALL)数据][还剩{}个]", updateCount.get());
+                LOGGER.debug("[正在更新Amazon(ALL)数据][还剩{}个]", updateCount.get());
             }
             if (updateCount.get() == 0) {
                 finishTheUpdate(discs, startTime, results);
@@ -152,7 +154,7 @@ public class AmazonTaskScheduler {
     }
 
     private void finishTheUpdate(LinkedHashSet<Disc> discs, LocalDateTime startTime, LinkedHashMap<String, Integer> results) {
-        LOGGER.info("[正在写入Amzon(ALL)数据]]");
+        LOGGER.info("[正在写入Amazon(ALL)数据]]");
         discs.forEach(disc -> {
             for (int i = 0; i < 3; i++) {
                 try {
@@ -169,7 +171,7 @@ public class AmazonTaskScheduler {
                 }
             }
         });
-        LOGGER.info("[成功更新Amzon(ALL)数据]");
+        LOGGER.info("[成功更新Amazon(ALL)数据]");
         service.infoStatus();
         amazonFetchStatus = AmazonFetchStatus.waitingForUpdate;
     }
