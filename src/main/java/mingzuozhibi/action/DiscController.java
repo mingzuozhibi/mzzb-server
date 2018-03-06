@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -256,6 +257,12 @@ public class DiscController extends BaseController {
         AtomicReference<Disc> disc = new AtomicReference<>(dao.lookup(Disc.class, "asin", asin));
         StringBuilder error = new StringBuilder();
         if (disc.get() == null) {
+
+            Instant instant = Instant.now();
+            if (LOGGER.isInfoEnabled()) {
+                infoRequest("[查找碟片][从Amazon查询开始][asin={}]", asin);
+            }
+
             service.createDiscTask(asin, task -> {
                 if (task.isDone()) {
                     Node node = getNode(task.getDocument(), "Items", "Item", "ItemAttributes");
@@ -286,6 +293,11 @@ public class DiscController extends BaseController {
                     }
                 }
 
+                if (LOGGER.isInfoEnabled()) {
+                    infoRequest("[查找碟片][从Amazon查询成功][asin={}][耗时={}ms]",
+                            asin, Instant.now().toEpochMilli() - instant.toEpochMilli());
+                }
+
                 synchronized (disc) {
                     disc.notify();
                 }
@@ -302,6 +314,11 @@ public class DiscController extends BaseController {
         }
         if (disc.get() == null) {
             if (error.length() == 0) {
+
+                if (LOGGER.isInfoEnabled()) {
+                    infoRequest("[查找碟片][从Amazon查询超时][asin={}]]", asin);
+                }
+
                 return errorMessage("查询超时，你可以稍后再尝试");
             } else {
                 return errorMessage(error.toString());
@@ -309,7 +326,11 @@ public class DiscController extends BaseController {
         }
 
         JSONArray result = new JSONArray();
-        result.put(disc.get().toJSON(COLUMNS_SET));
+        JSONObject discJSON = disc.get().toJSON(COLUMNS_SET);
+        if (LOGGER.isInfoEnabled()) {
+            infoRequest("[查找碟片成功][碟片信息={}]", discJSON);
+        }
+        result.put(discJSON);
         return objectResult(result);
     }
 
