@@ -5,6 +5,7 @@ import javax.persistence.Embeddable;
 @Embeddable
 public class DateRank {
 
+    private Integer rank00;
     private Integer rank01;
     private Integer rank02;
     private Integer rank03;
@@ -28,7 +29,14 @@ public class DateRank {
     private Integer rank21;
     private Integer rank22;
     private Integer rank23;
-    private Integer rank24;
+
+    public Integer getRank00() {
+        return rank00;
+    }
+
+    public void setRank00(Integer rank00) {
+        this.rank00 = rank00;
+    }
 
     public Integer getRank01() {
         return rank01;
@@ -212,14 +220,6 @@ public class DateRank {
 
     public void setRank23(Integer rank23) {
         this.rank23 = rank23;
-    }
-
-    public Integer getRank24() {
-        return rank24;
-    }
-
-    public void setRank24(Integer rank24) {
-        this.rank24 = rank24;
     }
 
 }

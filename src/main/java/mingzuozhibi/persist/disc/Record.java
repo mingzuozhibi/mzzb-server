@@ -57,8 +57,8 @@ public class Record extends BaseModel {
         for (int i = 0; i < 24; i++) {
             Class<DateRank> rankClass = DateRank.class;
             try {
-                rankSetters[i] = rankClass.getMethod(String.format("setRank%02d", i + 1), Integer.class);
-                rankGetters[i] = rankClass.getMethod(String.format("getRank%02d", i + 1));
+                rankSetters[i] = rankClass.getMethod(String.format("setRank%02d", i), Integer.class);
+                rankGetters[i] = rankClass.getMethod(String.format("getRank%02d", i));
             } catch (NoSuchMethodException e) {
                 e.printStackTrace();
             }
@@ -67,19 +67,22 @@ public class Record extends BaseModel {
 
     @Transient
     public void setRank(int hour, Integer rank) {
-        if (rank == null) {
-            return;
+        if (this.rank == null) {
+            this.rank = new DateRank();
         }
         try {
-            rankSetters[hour - 1].invoke(this.rank, rank);
+            rankSetters[hour].invoke(this.rank, rank);
         } catch (IllegalAccessException | InvocationTargetException ignore) {
         }
     }
 
     @Transient
     public Integer getRank(int hour) {
+        if (this.rank == null) {
+            return null;
+        }
         try {
-            return (Integer) rankGetters[hour - 1].invoke(this.rank);
+            return (Integer) rankGetters[hour].invoke(this.rank);
         } catch (IllegalAccessException | InvocationTargetException e) {
             return null;
         }

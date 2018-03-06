@@ -3,8 +3,11 @@ package mingzuozhibi.action;
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.persist.disc.Disc.UpdateType;
+import mingzuozhibi.persist.disc.Record;
 import mingzuozhibi.service.amazon.AmazonTaskService;
 import mingzuozhibi.support.JsonArg;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Restrictions;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +20,17 @@ import org.springframework.web.bind.annotation.RestController;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -123,12 +130,142 @@ public class DiscController extends BaseController {
     }
 
     @Transactional
+    @PutMapping(value = "/api/discs/{id}/record", produces = MEDIA_TYPE)
+    public String setRecord(@PathVariable Long id, @JsonArg String recordText) {
+        Disc disc = dao.get(Disc.class, id);
+        if (disc == null) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[更新排名失败][指定的碟片Id不存在][Id={}]", id);
+            }
+            return errorMessage("指定的碟片Id不存在");
+        }
+
+        String regex = "【(\\d{4})年 (\\d{2})月 (\\d{2})日 (\\d{2})時\\(.\\)】 ([*,\\d]{7})位";
+        Pattern pattern = Pattern.compile(regex);
+        String[] strings = recordText.split("\n");
+        int matchLine = 0;
+        for (String string : strings) {
+            Matcher matcher = pattern.matcher(string);
+            if (matcher.find()) {
+                Integer rank = getRank(matcher);
+                if (rank == null) {
+                    continue;
+                }
+                int year = Integer.parseInt(matcher.group(1));
+                int month = Integer.parseInt(matcher.group(2));
+                int date = Integer.parseInt(matcher.group(3));
+                int hour = Integer.parseInt(matcher.group(4));
+                LocalDate localDate = LocalDate.of(year, month, date);
+                Record record = getOrCreateRecord(disc, localDate);
+                record.setRank(hour, rank);
+                matchLine++;
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        List<Record> records = dao.create(Record.class)
+                .add(Restrictions.eq("disc", disc))
+                .add(Restrictions.lt("date", disc.getReleaseDate()))
+                .addOrder(Order.asc("date"))
+                .list();
+        disc.setTotalPt((int) computeTotalPt(disc, records));
+
+        JSONObject result = disc.toJSON(COLUMNS_SET);
+        if (LOGGER.isDebugEnabled()) {
+            debugRequest("[更新排名成功][共添加记录={}][碟片信息={}]", matchLine, result);
+        }
+        return objectResult(result);
+    }
+
+    private Integer getRank(Matcher matcher) {
+        String rankText = matcher.group(5).replaceAll("[*,]", "");
+        if (!rankText.isEmpty()) {
+            return new Integer(rankText);
+        }
+        return null;
+    }
+
+    private Record getOrCreateRecord(Disc disc, LocalDate localDate) {
+        return dao.query(session -> {
+            Record record = (Record) session.createCriteria(Record.class)
+                    .add(Restrictions.eq("disc", disc))
+                    .add(Restrictions.eq("date", localDate))
+                    .uniqueResult();
+            if (record == null) {
+                record = new Record(disc, localDate);
+                dao.save(record);
+            }
+            return record;
+        });
+    }
+
+    public static double computeTotalPt(Disc disc, List<Record> records) {
+        AtomicReference<Integer> lastRank = new AtomicReference<>();
+        return records.stream()
+                .mapToDouble(record -> computeRecordPt(disc, record, lastRank))
+                .sum();
+    }
+
+    private static double computeRecordPt(Disc disc, Record record, AtomicReference<Integer> lastRank) {
+        double recordPt = 0d;
+        for (int i = 0; i < 24; i++) {
+            Integer rank = record.getRank(i);
+            if (rank == null) {
+                rank = lastRank.get();
+            } else {
+                lastRank.set(rank);
+            }
+            if (rank != null) {
+                recordPt += computeHourPt(disc, rank);
+            }
+        }
+        return recordPt;
+    }
+
+    private static double computeHourPt(Disc disc, Integer rank) {
+        switch (disc.getDiscType()) {
+            case Cd:
+                return computePt(150, 5.25, rank);
+            case Other:
+                return 0d;
+            default:
+                if (disc.getTitle().contains("Blu-ray")) {
+                    if (rank <= 10) {
+                        return computePt(100, 3.2, rank);
+                    } else if (rank <= 20) {
+                        return computePt(100, 3.3, rank);
+                    } else if (rank <= 50) {
+                        return computePt(100, 3.4, rank);
+                    } else if (rank <= 100) {
+                        return computePt(100, 3.6, rank);
+                    } else if (rank <= 300) {
+                        return computePt(100, 3.8, rank);
+                    } else {
+                        return computePt(100, 3.9, rank);
+                    }
+                } else {
+                    return computePt(100, 4.2, rank);
+                }
+        }
+    }
+
+    private static double computePt(int div, double base, int rank) {
+        return div / Math.exp(Math.log(rank) / Math.log(base));
+    }
+
+    @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping(value = "/api/discs/search/{asin}", produces = MEDIA_TYPE)
     public String search(@PathVariable String asin) {
         AtomicReference<Disc> disc = new AtomicReference<>(dao.lookup(Disc.class, "asin", asin));
         StringBuilder error = new StringBuilder();
         if (disc.get() == null) {
+
+            Instant instant = Instant.now();
+            if (LOGGER.isInfoEnabled()) {
+                infoRequest("[查找碟片][从Amazon查询开始][asin={}]", asin);
+            }
+
             service.createDiscTask(asin, task -> {
                 if (task.isDone()) {
                     Node node = getNode(task.getDocument(), "Items", "Item", "ItemAttributes");
@@ -159,6 +296,11 @@ public class DiscController extends BaseController {
                     }
                 }
 
+                if (LOGGER.isInfoEnabled()) {
+                    infoRequest("[查找碟片][从Amazon查询成功][asin={}][耗时={}ms]",
+                            asin, Instant.now().toEpochMilli() - instant.toEpochMilli());
+                }
+
                 synchronized (disc) {
                     disc.notify();
                 }
@@ -175,6 +317,11 @@ public class DiscController extends BaseController {
         }
         if (disc.get() == null) {
             if (error.length() == 0) {
+
+                if (LOGGER.isInfoEnabled()) {
+                    infoRequest("[查找碟片][从Amazon查询超时][asin={}]]", asin);
+                }
+
                 return errorMessage("查询超时，你可以稍后再尝试");
             } else {
                 return errorMessage(error.toString());
@@ -182,7 +329,11 @@ public class DiscController extends BaseController {
         }
 
         JSONArray result = new JSONArray();
-        result.put(disc.get().toJSON(COLUMNS_SET));
+        JSONObject discJSON = disc.get().toJSON(COLUMNS_SET);
+        if (LOGGER.isInfoEnabled()) {
+            infoRequest("[查找碟片成功][碟片信息={}]", discJSON);
+        }
+        result.put(discJSON);
         return objectResult(result);
     }
 

@@ -6,6 +6,7 @@ import mingzuozhibi.persist.disc.Disc.UpdateType;
 import mingzuozhibi.persist.disc.Record;
 import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.support.Dao;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static mingzuozhibi.action.DiscController.computeTotalPt;
 import static mingzuozhibi.persist.disc.Sakura.ViewType.SakuraList;
 
 @Service
@@ -85,6 +87,7 @@ public class HourlyMission {
             @SuppressWarnings("unchecked")
             List<Disc> discs = session.createCriteria(Disc.class)
                     .add(Restrictions.ne("updateType", UpdateType.Sakura))
+                    .add(Restrictions.ne("updateType", UpdateType.None))
                     .add(Restrictions.gt("releaseDate", date.minusDays(7)))
                     .list();
 
@@ -100,6 +103,18 @@ public class HourlyMission {
                     dao.save(record);
                 }
                 record.setRank(hour, disc.getThisRank());
+            });
+
+            LOGGER.info("[定时任务][计算非Sakura碟片PT][碟片数量为:{}]", discs.size());
+
+            discs.forEach(disc -> {
+                @SuppressWarnings("unchecked")
+                List<Record> records = session.createCriteria(Record.class)
+                        .add(Restrictions.eq("disc", disc))
+                        .add(Restrictions.lt("date", disc.getReleaseDate()))
+                        .addOrder(Order.asc("date"))
+                        .list();
+                disc.setTotalPt((int) computeTotalPt(disc, records));
             });
         });
     }
