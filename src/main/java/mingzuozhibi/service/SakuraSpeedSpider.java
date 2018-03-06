@@ -128,7 +128,6 @@ public class SakuraSpeedSpider {
             LocalDate releaseDate = parseDate(fixYear(dateText));
             disc = new Disc(asin, title, parseDiscType(typeIcon),
                     UpdateType.Sakura, isAmazonLimit(title), releaseDate);
-            disc.setTitlePc(titlePcOfDisc(title));
             dao.save(disc);
             LOGGER.info("发现了新的碟片, title={}", disc.getTitle());
         }
@@ -165,16 +164,6 @@ public class SakuraSpeedSpider {
             discText = discText.replace("【予約不可】", "");
             discText = discText.replace("【更新停止】", "");
             return discText;
-        }
-
-        public static String titlePcOfDisc(String discName) {
-            discName = discName.replace("【Blu-ray】", " [Blu-ray]");
-            discName = discName.replace("【DVD】", " [DVD]");
-            if (isAmazonLimit(discName)) {
-                discName = discName.substring(16).trim() + "【尼限定】";
-            }
-            discName = discName.replaceAll("\\s+", " ");
-            return discName;
         }
 
         public static boolean isAmazonLimit(String japan) {
