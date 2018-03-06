@@ -1,5 +1,6 @@
 package mingzuozhibi.support;
 
+import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.springframework.orm.hibernate5.HibernateCallback;
 
@@ -29,5 +30,7 @@ public interface Dao {
     <T> T query(HibernateCallback<T> action);
 
     void execute(Consumer<Session> action);
+
+    Criteria create(Class<?> klass);
 
 }
