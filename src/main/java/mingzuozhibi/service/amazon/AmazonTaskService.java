@@ -144,6 +144,8 @@ public class AmazonTaskService {
     }
 
     public void debugStatus() {
+        LOGGER.debug("[Amazon更新服务][fetchers={}][discTasks={}][rankTasks={}][doneTasks={}]",
+                fetchers.size(), discTasks.size(), rankTasks.size(), doneTasks.size());
         fetchers.forEach(fetcher -> {
             LOGGER.debug("[Amazon更新服务][更新器tag:{}][创建时间:{}][运行时间:{}秒][运行效率:{}毫秒/任务]" +
                             "[总共任务:{}][失败任务:{}][总共连接:{}][503失败:{}][400失败:{}][doc失败:{}][其他失败:{}]",

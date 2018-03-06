@@ -8,6 +8,7 @@
                 [ %-5level] [%date{yyyy-MM-dd HH:mm:ss}] %logger{96} [%line] - %msg%n
             </pattern>
         </encoder>
+        <prudent>true</prudent>
     </appender>
 
     <appender name="STD" class="ch.qos.logback.core.ConsoleAppender">
