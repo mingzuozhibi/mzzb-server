@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static mingzuozhibi.action.DiscController.buildSet;
 import static mingzuozhibi.persist.disc.Sakura.ViewType.PrivateList;
@@ -139,11 +137,11 @@ public class SakuraController extends BaseController {
 
         Sakura sakura = dao.get(Sakura.class, id);
 
-        if (dao.lookup(Sakura.class, "key", key) == null) {
+        if (sakura == null) {
             if (LOGGER.isWarnEnabled()) {
-                warnRequest("[编辑列表失败][指定的列表索引不存在][Key={}]", key);
+                warnRequest("[编辑列表失败][指定的列表Id不存在][id={}]", id);
             }
-            return errorMessage("指定的列表索引不存在");
+            return errorMessage("指定的列表Id不存在");
         }
 
         JSONObject before = sakura.toJSON();
