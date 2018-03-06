@@ -131,7 +131,7 @@ public class DiscController extends BaseController {
 
     @Transactional
     @PutMapping(value = "/api/discs/{id}/record", produces = MEDIA_TYPE)
-    public String setRecord(@JsonArg Long id, @JsonArg String recordText) {
+    public String setRecord(@PathVariable Long id, @JsonArg String recordText) {
         Disc disc = dao.get(Disc.class, id);
         if (disc == null) {
             if (LOGGER.isWarnEnabled()) {
@@ -140,8 +140,10 @@ public class DiscController extends BaseController {
             return errorMessage("指定的碟片Id不存在");
         }
 
-        Pattern pattern = Pattern.compile("【(\\d{4})年 (\\d{2})月 (\\d{2})日 (\\d{2})時\\(火\\)】 ([*,\\d]{7})位");
-        String[] strings = recordText.split(",");
+        String regex = "【(\\d{4})年 (\\d{2})月 (\\d{2})日 (\\d{2})時\\(.\\)】 ([*,\\d]{7})位";
+        Pattern pattern = Pattern.compile(regex);
+        String[] strings = recordText.split("\n");
+        int matchLine = 0;
         for (String string : strings) {
             Matcher matcher = pattern.matcher(string);
             if (matcher.find()) {
@@ -156,6 +158,7 @@ public class DiscController extends BaseController {
                 LocalDate localDate = LocalDate.of(year, month, date);
                 Record record = getOrCreateRecord(disc, localDate);
                 record.setRank(hour, rank);
+                matchLine++;
             }
         }
 
@@ -169,7 +172,7 @@ public class DiscController extends BaseController {
 
         JSONObject result = disc.toJSON(COLUMNS_SET);
         if (LOGGER.isDebugEnabled()) {
-            debugRequest("[更新排名成功][碟片信息={}]", result);
+            debugRequest("[更新排名成功][共添加记录={}][碟片信息={}]", matchLine, result);
         }
         return objectResult(result);
     }
@@ -206,7 +209,7 @@ public class DiscController extends BaseController {
     private static double computeRecordPt(Disc disc, Record record, AtomicReference<Integer> lastRank) {
         double recordPt = 0d;
         for (int i = 0; i < 24; i++) {
-            Integer rank = record.getRank(i + 1);
+            Integer rank = record.getRank(i);
             if (rank == null) {
                 rank = lastRank.get();
             } else {
