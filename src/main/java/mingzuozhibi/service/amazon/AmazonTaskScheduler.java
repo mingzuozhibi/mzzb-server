@@ -17,15 +17,17 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static mingzuozhibi.service.amazon.AmazonTaskScheduler.AmazonFetchStatus.startFullUpdate;
+import static mingzuozhibi.service.amazon.AmazonTaskScheduler.AmazonFetchStatus.startHotUpdate;
 
 @Component
 public class AmazonTaskScheduler {
 
     enum AmazonFetchStatus {
-        waitingForUpdate, startFullUpdate
+        waitingForUpdate, startHotUpdate, startFullUpdate
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AmazonTaskScheduler.class);
@@ -40,6 +42,7 @@ public class AmazonTaskScheduler {
 
     public void fetchData() {
         if (amazonFetchStatus == AmazonFetchStatus.waitingForUpdate) {
+            amazonFetchStatus = startHotUpdate;
             checkAmazonHotData();
         }
     }
@@ -52,9 +55,11 @@ public class AmazonTaskScheduler {
                 findAmazonDiscs(sakura).sorted().limit(5).forEach(discs::add);
             });
         });
-        LOGGER.debug("[正在检测Amzon(Hot)数据][共{}个]", discs.size());
-        AtomicInteger updateCount = new AtomicInteger(discs.size());
-        discs.forEach(disc -> {
+
+        Set<Disc> hotDiscs = discs.stream().sorted().limit(10).collect(Collectors.toSet());
+        LOGGER.debug("[正在检测Amzon(Hot)数据][共{}个]", hotDiscs.size());
+        AtomicInteger updateCount = new AtomicInteger(hotDiscs.size());
+        hotDiscs.forEach(disc -> {
             service.createRankTask(disc.getAsin(), checkHotCB(updateCount, disc));
         });
     }
