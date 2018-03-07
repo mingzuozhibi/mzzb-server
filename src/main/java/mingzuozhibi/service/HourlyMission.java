@@ -90,6 +90,12 @@ public class HourlyMission {
                     .add(Restrictions.gt("releaseDate", date.minusDays(7)))
                     .list();
 
+            LocalDateTime minusDays = LocalDateTime.now().minusDays(1);
+
+            discsToRecord.removeIf(disc -> {
+                return disc.getUpdateTime() == null || disc.getUpdateTime().isBefore(minusDays);
+            });
+
             LOGGER.info("[定时任务][记录碟片排名][碟片数量为:{}]", discsToRecord.size());
 
             discsToRecord.forEach(disc -> {
