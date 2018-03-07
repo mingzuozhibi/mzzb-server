@@ -18,10 +18,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static mingzuozhibi.persist.disc.Sakura.ViewType.SakuraList;
@@ -93,12 +90,17 @@ public class SakuraSpeedSpider {
             if (disc.getUpdateType() == UpdateType.Both && !isTop100) {
                 disc.setUpdateType(UpdateType.Sakura);
             }
-            if (disc.getUpdateType() == UpdateType.Sakura) {
+            if (disc.getUpdateType() == UpdateType.Sakura || disc.getUpdateType() == UpdateType.Both) {
                 String[] sakuraRank = tr.child(0).text().split("/");
                 disc.setThisRank(parseInteger(sakuraRank[0]));
                 disc.setPrevRank(parseInteger(sakuraRank[1]));
                 disc.setTotalPt(parseInteger(tr.child(2).text()));
                 disc.setNicoBook(parseInteger(tr.child(3).text()));
+
+                disc.setUpdateTime(sakura.getModifyTime());
+                if (!Objects.equals(disc.getThisRank(), disc.getPrevRank())) {
+                    disc.setModifyTime(sakura.getModifyTime());
+                }
             }
             toAdd.add(disc);
         });
