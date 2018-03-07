@@ -217,7 +217,7 @@ public class DiscController extends BaseController {
                 .add(Restrictions.lt("date", disc.getReleaseDate()))
                 .addOrder(Order.asc("date"))
                 .list();
-        disc.setTotalPt((int) computeTotalPt(disc, records));
+        computeAndUpdatePt(disc, records);
 
         JSONObject result = disc.toJSON();
         if (LOGGER.isDebugEnabled()) {
@@ -248,7 +248,7 @@ public class DiscController extends BaseController {
         });
     }
 
-    public static double computeTotalPt(Disc disc, List<Record> records) {
+    public static void computeAndUpdatePt(Disc disc, List<Record> records) {
         AtomicReference<Integer> lastRank = new AtomicReference<>();
         AtomicReference<Double> totalPt = new AtomicReference<>(0d);
 
@@ -279,7 +279,7 @@ public class DiscController extends BaseController {
         } else if (sevenPt.get() != null) {
             disc.setGuessPt((int) (totalPt.get() + (totalPt.get() - sevenPt.get()) / 7 * days));
         }
-        return totalPt.get();
+        disc.setTotalPt(totalPt.get().intValue());
     }
 
     private static double computeRecordPt(Disc disc, Record record, AtomicReference<Integer> lastRank) {

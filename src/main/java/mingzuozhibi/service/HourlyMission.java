@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static mingzuozhibi.action.DiscController.computeTotalPt;
+import static mingzuozhibi.action.DiscController.computeAndUpdatePt;
 import static mingzuozhibi.persist.disc.Sakura.ViewType.SakuraList;
 
 @Service
@@ -79,21 +79,20 @@ public class HourlyMission {
     }
 
 
-    public void recordNotSakuraDiscsRank() {
+    public void recordDiscsRankAndComputePt() {
         LocalDateTime japanTime = LocalDateTime.now().plusHours(1);
         LocalDate date = japanTime.toLocalDate();
         int hour = japanTime.getHour();
         dao.execute(session -> {
             @SuppressWarnings("unchecked")
-            List<Disc> discs = session.createCriteria(Disc.class)
-                    .add(Restrictions.ne("updateType", UpdateType.Sakura))
+            List<Disc> discsToRecord = session.createCriteria(Disc.class)
                     .add(Restrictions.ne("updateType", UpdateType.None))
                     .add(Restrictions.gt("releaseDate", date.minusDays(7)))
                     .list();
 
-            LOGGER.info("[定时任务][记录非Sakura碟片排名][碟片数量为:{}]", discs.size());
+            LOGGER.info("[定时任务][记录碟片排名][碟片数量为:{}]", discsToRecord.size());
 
-            discs.forEach(disc -> {
+            discsToRecord.forEach(disc -> {
                 Record record = (Record) session.createCriteria(Record.class)
                         .add(Restrictions.eq("disc", disc))
                         .add(Restrictions.eq("date", date))
@@ -105,16 +104,20 @@ public class HourlyMission {
                 record.setRank(hour, disc.getThisRank());
             });
 
-            LOGGER.info("[定时任务][计算非Sakura碟片PT][碟片数量为:{}]", discs.size());
+            List<Disc> discsToCompute = discsToRecord.stream()
+                    .filter(disc -> disc.getUpdateType() != UpdateType.Sakura)
+                    .collect(Collectors.toList());
 
-            discs.forEach(disc -> {
+            LOGGER.info("[定时任务][计算非Sakura碟片PT][碟片数量为:{}]", discsToRecord.size());
+
+            discsToCompute.forEach(disc -> {
                 @SuppressWarnings("unchecked")
                 List<Record> records = session.createCriteria(Record.class)
                         .add(Restrictions.eq("disc", disc))
                         .add(Restrictions.lt("date", disc.getReleaseDate()))
                         .addOrder(Order.asc("date"))
                         .list();
-                disc.setTotalPt((int) computeTotalPt(disc, records));
+                computeAndUpdatePt(disc, records);
             });
         });
     }
