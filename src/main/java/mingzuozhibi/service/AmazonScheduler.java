@@ -165,8 +165,9 @@ public class AmazonScheduler {
                     disc.setPrevRank(disc.getThisRank());
                     if (rank != null) {
                         disc.setThisRank(rank);
+                        disc.setModifyTime(startTime);
                     }
-                    disc.setModifyTime(startTime);
+                    disc.setUpdateTime(startTime);
                     dao.update(disc);
                     break;
                 } catch (DataException ignore) {
