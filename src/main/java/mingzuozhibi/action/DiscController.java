@@ -297,7 +297,7 @@ public class DiscController extends BaseController {
                 }
 
                 if (LOGGER.isInfoEnabled()) {
-                    infoRequest("[查找碟片][从Amazon查询成功][asin={}][耗时={}ms]",
+                    LOGGER.info("[查找碟片][从Amazon查询成功][asin={}][耗时={}ms]",
                             asin, Instant.now().toEpochMilli() - instant.toEpochMilli());
                 }
 
