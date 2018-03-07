@@ -15,11 +15,14 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import static mingzuozhibi.action.DiscController.computeAndUpdatePt;
 import static mingzuozhibi.persist.disc.Sakura.ViewType.SakuraList;
+import static mingzuozhibi.service.RecordHelper.computeAndUpdateAmazonPt;
+import static mingzuozhibi.service.RecordHelper.computeAndUpdateSakuraPt;
 
 @Service
 public class HourlyMission {
@@ -83,22 +86,26 @@ public class HourlyMission {
         LocalDateTime japanTime = LocalDateTime.now().plusHours(1);
         LocalDate date = japanTime.toLocalDate();
         int hour = japanTime.getHour();
+
         dao.execute(session -> {
             @SuppressWarnings("unchecked")
-            List<Disc> discsToRecord = session.createCriteria(Disc.class)
-                    .add(Restrictions.ne("updateType", UpdateType.None))
-                    .add(Restrictions.gt("releaseDate", date.minusDays(7)))
+            List<Sakura> sakuras = session.createCriteria(Sakura.class)
+                    .add(Restrictions.ne("key", "9999-99"))
+                    .add(Restrictions.eq("enabled", true))
                     .list();
 
-            LocalDateTime minusDays = LocalDateTime.now().minusDays(1);
+            Set<Disc> discs = new LinkedHashSet<>();
 
-            discsToRecord.removeIf(disc -> {
-                return disc.getUpdateTime() == null || disc.getUpdateTime().isBefore(minusDays);
+            sakuras.forEach(sakura -> {
+                sakura.getDiscs().stream()
+                        .filter(disc -> disc.getUpdateType() != UpdateType.None)
+                        .filter(disc -> !isReleasedSevenDays(disc))
+                        .forEach(discs::add);
             });
 
-            LOGGER.info("[定时任务][记录碟片排名][碟片数量为:{}]", discsToRecord.size());
+            LOGGER.info("[定时任务][记录碟片排名][碟片数量为:{}]", discs.size());
 
-            discsToRecord.forEach(disc -> {
+            discs.forEach(disc -> {
                 Record record = (Record) session.createCriteria(Record.class)
                         .add(Restrictions.eq("disc", disc))
                         .add(Restrictions.eq("date", date))
@@ -110,23 +117,24 @@ public class HourlyMission {
                 record.setRank(hour, disc.getThisRank());
             });
 
-            List<Disc> discsToCompute = discsToRecord.stream()
-                    .filter(disc -> disc.getUpdateType() != UpdateType.Sakura)
-                    .collect(Collectors.toList());
+            LOGGER.info("[定时任务][计算碟片PT][碟片数量为:{}]", discs.size());
 
-            LOGGER.info("[定时任务][计算非Sakura碟片PT][碟片数量为:{}]", discsToRecord.size());
-
-            discsToCompute.forEach(disc -> {
+            discs.forEach(disc -> {
                 @SuppressWarnings("unchecked")
                 List<Record> records = session.createCriteria(Record.class)
                         .add(Restrictions.eq("disc", disc))
                         .add(Restrictions.lt("date", disc.getReleaseDate()))
                         .addOrder(Order.asc("date"))
                         .list();
-                computeAndUpdatePt(disc, records);
+                if (disc.getUpdateType() != UpdateType.Sakura) {
+                    computeAndUpdateAmazonPt(disc, records);
+                } else {
+                    computeAndUpdateSakuraPt(disc, records);
+                }
             });
         });
     }
+
 
     private boolean isReleasedSevenDays(Disc disc) {
         LocalDate releaseTenDays = disc.getReleaseDate().plusDays(7);
