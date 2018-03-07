@@ -20,9 +20,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static mingzuozhibi.service.amazon.AmazonTaskScheduler.AmazonFetchStatus.startFullUpdate;
-import static mingzuozhibi.service.amazon.AmazonTaskScheduler.AmazonFetchStatus.startHotUpdate;
-import static mingzuozhibi.service.amazon.AmazonTaskScheduler.AmazonFetchStatus.waitingForUpdate;
+import static mingzuozhibi.persist.disc.Sakura.ViewType.SakuraList;
+import static mingzuozhibi.service.amazon.AmazonTaskScheduler.AmazonFetchStatus.*;
 
 @Component
 public class AmazonTaskScheduler {
@@ -171,6 +170,11 @@ public class AmazonTaskScheduler {
                 }
             }
         });
+        dao.findAll(Sakura.class).stream()
+                .filter(sakura -> sakura.getViewType() != SakuraList)
+                .forEach(sakura -> {
+                    sakura.setModifyTime(startTime);
+                });
         LOGGER.info("[成功更新Amazon(ALL)数据]");
         service.infoStatus();
         amazonFetchStatus = AmazonFetchStatus.waitingForUpdate;
