@@ -12,11 +12,17 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static mingzuozhibi.action.DiscController.buildSet;
 import static mingzuozhibi.persist.disc.Sakura.ViewType.PrivateList;
+import static mingzuozhibi.persist.disc.Sakura.ViewType.SakuraList;
 
 @RestController
 public class SakuraController extends BaseController {
@@ -307,6 +313,76 @@ public class SakuraController extends BaseController {
             infoRequest("[从列表移除碟片成功][ASIN={}][列表={}]", disc.getAsin(), sakura.getTitle());
         }
         return objectResult(disc.toJSON(getColumns(discColumns)));
+    }
+
+    @Transactional
+    @GetMapping(value = "/sakura.do", produces = MEDIA_TYPE)
+    public String sakuraDotDo() {
+        @SuppressWarnings("unchecked")
+        List<Sakura> sakuras = dao.query(session -> {
+            return session.createCriteria(Sakura.class)
+                    .add(Restrictions.eq("viewType", SakuraList))
+                    .add(Restrictions.eq("enabled", true)).list();
+        });
+        JSONArray array = new JSONArray();
+        sakuras.forEach(sakura -> {
+            JSONObject object = new JSONObject();
+            object.put("id", sakura.getId());
+            object.put("name", sakura.getKey());
+            Optional.ofNullable(sakura.getModifyTime()).ifPresent(localDateTime -> {
+                object.put("time", localDateTime.atZone(ZoneId.systemDefault())
+                        .toInstant().toEpochMilli());
+            });
+            object.put("discs", buildDiscs(sakura.getDiscs()));
+            array.put(object);
+        });
+        return array.toString();
+    }
+
+    private JSONArray buildDiscs(List<Disc> discs) {
+        JSONArray array = new JSONArray();
+        discs.stream().sorted().forEach(disc -> {
+            JSONObject object = new JSONObject();
+            object.put("id", disc.getId());
+            object.put("asin", disc.getAsin());
+            object.put("title", Stream.of(disc.getTitlePc(), disc.getTitle())
+                    .filter(Objects::nonNull)
+                    .findFirst().orElse(null));
+            object.put("sname", Stream.of(disc.getTitleMo(), disc.getTitlePc(), disc.getTitle())
+                    .filter(Objects::nonNull).findFirst()
+                    .orElse(null));
+            object.put("type", getType(disc));
+            object.put("amzver", disc.isAmazonLimit());
+            object.put("release", disc.getReleaseDate().atStartOfDay()
+                    .toInstant(ZoneOffset.UTC).toEpochMilli());
+            object.put("rank1", disc.getThisRank());
+            object.put("rank2", disc.getPrevRank());
+            object.put("rank3", disc.getPrevRank());
+            object.put("rank4", disc.getPrevRank());
+            object.put("rank5", disc.getPrevRank());
+            object.put("curk", disc.getThisRank());
+            object.put("prrk", disc.getPrevRank());
+            object.put("cupt", disc.getTotalPt());
+            object.put("cubk", disc.getNicoBook());
+            object.put("sday", disc.getSurplusDays());
+            array.put(object);
+        });
+        return array;
+    }
+
+    private String getType(Disc disc) {
+        switch (disc.getDiscType()) {
+            case Cd:
+                return "CD";
+            case Bluray:
+                return "BD";
+            case Dvd:
+                return "DVD";
+            case Box:
+                return disc.getTitle().contains("Blu-ray") ? "BD" : "DVD";
+            default:
+                return "OTHER";
+        }
     }
 
 }
