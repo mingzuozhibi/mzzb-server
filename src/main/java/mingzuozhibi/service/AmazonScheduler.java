@@ -1,8 +1,11 @@
-package mingzuozhibi.service.amazon;
+package mingzuozhibi.service;
 
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.UpdateType;
 import mingzuozhibi.persist.disc.Sakura;
+import mingzuozhibi.service.amazon.AmazonTask;
+import mingzuozhibi.service.amazon.AmazonTaskService;
+import mingzuozhibi.service.amazon.DocumentReader;
 import mingzuozhibi.support.Dao;
 import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
@@ -21,16 +24,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static mingzuozhibi.persist.disc.Sakura.ViewType.SakuraList;
-import static mingzuozhibi.service.amazon.AmazonTaskScheduler.AmazonFetchStatus.*;
+import static mingzuozhibi.service.AmazonScheduler.AmazonFetchStatus.*;
 
 @Component
-public class AmazonTaskScheduler {
+public class AmazonScheduler {
 
     enum AmazonFetchStatus {
         waitingForUpdate, startHotUpdate, startFullUpdate
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AmazonTaskScheduler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AmazonScheduler.class);
 
     private transient AmazonFetchStatus amazonFetchStatus = AmazonFetchStatus.waitingForUpdate;
 

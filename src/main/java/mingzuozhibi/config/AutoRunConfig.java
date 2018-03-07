@@ -2,7 +2,7 @@ package mingzuozhibi.config;
 
 import mingzuozhibi.service.HourlyMission;
 import mingzuozhibi.service.SakuraSpeedSpider;
-import mingzuozhibi.service.amazon.AmazonTaskScheduler;
+import mingzuozhibi.service.AmazonScheduler;
 import mingzuozhibi.support.Dao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,7 @@ public class AutoRunConfig {
     private Dao dao;
 
     @Autowired
-    private AmazonTaskScheduler scheduler;
+    private AmazonScheduler scheduler;
 
     @Autowired
     private HourlyMission hourlyMission;
