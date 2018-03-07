@@ -105,14 +105,9 @@ public class SakuraSpeedSpider {
         if (isTop100) {
             sakura.setDiscs(toAdd);
         } else {
-            sakura.getDiscs().forEach(disc -> {
-                if (disc.getUpdateType() == UpdateType.Amazon) {
-                    toAdd.add(disc);
-                }
-                if (disc.getUpdateType() == UpdateType.None) {
-                    toAdd.add(disc);
-                }
-            });
+            sakura.getDiscs().stream()
+                    .filter(disc -> disc.getUpdateType() != UpdateType.Sakura)
+                    .forEach(toAdd::add);
             toAdd.sort(Comparator.naturalOrder());
             sakura.setDiscs(toAdd);
         }
