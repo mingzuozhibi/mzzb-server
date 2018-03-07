@@ -37,7 +37,7 @@ public class AutoRunConfig {
         fetchSakuraSpeedData(3);
         hourlyMission.removeExpiredDiscsFromList();
         hourlyMission.removeExpiredAutoLoginData();
-        hourlyMission.recordNotSakuraDiscsRank();
+        hourlyMission.recordDiscsRankAndComputePt();
     }
 
     @Scheduled(cron = "0 2 * * * ?")
@@ -45,7 +45,7 @@ public class AutoRunConfig {
         LOGGER.info("每小时任务开始");
         hourlyMission.removeExpiredDiscsFromList();
         hourlyMission.removeExpiredAutoLoginData();
-        hourlyMission.recordNotSakuraDiscsRank();
+        hourlyMission.recordDiscsRankAndComputePt();
         LOGGER.info("每小时任务完成");
     }
 
