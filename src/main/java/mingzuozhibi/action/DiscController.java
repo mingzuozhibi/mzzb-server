@@ -22,16 +22,19 @@ import org.w3c.dom.Node;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Objects;
+import java.util.OptionalDouble;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static mingzuozhibi.persist.disc.Disc.UpdateType.Both;
@@ -40,12 +43,6 @@ import static mingzuozhibi.service.amazon.DocumentReader.getText;
 
 @RestController
 public class DiscController extends BaseController {
-
-    public static final String COLUMNS = "id,asin,title,titlePc,titleMo," +
-            "thisRank,prevRank,nicoBook,totalPt,discType,updateType," +
-            "releaseDate,createTime,updateTime,mofidyTime,surplusDays";
-
-    public static final Set<String> COLUMNS_SET = buildSet(COLUMNS);
 
     public static Set<String> buildSet(String columns) {
         return Stream.of(columns.split(",")).collect(Collectors.toSet());
@@ -68,12 +65,64 @@ public class DiscController extends BaseController {
             return errorMessage("指定的碟片Id不存在");
         }
 
-
-        JSONObject result = disc.toJSON(COLUMNS_SET);
+        JSONObject result = disc.toJSON();
         if (LOGGER.isDebugEnabled()) {
             debugRequest("[获取碟片成功][碟片信息={}]", result);
         }
         return objectResult(result);
+    }
+
+    @Transactional
+    @GetMapping(value = "/api/discs/{id}/ranks", produces = MEDIA_TYPE)
+    public String getRanks(@PathVariable Long id) {
+        Disc disc = dao.get(Disc.class, id);
+        if (disc == null) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[获取碟片排名失败][指定的碟片Id不存在][Id={}]", id);
+            }
+            return errorMessage("指定的碟片Id不存在");
+        }
+
+        @SuppressWarnings("unchecked")
+        List<Record> records = dao.create(Record.class)
+                .add(Restrictions.eq("disc", disc))
+                .add(Restrictions.lt("date", disc.getReleaseDate()))
+                .addOrder(Order.asc("date"))
+                .list();
+
+        JSONObject result = disc.toJSON();
+        result.put("ranks", buildRanks(records));
+        if (LOGGER.isDebugEnabled()) {
+            debugRequest("[获取碟片排名成功][碟片信息={}][排名数量={}]", result, records.size());
+        }
+        return objectResult(result);
+    }
+
+    private JSONArray buildRanks(List<Record> records) {
+        JSONArray array = new JSONArray();
+        records.forEach(record -> {
+            JSONObject object = new JSONObject();
+            object.put("id", record.getId());
+            object.put("date", record.getDate());
+            object.put("todayPt", record.getTodayPt());
+            object.put("totalPt", record.getTotalPt());
+            getAverRank(record).ifPresent(averRank -> {
+                object.put("averRank", (int) averRank);
+            });
+            array.put(object);
+        });
+        return array;
+    }
+
+    private OptionalDouble getAverRank(Record record) {
+        IntStream.Builder builder = IntStream.builder();
+        for (int i = 0; i < 24; i++) {
+            Integer rank = record.getRank(i);
+            if (rank != null) {
+                builder.add(rank);
+            }
+        }
+        return builder.build().average();
     }
 
     @Transactional
@@ -111,7 +160,7 @@ public class DiscController extends BaseController {
             return errorMessage("指定的碟片Id不存在");
         }
 
-        JSONObject before = disc.toJSON(COLUMNS_SET);
+        JSONObject before = disc.toJSON();
         if (LOGGER.isDebugEnabled()) {
             debugRequest("[编辑碟片开始][修改前={}]", before);
         }
@@ -122,7 +171,7 @@ public class DiscController extends BaseController {
         disc.setUpdateType(updateType);
         disc.setReleaseDate(localDate);
 
-        JSONObject result = disc.toJSON(COLUMNS_SET);
+        JSONObject result = disc.toJSON();
         if (LOGGER.isDebugEnabled()) {
             debugRequest("[编辑列表成功][修改后={}]", result);
         }
@@ -170,7 +219,7 @@ public class DiscController extends BaseController {
                 .list();
         disc.setTotalPt((int) computeTotalPt(disc, records));
 
-        JSONObject result = disc.toJSON(COLUMNS_SET);
+        JSONObject result = disc.toJSON();
         if (LOGGER.isDebugEnabled()) {
             debugRequest("[更新排名成功][共添加记录={}][碟片信息={}]", matchLine, result);
         }
@@ -201,9 +250,36 @@ public class DiscController extends BaseController {
 
     public static double computeTotalPt(Disc disc, List<Record> records) {
         AtomicReference<Integer> lastRank = new AtomicReference<>();
-        return records.stream()
-                .mapToDouble(record -> computeRecordPt(disc, record, lastRank))
-                .sum();
+        AtomicReference<Double> totalPt = new AtomicReference<>(0d);
+
+        LocalDateTime japanTime = LocalDateTime.now().plusHours(1);
+
+        LocalDate today = japanTime.toLocalDate();
+        LocalDate seven = japanTime.minusDays(7).toLocalDate();
+        AtomicReference<Double> sevenPt = new AtomicReference<>();
+
+        disc.setTodayPt(null);
+
+        long days = disc.getReleaseDate().toEpochDay() - today.toEpochDay();
+        records.forEach(record -> {
+            double todayPt = computeRecordPt(disc, record, lastRank);
+            totalPt.set(totalPt.get() + todayPt);
+            record.setTotalPt(totalPt.get().intValue());
+            record.setTodayPt((int) todayPt);
+            if (record.getDate().equals(today)) {
+                disc.setTodayPt((int) todayPt);
+            }
+            if (record.getDate().equals(seven)) {
+                sevenPt.set(totalPt.get());
+            }
+        });
+
+        if (days <= 0) {
+            disc.setGuessPt(totalPt.get().intValue());
+        } else if (sevenPt.get() != null) {
+            disc.setGuessPt((int) (totalPt.get() + (totalPt.get() - sevenPt.get()) / 7 * days));
+        }
+        return totalPt.get();
     }
 
     private static double computeRecordPt(Disc disc, Record record, AtomicReference<Integer> lastRank) {
@@ -329,7 +405,7 @@ public class DiscController extends BaseController {
         }
 
         JSONArray result = new JSONArray();
-        JSONObject discJSON = disc.get().toJSON(COLUMNS_SET);
+        JSONObject discJSON = disc.get().toJSON();
         if (LOGGER.isInfoEnabled()) {
             infoRequest("[查找碟片成功][碟片信息={}]", discJSON);
         }

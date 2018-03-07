@@ -30,7 +30,9 @@ public class Disc extends BaseModel implements Comparable<Disc> {
     private Integer thisRank;
     private Integer prevRank;
     private Integer nicoBook;
+    private Integer todayPt;
     private Integer totalPt;
+    private Integer guessPt;
     private DiscType discType;
     private boolean amazonLimit;
     private UpdateType updateType;
@@ -117,12 +119,30 @@ public class Disc extends BaseModel implements Comparable<Disc> {
     }
 
     @Column
+    public Integer getTodayPt() {
+        return todayPt;
+    }
+
+    public void setTodayPt(Integer todayPt) {
+        this.todayPt = todayPt;
+    }
+
+    @Column
     public Integer getTotalPt() {
         return totalPt;
     }
 
     public void setTotalPt(Integer totalPt) {
         this.totalPt = totalPt;
+    }
+
+    @Column
+    public Integer getGuessPt() {
+        return guessPt;
+    }
+
+    public void setGuessPt(Integer guessPt) {
+        this.guessPt = guessPt;
     }
 
     @Column(nullable = false)
@@ -220,6 +240,34 @@ public class Disc extends BaseModel implements Comparable<Disc> {
         }
     }
 
+    public JSONObject toJSON() {
+        JSONObject object = new JSONObject();
+        object.put("id", getId());
+        object.put("asin", getAsin());
+        object.put("title", getTitle());
+        object.put("titlePc", getTitlePc());
+        object.put("titleMo", getTitleMo());
+        object.put("thisRank", getThisRank());
+        object.put("prevRank", getPrevRank());
+        object.put("nicoBook", getNicoBook());
+        object.put("todayPt", getTodayPt());
+        object.put("totalPt", getTotalPt());
+        object.put("guessPt", getGuessPt());
+        object.put("amazonLimit", isAmazonLimit());
+        object.put("discType", getDiscType().name());
+        object.put("updateType", getUpdateType().name());
+        object.put("releaseDate", getReleaseDate().toString());
+        object.put("createTime", toEpochMilli(getCreateTime()));
+        Optional.ofNullable(getUpdateTime()).ifPresent(updateTime -> {
+            object.put("updateTime", toEpochMilli(updateTime));
+        });
+        Optional.ofNullable(getModifyTime()).ifPresent(modifyTime -> {
+            object.put("modifyTime", toEpochMilli(modifyTime));
+        });
+        object.put("surplusDays", getSurplusDays());
+        return object;
+    }
+
     public JSONObject toJSON(Set<String> columns) {
         JSONObject object = new JSONObject();
         if (columns.contains("id"))
@@ -238,8 +286,12 @@ public class Disc extends BaseModel implements Comparable<Disc> {
             object.put("prevRank", getPrevRank());
         if (columns.contains("nicoBook"))
             object.put("nicoBook", getNicoBook());
+        if (columns.contains("todayPt"))
+            object.put("todayPt", getTodayPt());
         if (columns.contains("totalPt"))
             object.put("totalPt", getTotalPt());
+        if (columns.contains("guessPt"))
+            object.put("guessPt", getGuessPt());
         if (columns.contains("amazonLimit"))
             object.put("amazonLimit", isAmazonLimit());
         if (columns.contains("discType"))

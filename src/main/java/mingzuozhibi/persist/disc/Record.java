@@ -11,8 +11,10 @@ import java.time.LocalDate;
 public class Record extends BaseModel {
 
     private Disc disc;
-    private DateRank rank;
     private LocalDate date;
+    private DateRank rank;
+    private Integer todayPt;
+    private Integer totalPt;
 
     public Record() {
     }
@@ -32,6 +34,15 @@ public class Record extends BaseModel {
         this.disc = disc;
     }
 
+    @Column(nullable = false)
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
     @Embedded
     public DateRank getRank() {
         return rank;
@@ -41,13 +52,22 @@ public class Record extends BaseModel {
         this.rank = rank;
     }
 
-    @Column(nullable = false)
-    public LocalDate getDate() {
-        return date;
+    @Column
+    public Integer getTodayPt() {
+        return todayPt;
     }
 
-    public void setDate(LocalDate date) {
-        this.date = date;
+    public void setTodayPt(Integer todayPt) {
+        this.todayPt = todayPt;
+    }
+
+    @Column
+    public Integer getTotalPt() {
+        return totalPt;
+    }
+
+    public void setTotalPt(Integer totalPt) {
+        this.totalPt = totalPt;
     }
 
     private static Method[] rankSetters = new Method[24];
