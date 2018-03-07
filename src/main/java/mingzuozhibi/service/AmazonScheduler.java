@@ -70,7 +70,7 @@ public class AmazonScheduler {
                 service.createRankTask(disc.getAsin(), checkHotCB(updateCount, disc));
             });
         } else {
-            LOGGER.info("[未找到可以检测的Amazon(Hot)数据]]");
+            LOGGER.info("[结束检测Amazon(Hot)数据][未找到可以检测的Amazon(Hot)数据]]");
             amazonFetchStatus = waitingForUpdate;
         }
     }
@@ -128,14 +128,18 @@ public class AmazonScheduler {
     private void startFullUpdate() {
         LOGGER.info("[开始更新Amazon(ALL)数据]");
 
-        LocalDateTime startTime = getStartTime();
+        updateFullUpdateTime();
 
         LinkedHashSet<Disc> discs = new LinkedHashSet<>();
         LinkedHashMap<String, Integer> results = new LinkedHashMap<>();
 
+        Predicate<Disc> needUpdateDisc = disc -> {
+            return disc.getUpdateTime() == null || disc.getUpdateTime().isBefore(fullUpdateTime.get());
+        };
+
         dao.execute(session -> {
             findActiveSakura(session).forEach(sakura -> {
-                findAmazonDiscs(sakura).filter(needUpdate(startTime)).forEach(discs::add);
+                findAmazonDiscs(sakura).filter(needUpdateDisc).forEach(discs::add);
             });
         });
 
@@ -143,35 +147,24 @@ public class AmazonScheduler {
             AtomicInteger updateCount = new AtomicInteger(discs.size());
             LOGGER.info("[正在更新Amazon(ALL)数据][共{}个]", discs.size());
             discs.stream().sorted().forEach(disc -> {
-                service.createRankTask(disc.getAsin(), fullUpdateCB(startTime, discs, updateCount, results));
+                service.createRankTask(disc.getAsin(), fullUpdateCB(discs, results, updateCount));
             });
         } else {
-            LOGGER.info("[未找到可以更新的Amazon(ALL)数据]");
+            LOGGER.info("[结束更新Amazon(ALL)数据][未找到可以更新的Amazon(ALL)数据]");
             amazonFetchStatus = AmazonFetchStatus.waitingForUpdate;
         }
     }
 
-    private Predicate<Disc> needUpdate(LocalDateTime startTime) {
-        return disc -> {
-            LocalDateTime updateTime = disc.getUpdateTime();
-            return updateTime == null || updateTime.compareTo(startTime) < 0;
-        };
-    }
-
-    private LocalDateTime getStartTime() {
+    private void updateFullUpdateTime() {
         LocalDateTime nowTime = LocalDateTime.now().withNano(0);
-        if (fullUpdateTime.get() != null) {
-            LocalDateTime canFullUpdateTime = fullUpdateTime.get().plusMinutes(20);
-            if (nowTime.compareTo(canFullUpdateTime) < 0) {
-                LOGGER.info("[距离上次更新时间不超过20分钟，只进行部分更新]");
-                return fullUpdateTime.get();
-            }
+        if (fullUpdateTime.get() == null || nowTime.isAfter(fullUpdateTime.get().plusMinutes(20))) {
+            fullUpdateTime.set(nowTime);
+        } else {
+            LOGGER.info("[补充更新Amazon(ALL)数据][上次更新时间:{}]", fullUpdateTime.get());
         }
-        fullUpdateTime.set(nowTime);
-        return nowTime;
     }
 
-    private Consumer<AmazonTask> fullUpdateCB(LocalDateTime startTime, LinkedHashSet<Disc> discs, AtomicInteger updateCount, LinkedHashMap<String, Integer> results) {
+    private Consumer<AmazonTask> fullUpdateCB(Set<Disc> discs, Map<String, Integer> results, AtomicInteger updateCount) {
         return task -> {
             updateCount.decrementAndGet();
             getRank(task).ifPresent(rank -> {
@@ -183,12 +176,12 @@ public class AmazonScheduler {
                 LOGGER.debug("[正在更新Amazon(ALL)数据][还剩{}个]", updateCount.get());
             }
             if (updateCount.get() == 0) {
-                finishTheUpdate(discs, startTime, results);
+                finishTheUpdate(discs, results);
             }
         };
     }
 
-    private void finishTheUpdate(LinkedHashSet<Disc> discs, LocalDateTime startTime, LinkedHashMap<String, Integer> results) {
+    private void finishTheUpdate(Set<Disc> discs, Map<String, Integer> results) {
         LOGGER.info("[正在写入Amazon(ALL)数据]]");
         dao.execute(session -> {
             discs.forEach(disc -> {
@@ -197,16 +190,16 @@ public class AmazonScheduler {
                 disc.setPrevRank(disc.getThisRank());
                 if (rank != null) {
                     disc.setThisRank(rank);
-                    disc.setUpdateTime(startTime);
+                    disc.setUpdateTime(fullUpdateTime.get());
                 }
-                if (!disc.getThisRank().equals(disc.getPrevRank())) {
-                    disc.setModifyTime(startTime);
+                if (!Objects.equals(disc.getThisRank(), disc.getPrevRank())) {
+                    disc.setModifyTime(fullUpdateTime.get());
                 }
             });
             dao.findAll(Sakura.class).stream()
                     .filter(sakura -> sakura.getViewType() != SakuraList)
                     .forEach(sakura -> {
-                        sakura.setModifyTime(startTime);
+                        sakura.setModifyTime(fullUpdateTime.get());
                     });
         });
         LOGGER.info("[成功更新Amazon(ALL)数据]");
