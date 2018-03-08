@@ -91,10 +91,11 @@ public class DiscController extends BaseController {
                 .list();
 
         JSONObject result = disc.toJSON();
-        result.put("ranks", buildRanks(records));
+        JSONArray ranks = buildRanks(records);
         if (LOGGER.isDebugEnabled()) {
-            debugRequest("[获取碟片排名成功][碟片信息={}][排名数量={}]", result, records.size());
+            debugRequest("[获取碟片排名成功][碟片信息={}][排名数量={}]", result, ranks.length());
         }
+        result.put("ranks", ranks);
         return objectResult(result);
     }
 
