@@ -93,7 +93,6 @@ public class HourlyMission {
                     .add(Restrictions.eq("enabled", true))
                     .list();
 
-            LocalDate expiredDate = LocalDate.now().minusDays(7);
             Set<Disc> discs = new LinkedHashSet<>();
 
             sakuras.forEach(sakura -> {

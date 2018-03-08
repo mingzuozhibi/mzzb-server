@@ -97,7 +97,7 @@ public class SakuraSpeedSpider {
             if (disc.getUpdateType() == UpdateType.Both && !isTop100) {
                 disc.setUpdateType(UpdateType.Sakura);
             }
-            if (disc.getUpdateType() == UpdateType.Sakura || disc.getUpdateType() == UpdateType.Both) {
+            if (disc.getUpdateType() == UpdateType.Sakura) {
                 String[] sakuraRank = tr.child(0).text().split("/");
                 disc.setThisRank(parseInteger(sakuraRank[0]));
                 disc.setPrevRank(parseInteger(sakuraRank[1]));
