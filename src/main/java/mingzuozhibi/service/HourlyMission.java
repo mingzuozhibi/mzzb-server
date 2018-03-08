@@ -114,9 +114,9 @@ public class HourlyMission {
 
             discs.forEach(disc -> {
                 if (disc.getUpdateType() != UpdateType.Sakura) {
-                    computeAndUpdateAmazonPt(disc, getRecords(dao, disc));
+                    computeAndUpdateAmazonPt(disc, findActiveRecords(dao, disc));
                 } else {
-                    computeAndUpdateSakuraPt(disc, getRecords(dao, disc));
+                    computeAndUpdateSakuraPt(disc, findActiveRecords(dao, disc));
                 }
             });
         });

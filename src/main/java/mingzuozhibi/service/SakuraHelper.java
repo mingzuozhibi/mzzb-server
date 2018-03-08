@@ -6,12 +6,18 @@ import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.support.Dao;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.OptionalDouble;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 
 public abstract class SakuraHelper {
 
@@ -29,6 +35,59 @@ public abstract class SakuraHelper {
         return !isExpiredDisc(disc);
     }
 
+    @SuppressWarnings("unchecked")
+    public static List<Record> findLatestRank(Dao dao, Disc disc) {
+        return dao.create(Record.class)
+                .add(Restrictions.eq("disc", disc))
+                .add(Restrictions.lt("date", disc.getReleaseDate()))
+                .addOrder(Order.desc("date"))
+                .setMaxResults(2)
+                .list();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static List<Record> findActiveRecords(Dao dao, Disc disc) {
+        return dao.create(Record.class)
+                .add(Restrictions.eq("disc", disc))
+                .add(Restrictions.lt("date", disc.getReleaseDate()))
+                .addOrder(Order.asc("date"))
+                .list();
+    }
+
+    public static int updateRecords(Dao dao, Disc disc, String recordsText) {
+        String regex = "【(\\d{4})年 (\\d{2})月 (\\d{2})日 (\\d{2})時\\(.\\)】 ([*,\\d]{7})位";
+        Pattern pattern = Pattern.compile(regex);
+        String[] strings = recordsText.split("\n");
+        int matchLine = 0;
+        for (String string : strings) {
+            Matcher matcher = pattern.matcher(string);
+            if (matcher.find()) {
+                Integer rank = parseRank(matcher);
+                if (rank == null) {
+                    continue;
+                }
+                int year = Integer.parseInt(matcher.group(1));
+                int month = Integer.parseInt(matcher.group(2));
+                int date = Integer.parseInt(matcher.group(3));
+                int hour = Integer.parseInt(matcher.group(4));
+                LocalDate localDate = LocalDate.of(year, month, date);
+
+                Record record = getOrCreateRecord(dao, disc, localDate);
+                record.setRank(hour, rank);
+                matchLine++;
+            }
+        }
+        return matchLine;
+    }
+
+    private static Integer parseRank(Matcher matcher) {
+        String rankText = matcher.group(5).replaceAll("[*,]", "");
+        if (!rankText.isEmpty()) {
+            return new Integer(rankText);
+        }
+        return null;
+    }
+
     public static Record getOrCreateRecord(Dao dao, Disc disc, LocalDate date) {
         Record record = (Record) dao.create(Record.class)
                 .add(Restrictions.eq("disc", disc))
@@ -41,13 +100,33 @@ public abstract class SakuraHelper {
         return record;
     }
 
-    @SuppressWarnings("unchecked")
-    public static List<Record> getRecords(Dao dao, Disc disc) {
-        return dao.create(Record.class)
-                .add(Restrictions.eq("disc", disc))
-                .add(Restrictions.lt("date", disc.getReleaseDate()))
-                .addOrder(Order.asc("date"))
-                .list();
+    public static JSONArray buildRecords(List<Record> records) {
+        JSONArray array = new JSONArray();
+        records.stream().sorted((o1, o2) -> {
+            return o2.getDate().compareTo(o1.getDate());
+        }).forEach(record -> {
+            JSONObject object = new JSONObject();
+            object.put("id", record.getId());
+            object.put("date", record.getDate());
+            object.put("todayPt", record.getTodayPt());
+            object.put("totalPt", record.getTotalPt());
+            getAverRank(record).ifPresent(averRank -> {
+                object.put("averRank", (int) averRank);
+            });
+            array.put(object);
+        });
+        return array;
+    }
+
+    private static OptionalDouble getAverRank(Record record) {
+        IntStream.Builder builder = IntStream.builder();
+        for (int i = 0; i < 24; i++) {
+            Integer rank = record.getRank(i);
+            if (rank != null) {
+                builder.add(rank);
+            }
+        }
+        return builder.build().average();
     }
 
     public static void computeAndUpdateSakuraPt(Disc disc, List<Record> records) {
