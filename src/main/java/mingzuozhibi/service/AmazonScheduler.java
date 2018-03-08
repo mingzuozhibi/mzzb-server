@@ -134,7 +134,7 @@ public class AmazonScheduler {
         LinkedHashMap<String, Integer> results = new LinkedHashMap<>();
 
         Predicate<Disc> needUpdateDisc = disc -> {
-            return disc.getUpdateTime() == null || disc.getUpdateTime().isBefore(fullUpdateTime.get());
+            return disc.getModifyTime() == null || disc.getModifyTime().isBefore(fullUpdateTime.get());
         };
 
         dao.execute(session -> {
