@@ -84,8 +84,6 @@ public class SakuraSpeedSpider {
     }
 
     private void updateSakuraDiscs(Sakura sakura, Stream<Element> tableRows) {
-        LocalDate recordDate = sakura.getModifyTime().plusHours(1).toLocalDate();
-        int recordHour = sakura.getModifyTime().plusHours(1).getHour();
         Set<Disc> toAdd = new LinkedHashSet<>(sakura.getDiscs().size());
         boolean isTop100 = "9999-99".equals(sakura.getKey());
 
@@ -107,12 +105,6 @@ public class SakuraSpeedSpider {
                 disc.setUpdateTime(sakura.getModifyTime());
                 if (!Objects.equals(disc.getThisRank(), disc.getPrevRank())) {
                     disc.setModifyTime(sakura.getModifyTime());
-                }
-
-                if (!isTop100) {
-                    Record record = getOrCreateRecord(dao, disc, recordDate);
-                    record.setRank(recordHour, disc.getThisRank());
-                    record.setTotalPt(disc.getTotalPt());
                 }
             }
             toAdd.add(disc);
