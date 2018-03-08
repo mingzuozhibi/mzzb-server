@@ -171,9 +171,9 @@ public class AmazonScheduler {
                 results.put(task.getAsin(), rank);
             });
             if (updateCount.get() % 5 == 0 || updateCount.get() < 10) {
-                LOGGER.info("[正在更新Amazon(ALL)数据][还剩{}个]", updateCount.get());
+                LOGGER.info("[正在更新Amazon(ALL)数据][还剩{}个][asin={}]", updateCount.get(), task.getAsin());
             } else {
-                LOGGER.debug("[正在更新Amazon(ALL)数据][还剩{}个]", updateCount.get());
+                LOGGER.debug("[正在更新Amazon(ALL)数据][还剩{}个][asin={}]", updateCount.get(), task.getAsin());
             }
             if (updateCount.get() == 0) {
                 finishTheUpdate(discs, results);
