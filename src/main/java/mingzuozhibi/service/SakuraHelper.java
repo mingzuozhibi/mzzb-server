@@ -100,6 +100,28 @@ public abstract class SakuraHelper {
         return record;
     }
 
+    public static JSONArray buildRanks(Dao dao, Disc disc) {
+        JSONArray array = new JSONArray();
+        List<Record> latestRank = findLatestRank(dao, disc);
+        latestRank.forEach(record -> {
+            for (int i = 0; i < 24; i++) {
+                if (array.length() >= 5) {
+                    break;
+                }
+                int hour = 23 - i;
+                Integer rank = record.getRank(hour);
+                if (rank != null) {
+                    JSONObject object = new JSONObject();
+                    object.put("date", record.getDate());
+                    object.put("hour", String.format("%02d", hour));
+                    object.put("rank", rank);
+                    array.put(object);
+                }
+            }
+        });
+        return array;
+    }
+
     public static JSONArray buildRecords(List<Record> records) {
         JSONArray array = new JSONArray();
         records.stream().sorted((o1, o2) -> {
