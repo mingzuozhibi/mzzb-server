@@ -130,7 +130,7 @@ public abstract class SakuraHelper {
     }
 
     public static void computeAndUpdateSakuraPt(Disc disc, List<Record> records) {
-        AtomicReference<Integer> lastTotalPt = new AtomicReference<>();
+        AtomicReference<Integer> lastTotalPt = new AtomicReference<>(0);
 
         LocalDateTime japanTime = LocalDateTime.now().plusHours(1);
         LocalDate today = japanTime.toLocalDate();

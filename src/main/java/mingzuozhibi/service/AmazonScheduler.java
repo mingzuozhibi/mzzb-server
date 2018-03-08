@@ -58,11 +58,11 @@ public class AmazonScheduler {
         Set<Disc> discs = new LinkedHashSet<>();
         dao.execute(session -> {
             findActiveSakura(session).forEach(sakura -> {
-                findAmazonDiscs(sakura).sorted().limit(5).forEach(discs::add);
+                findAmazonDiscs(sakura).unordered().limit(5).forEach(discs::add);
             });
         });
 
-        Set<Disc> hotDiscs = discs.stream().sorted().limit(10).collect(Collectors.toSet());
+        Set<Disc> hotDiscs = discs.stream().unordered().limit(10).collect(Collectors.toSet());
         if (hotDiscs.size() > 0) {
             LOGGER.debug("[开始检测Amazon(Hot)数据][共{}个]", hotDiscs.size());
             AtomicInteger updateCount = new AtomicInteger(hotDiscs.size());

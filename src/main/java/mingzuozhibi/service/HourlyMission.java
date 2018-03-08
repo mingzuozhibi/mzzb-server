@@ -107,6 +107,9 @@ public class HourlyMission {
             discs.forEach(disc -> {
                 Record record = getOrCreateRecord(dao, disc, date);
                 record.setRank(hour, disc.getThisRank());
+                if (disc.getUpdateType() == UpdateType.Sakura) {
+                    record.setTotalPt(disc.getTotalPt());
+                }
             });
 
             LOGGER.info("[定时任务][计算碟片PT][碟片数量为:{}]", discs.size());
