@@ -3,6 +3,7 @@ package mingzuozhibi.service;
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.persist.disc.Disc.UpdateType;
+import mingzuozhibi.persist.disc.Record;
 import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.support.Dao;
 import org.jsoup.Jsoup;
@@ -19,9 +20,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static mingzuozhibi.persist.disc.Sakura.ViewType.SakuraList;
+import static mingzuozhibi.service.SakuraHelper.getOrCreateRecord;
+import static mingzuozhibi.service.SakuraHelper.isExpiredSakura;
 import static mingzuozhibi.service.SakuraSpeedSpider.Util.*;
 
 @Service
@@ -80,8 +84,11 @@ public class SakuraSpeedSpider {
     }
 
     private void updateSakuraDiscs(Sakura sakura, Stream<Element> tableRows) {
-        List<Disc> toAdd = new ArrayList<>(sakura.getDiscs().size());
+        LocalDate recordDate = sakura.getModifyTime().plusHours(1).toLocalDate();
+        int recordHour = sakura.getModifyTime().plusHours(1).getHour();
+        Set<Disc> toAdd = new LinkedHashSet<>(sakura.getDiscs().size());
         boolean isTop100 = "9999-99".equals(sakura.getKey());
+
         tableRows.forEach(tr -> {
             String href = tr.child(5).child(0).attr("href");
             String asin = href.substring(href.length() - 10);
@@ -101,17 +108,29 @@ public class SakuraSpeedSpider {
                 if (!Objects.equals(disc.getThisRank(), disc.getPrevRank())) {
                     disc.setModifyTime(sakura.getModifyTime());
                 }
+
+                if (!isTop100) {
+                    Record record = getOrCreateRecord(dao, disc, recordDate);
+                    record.setRank(recordHour, disc.getThisRank());
+                    record.setTotalPt(disc.getTotalPt());
+                }
             }
             toAdd.add(disc);
         });
         if (isTop100) {
-            sakura.setDiscs(toAdd);
+            sakura.setDiscs(new LinkedList<>(toAdd));
         } else {
+            boolean expiredSakura = isExpiredSakura(sakura);
             sakura.getDiscs().stream()
-                    .filter(disc -> disc.getUpdateType() != UpdateType.Sakura)
-                    .forEach(toAdd::add);
-            toAdd.sort(Comparator.naturalOrder());
-            sakura.setDiscs(toAdd);
+                    .filter(disc -> disc.getUpdateType() != UpdateType.Sakura || !expiredSakura)
+                    .filter(disc -> !toAdd.contains(disc))
+                    .forEach(disc -> {
+                        if (disc.getUpdateType() == UpdateType.Sakura) {
+                            disc.setUpdateType(UpdateType.Both);
+                        }
+                        toAdd.add(disc);
+                    });
+            sakura.setDiscs(toAdd.stream().sorted().collect(Collectors.toList()));
         }
         LOGGER.debug("成功更新[{}]列表", sakura.getTitle());
     }
