@@ -60,29 +60,11 @@ public class DiscController extends BaseController {
 
         JSONObject result = disc.toJSON();
 
-        JSONArray array = new JSONArray();
-        List<Record> latestRank = findLatestRank(dao, disc);
-        latestRank.forEach(record -> {
-            for (int i = 0; i < 24; i++) {
-                if (array.length() >= 5) {
-                    break;
-                }
-                int hour = 23 - i;
-                Integer rank = record.getRank(hour);
-                if (rank != null) {
-                    JSONObject object = new JSONObject();
-                    object.put("date", record.getDate());
-                    object.put("hour", String.format("%02d", hour));
-                    object.put("rank", rank);
-                    array.put(object);
-                }
-            }
-        });
-
         if (LOGGER.isDebugEnabled()) {
-            debugRequest("[获取碟片成功][碟片信息={}][排名数量={}]", result, array.length());
+            debugRequest("[获取碟片成功][碟片信息={}]", result);
         }
 
+        JSONArray array = buildRanks(dao, disc);
         result.put("ranks", array);
 
         return objectResult(result);
@@ -135,9 +117,14 @@ public class DiscController extends BaseController {
         disc.setReleaseDate(localDate);
 
         JSONObject result = disc.toJSON();
+
         if (LOGGER.isDebugEnabled()) {
             debugRequest("[编辑列表成功][修改后={}]", result);
         }
+
+        JSONArray array = buildRanks(dao, disc);
+        result.put("ranks", array);
+
         return objectResult(result);
     }
 
@@ -161,9 +148,11 @@ public class DiscController extends BaseController {
 
         JSONObject result = disc.toJSON();
         JSONArray array = buildRecords(records);
+
         if (LOGGER.isDebugEnabled()) {
             debugRequest("[获取碟片排名成功][碟片信息={}][排名数量={}]", result, array.length());
         }
+
         result.put("records", array);
         return objectResult(result);
     }
@@ -184,9 +173,14 @@ public class DiscController extends BaseController {
         computeAndUpdateAmazonPt(disc, findActiveRecords(dao, disc));
 
         JSONObject result = disc.toJSON();
+
         if (LOGGER.isDebugEnabled()) {
             debugRequest("[添加排名成功][共添加记录={}][碟片信息={}]", matchLine, result);
         }
+
+        JSONArray array = buildRanks(dao, disc);
+        result.put("ranks", array);
+
         return objectResult(result);
     }
 
