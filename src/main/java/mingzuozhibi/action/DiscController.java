@@ -37,8 +37,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static mingzuozhibi.persist.disc.Disc.UpdateType.Both;
-import static mingzuozhibi.service.RecordHelper.computeAndUpdateAmazonPt;
-import static mingzuozhibi.service.RecordHelper.getOrCreateRecord;
+import static mingzuozhibi.service.SakuraHelper.*;
 import static mingzuozhibi.service.amazon.DocumentReader.getNode;
 import static mingzuozhibi.service.amazon.DocumentReader.getText;
 
@@ -213,13 +212,7 @@ public class DiscController extends BaseController {
             }
         }
 
-        @SuppressWarnings("unchecked")
-        List<Record> records = dao.create(Record.class)
-                .add(Restrictions.eq("disc", disc))
-                .add(Restrictions.lt("date", disc.getReleaseDate()))
-                .addOrder(Order.asc("date"))
-                .list();
-        computeAndUpdateAmazonPt(disc, records);
+        computeAndUpdateAmazonPt(disc, getRecords(dao, disc));
 
         JSONObject result = disc.toJSON();
         if (LOGGER.isDebugEnabled()) {

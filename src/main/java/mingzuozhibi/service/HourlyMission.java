@@ -6,7 +6,6 @@ import mingzuozhibi.persist.disc.Disc.UpdateType;
 import mingzuozhibi.persist.disc.Record;
 import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.support.Dao;
-import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +20,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static mingzuozhibi.persist.disc.Sakura.ViewType.SakuraList;
-import static mingzuozhibi.service.RecordHelper.computeAndUpdateAmazonPt;
-import static mingzuozhibi.service.RecordHelper.computeAndUpdateSakuraPt;
+import static mingzuozhibi.service.SakuraHelper.*;
 
 @Service
 public class HourlyMission {
@@ -58,9 +56,11 @@ public class HourlyMission {
                     .list();
 
             sakuras.forEach(sakura -> {
+                boolean expiredSakura = isExpiredSakura(sakura);
                 List<Disc> toDelete = sakura.getDiscs().stream()
-                        .filter(this::notSakuraUpdateType)
-                        .filter(this::isReleasedSevenDays)
+                        .filter(disc -> disc.getUpdateType() != UpdateType.Sakura)
+                        .filter(disc -> disc.getUpdateType() == UpdateType.None || expiredSakura)
+                        .filter(SakuraHelper::isExpiredDisc)
                         .collect(Collectors.toList());
                 sakura.getDiscs().removeAll(toDelete);
 
@@ -81,7 +81,6 @@ public class HourlyMission {
         });
     }
 
-
     public void recordDiscsRankAndComputePt() {
         LocalDateTime japanTime = LocalDateTime.now().plusHours(1);
         LocalDate date = japanTime.toLocalDate();
@@ -94,55 +93,34 @@ public class HourlyMission {
                     .add(Restrictions.eq("enabled", true))
                     .list();
 
+            LocalDate expiredDate = LocalDate.now().minusDays(7);
             Set<Disc> discs = new LinkedHashSet<>();
 
             sakuras.forEach(sakura -> {
                 sakura.getDiscs().stream()
                         .filter(disc -> disc.getUpdateType() != UpdateType.None)
-                        .filter(disc -> !isReleasedSevenDays(disc))
+                        .filter(SakuraHelper::noExpiredDisc)
                         .forEach(discs::add);
             });
 
             LOGGER.info("[定时任务][记录碟片排名][碟片数量为:{}]", discs.size());
 
             discs.forEach(disc -> {
-                Record record = (Record) session.createCriteria(Record.class)
-                        .add(Restrictions.eq("disc", disc))
-                        .add(Restrictions.eq("date", date))
-                        .uniqueResult();
-                if (record == null) {
-                    record = new Record(disc, date);
-                    dao.save(record);
-                }
+                Record record = getOrCreateRecord(dao, disc, date);
                 record.setRank(hour, disc.getThisRank());
             });
 
             LOGGER.info("[定时任务][计算碟片PT][碟片数量为:{}]", discs.size());
 
             discs.forEach(disc -> {
-                @SuppressWarnings("unchecked")
-                List<Record> records = session.createCriteria(Record.class)
-                        .add(Restrictions.eq("disc", disc))
-                        .add(Restrictions.lt("date", disc.getReleaseDate()))
-                        .addOrder(Order.asc("date"))
-                        .list();
                 if (disc.getUpdateType() != UpdateType.Sakura) {
-                    computeAndUpdateAmazonPt(disc, records);
+                    computeAndUpdateAmazonPt(disc, getRecords(dao, disc));
                 } else {
-                    computeAndUpdateSakuraPt(disc, records);
+                    computeAndUpdateSakuraPt(disc, getRecords(dao, disc));
                 }
             });
         });
     }
 
-
-    private boolean isReleasedSevenDays(Disc disc) {
-        LocalDate releaseTenDays = disc.getReleaseDate().plusDays(7);
-        return LocalDate.now().isAfter(releaseTenDays);
-    }
-
-    private boolean notSakuraUpdateType(Disc disc) {
-        return disc.getUpdateType() != UpdateType.Sakura;
-    }
 
 }

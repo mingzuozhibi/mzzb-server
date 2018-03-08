@@ -2,30 +2,53 @@ package mingzuozhibi.service;
 
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Record;
+import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.support.Dao;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-public abstract class RecordHelper {
+public abstract class SakuraHelper {
 
-    public static Record getOrCreateRecord(Dao dao, Disc disc, LocalDate localDate) {
-        return dao.query(session -> {
-            Record record = (Record) session.createCriteria(Record.class)
-                    .add(Restrictions.eq("disc", disc))
-                    .add(Restrictions.eq("date", localDate))
-                    .uniqueResult();
-            if (record == null) {
-                record = new Record(disc, localDate);
-                dao.save(record);
-            }
-            return record;
-        });
+    public static boolean isExpiredSakura(Sakura sakura) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate sakuraDate = LocalDate.parse(sakura.getKey() + "-01", formatter);
+        return LocalDate.now().isAfter(sakuraDate.plusMonths(3));
     }
 
+    public static boolean isExpiredDisc(Disc disc) {
+        return disc.getReleaseDate().isBefore(LocalDate.now().minusDays(7));
+    }
+
+    public static boolean noExpiredDisc(Disc disc) {
+        return !isExpiredDisc(disc);
+    }
+
+    public static Record getOrCreateRecord(Dao dao, Disc disc, LocalDate date) {
+        Record record = (Record) dao.create(Record.class)
+                .add(Restrictions.eq("disc", disc))
+                .add(Restrictions.eq("date", date))
+                .uniqueResult();
+        if (record == null) {
+            record = new Record(disc, date);
+            dao.save(record);
+        }
+        return record;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static List<Record> getRecords(Dao dao, Disc disc) {
+        return dao.create(Record.class)
+                .add(Restrictions.eq("disc", disc))
+                .add(Restrictions.lt("date", disc.getReleaseDate()))
+                .addOrder(Order.asc("date"))
+                .list();
+    }
 
     public static void computeAndUpdateSakuraPt(Disc disc, List<Record> records) {
         AtomicReference<Integer> lastTotalPt = new AtomicReference<>();
