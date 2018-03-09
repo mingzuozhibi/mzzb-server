@@ -58,7 +58,7 @@ public class AmazonScheduler {
         Set<Disc> discs = new LinkedHashSet<>();
         dao.execute(session -> {
             findActiveSakura(session).forEach(sakura -> {
-                findAmazonDiscs(sakura).unordered().limit(5).forEach(discs::add);
+                findAmazonDiscs(sakura).filter(needUpdate()).forEach(discs::add);
             });
         });
 
@@ -133,13 +133,9 @@ public class AmazonScheduler {
         LinkedHashSet<Disc> discs = new LinkedHashSet<>();
         LinkedHashMap<String, Integer> results = new LinkedHashMap<>();
 
-        Predicate<Disc> needUpdateDisc = disc -> {
-            return disc.getModifyTime() == null || disc.getModifyTime().isBefore(fullUpdateTime.get());
-        };
-
         dao.execute(session -> {
             findActiveSakura(session).forEach(sakura -> {
-                findAmazonDiscs(sakura).filter(needUpdateDisc).forEach(discs::add);
+                findAmazonDiscs(sakura).filter(needUpdate()).forEach(discs::add);
             });
         });
 
@@ -153,6 +149,12 @@ public class AmazonScheduler {
             LOGGER.info("[结束更新Amazon(ALL)数据][未找到可以更新的Amazon(ALL)数据]");
             amazonFetchStatus = AmazonFetchStatus.waitingForUpdate;
         }
+    }
+
+    private Predicate<Disc> needUpdate() {
+        return disc -> {
+            return disc.getModifyTime() == null || disc.getModifyTime().isBefore(fullUpdateTime.get());
+        };
     }
 
     private void updateFullUpdateTime() {
