@@ -73,11 +73,29 @@ public class BaseController {
     }
 
     private String getCommon() {
-        HttpServletRequest request = getAttributes().getRequest();
-        String common = String.format("[%s][%s][%s][%s][%s]",
-                getRemoteAddr(), getUserName(), request.getMethod(),
-                request.getRequestURI(), paramString(request));
-        return common.replace("{}", "\\{}");
+        try {
+            HttpServletRequest request = getAttributes().getRequest();
+            String common = String.format("[%s][%s][%s][%s][%s][%s]",
+                    getRemoteAddr(), getUserName(), request.getMethod(),
+                    request.getRequestURI(), bodyString(request), paramString(request));
+            return common.replace("{}", "{empty}");
+        } catch (Exception e) {
+            return String.format("[获取请求数据失败][error=%s]", e.getMessage())
+                    .replace("{}", "{empty}");
+        }
+    }
+
+    private Object bodyString(HttpServletRequest request) {
+        Object jsonRequestBody = request.getAttribute("JSON_REQUEST_BODY");
+        if (jsonRequestBody instanceof String) {
+            String body = (String) jsonRequestBody;
+            if (body.length() > 200) {
+                return body.substring(0, 200) + "...";
+            } else {
+                return body;
+            }
+        }
+        return "NoBody";
     }
 
     private String paramString(HttpServletRequest request) {
