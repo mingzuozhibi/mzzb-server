@@ -100,7 +100,7 @@ public class DiscController extends BaseController {
         Disc disc = dao.get(Disc.class, id);
         if (disc == null) {
             if (LOGGER.isWarnEnabled()) {
-                warnRequest("[编辑列表失败][指定的碟片Id不存在][Id={}]", id);
+                warnRequest("[编辑碟片失败][指定的碟片Id不存在][Id={}]", id);
             }
             return errorMessage("指定的碟片Id不存在");
         }
@@ -119,7 +119,7 @@ public class DiscController extends BaseController {
         JSONObject result = disc.toJSON();
 
         if (LOGGER.isDebugEnabled()) {
-            debugRequest("[编辑列表成功][修改后={}]", result);
+            debugRequest("[编辑碟片成功][修改后={}]", result);
         }
 
         JSONArray array = buildRanks(dao, disc);
