@@ -153,7 +153,9 @@ public class AmazonScheduler {
 
     private Predicate<Disc> needUpdate() {
         return disc -> {
-            return disc.getModifyTime() == null || disc.getModifyTime().isBefore(fullUpdateTime.get());
+            if (fullUpdateTime == null) return true;
+            if (disc.getModifyTime() == null) return true;
+            return disc.getModifyTime().isBefore(fullUpdateTime.get());
         };
     }
 
