@@ -3,7 +3,6 @@ package mingzuozhibi.service;
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.persist.disc.Disc.UpdateType;
-import mingzuozhibi.persist.disc.Record;
 import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.support.Dao;
 import org.jsoup.Jsoup;
@@ -24,9 +23,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static mingzuozhibi.persist.disc.Sakura.ViewType.SakuraList;
-import static mingzuozhibi.service.SakuraHelper.getOrCreateRecord;
-import static mingzuozhibi.service.SakuraHelper.isExpiredSakura;
 import static mingzuozhibi.service.SakuraSpeedSpider.Util.*;
+import static mingzuozhibi.support.SakuraHelper.noExpiredSakura;
 
 @Service
 public class SakuraSpeedSpider {
@@ -112,9 +110,11 @@ public class SakuraSpeedSpider {
         if (isTop100) {
             sakura.setDiscs(new LinkedList<>(toAdd));
         } else {
-            boolean expiredSakura = isExpiredSakura(sakura);
+            boolean noExpiredSakura = noExpiredSakura(sakura);
             sakura.getDiscs().stream()
-                    .filter(disc -> disc.getUpdateType() != UpdateType.Sakura || !expiredSakura)
+                    .filter(disc -> {
+                        return disc.getUpdateType() != UpdateType.Sakura || noExpiredSakura;
+                    })
                     .filter(disc -> !toAdd.contains(disc))
                     .forEach(disc -> {
                         if (disc.getUpdateType() == UpdateType.Sakura) {

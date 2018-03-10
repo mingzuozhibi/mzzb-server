@@ -6,6 +6,7 @@ import mingzuozhibi.persist.disc.Disc.UpdateType;
 import mingzuozhibi.persist.disc.Record;
 import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.support.Dao;
+import mingzuozhibi.support.SakuraHelper;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +21,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static mingzuozhibi.persist.disc.Sakura.ViewType.SakuraList;
-import static mingzuozhibi.service.SakuraHelper.*;
+import static mingzuozhibi.support.SakuraHelper.*;
 
 @Service
 public class HourlyMission {
@@ -116,9 +117,9 @@ public class HourlyMission {
 
             discs.forEach(disc -> {
                 if (disc.getUpdateType() != UpdateType.Sakura) {
-                    computeAndUpdateAmazonPt(disc, findActiveRecords(dao, disc));
+                    computeAndUpdateAmazonPt(dao, disc);
                 } else {
-                    computeAndUpdateSakuraPt(disc, findActiveRecords(dao, disc));
+                    computeAndUpdateSakuraPt(dao, disc);
                 }
             });
         });
