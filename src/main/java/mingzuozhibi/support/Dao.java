@@ -2,6 +2,7 @@ package mingzuozhibi.support;
 
 import org.hibernate.Criteria;
 import org.hibernate.Session;
+import org.hibernate.jdbc.ReturningWork;
 import org.springframework.orm.hibernate5.HibernateCallback;
 
 import java.util.List;
@@ -10,8 +11,6 @@ import java.util.function.Consumer;
 public interface Dao {
 
     Long save(Object object);
-
-    void saveOrUpdate(Object object);
 
     <T> T get(Class<T> klass, Long id);
 
@@ -26,6 +25,8 @@ public interface Dao {
     <T> List<T> findBy(Class<T> klass, String name, Object value);
 
     <T> T lookup(Class<T> klass, String name, Object value);
+
+    <T> T jdbc(ReturningWork<T> work);
 
     <T> T query(HibernateCallback<T> action);
 

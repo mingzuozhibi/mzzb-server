@@ -3,6 +3,7 @@ package mingzuozhibi.support;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.jdbc.ReturningWork;
 import org.springframework.orm.hibernate5.HibernateCallback;
 import org.springframework.stereotype.Repository;
 
@@ -26,11 +27,6 @@ public class DaoImpl implements Dao {
     @Transactional
     public Long save(Object object) {
         return (Long) session().save(object);
-    }
-
-    @Transactional
-    public void saveOrUpdate(Object object) {
-        session().saveOrUpdate(object);
     }
 
     @Transactional
@@ -69,6 +65,11 @@ public class DaoImpl implements Dao {
     @SuppressWarnings("unchecked")
     public <T> T lookup(Class<T> klass, String name, Object value) {
         return (T) create(klass).add(eq(name, value)).uniqueResult();
+    }
+
+    @Transactional
+    public <T> T jdbc(ReturningWork<T> work) {
+        return session().doReturningWork(work);
     }
 
     @Transactional

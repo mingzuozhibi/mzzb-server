@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
@@ -131,7 +133,7 @@ public class SessionController extends BaseController {
         });
     }
 
-    public static JSONObject buildSession() {
+    public JSONObject buildSession() {
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication authentication = context.getAuthentication();
 
@@ -140,8 +142,27 @@ public class SessionController extends BaseController {
         object.put("userName", authentication.getName());
         object.put("isLogged", isLogged(authentication));
         object.put("userRoles", getUserRoles(authentication));
+        object.put("onlineUserCount", getJdbcSessionCount());
 
         return object;
+    }
+
+    private Integer getJdbcSessionCount() {
+        try {
+            return dao.jdbc(connection -> {
+                String sql = "SELECT COUNT(*) FROM SPRING_SESSION";
+                PreparedStatement stmt = connection.prepareStatement(sql);
+                ResultSet resultSet = stmt.executeQuery();
+                if (resultSet.next()) {
+                    return resultSet.getInt(1);
+                } else {
+                    return 0;
+                }
+            });
+        } catch (Exception e) {
+            LOGGER.warn("获取JdbcSessionCount失败", e.getMessage());
+            return 0;
+        }
     }
 
     private static boolean isLogged(Authentication authentication) {
