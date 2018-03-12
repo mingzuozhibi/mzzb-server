@@ -21,11 +21,9 @@ import static mingzuozhibi.persist.disc.Sakura.ViewType.PrivateList;
 @RestController
 public class SakuraController extends BaseController {
 
-    public final static String DISC_COLUMNS = "id,thisRank,prevRank,todayPt,totalPt,guessPt,title,titlePc,titleMo,surplusDays";
-    public final static String DISC_COLUMNS_ADMIN = "id,asin,thisRank,totalPt,title,titlePc,titleMo,surplusDays";
+    public final static String DISC_COLUMNS = "id,asin,thisRank,totalPt,title,titlePc,titleMo,surplusDays";
 
     public static Set<String> DISC_COLUMNS_SET = buildSet(DISC_COLUMNS);
-    public static Set<String> DISC_COLUMNS_ADMIN_SET = buildSet(DISC_COLUMNS_ADMIN);
 
     @Transactional
     @GetMapping(value = "/api/sakuras", produces = MEDIA_TYPE)
@@ -224,8 +222,6 @@ public class SakuraController extends BaseController {
         switch (discColumns) {
             case DISC_COLUMNS:
                 return DISC_COLUMNS_SET;
-            case DISC_COLUMNS_ADMIN:
-                return DISC_COLUMNS_ADMIN_SET;
             default:
                 return buildSet(discColumns);
         }
@@ -237,7 +233,7 @@ public class SakuraController extends BaseController {
     public String pushDiscs(
             @PathVariable("id") Long id,
             @PathVariable("discId") Long discId,
-            @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS_ADMIN) String discColumns) {
+            @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS) String discColumns) {
 
         Sakura sakura = dao.get(Sakura.class, id);
 
@@ -279,7 +275,7 @@ public class SakuraController extends BaseController {
     public String dropDiscs(
             @PathVariable("id") Long id,
             @PathVariable("discId") Long discId,
-            @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS_ADMIN) String discColumns) {
+            @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS) String discColumns) {
 
         Sakura sakura = dao.get(Sakura.class, id);
 
