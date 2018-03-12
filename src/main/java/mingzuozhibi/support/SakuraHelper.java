@@ -177,6 +177,8 @@ public abstract class SakuraHelper {
             }
         });
 
+        disc.setTotalPt(lastTotalPt.get());
+
         updateGuessPt(disc, today, lastTotalPt.get(), sevenPt.get());
     }
 
@@ -218,7 +220,7 @@ public abstract class SakuraHelper {
     }
 
     private static void updateGuessPt(Disc disc, LocalDate today, Integer totalPt, Integer sevenPt) {
-        long days = disc.getReleaseDate().toEpochDay() - today.toEpochDay();
+        long days = disc.getReleaseDate().toEpochDay() - today.toEpochDay() - 1;
         if (days <= 0) {
             disc.setGuessPt(totalPt);
         } else if (sevenPt != null) {
