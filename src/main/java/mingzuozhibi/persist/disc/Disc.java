@@ -269,49 +269,12 @@ public class Disc extends BaseModel implements Comparable<Disc> {
     }
 
     public JSONObject toJSON(Set<String> columns) {
-        JSONObject object = new JSONObject();
-        if (columns.contains("id"))
-            object.put("id", getId());
-        if (columns.contains("asin"))
-            object.put("asin", getAsin());
-        if (columns.contains("title"))
-            object.put("title", getTitle());
-        if (columns.contains("titlePc"))
-            object.put("titlePc", getTitlePc());
-        if (columns.contains("titleMo"))
-            object.put("titleMo", getTitleMo());
-        if (columns.contains("thisRank"))
-            object.put("thisRank", getThisRank());
-        if (columns.contains("prevRank"))
-            object.put("prevRank", getPrevRank());
-        if (columns.contains("nicoBook"))
-            object.put("nicoBook", getNicoBook());
-        if (columns.contains("todayPt"))
-            object.put("todayPt", getTodayPt());
-        if (columns.contains("totalPt"))
-            object.put("totalPt", getTotalPt());
-        if (columns.contains("guessPt"))
-            object.put("guessPt", getGuessPt());
-        if (columns.contains("amazonLimit"))
-            object.put("amazonLimit", isAmazonLimit());
-        if (columns.contains("discType"))
-            object.put("discType", getDiscType().name());
-        if (columns.contains("updateType"))
-            object.put("updateType", getUpdateType().name());
-        if (columns.contains("releaseDate"))
-            object.put("releaseDate", getReleaseDate().toString());
-        if (columns.contains("createTime"))
-            object.put("createTime", toEpochMilli(getCreateTime()));
-        if (columns.contains("updateTime"))
-            Optional.ofNullable(getUpdateTime()).ifPresent(updateTime -> {
-                object.put("updateTime", toEpochMilli(updateTime));
-            });
-        if (columns.contains("mofidyTime"))
-            Optional.ofNullable(getModifyTime()).ifPresent(modifyTime -> {
-                object.put("modifyTime", toEpochMilli(modifyTime));
-            });
-        if (columns.contains("surplusDays"))
-            object.put("surplusDays", getSurplusDays());
+        JSONObject object = toJSON();
+        object.keys().forEachRemaining(key -> {
+            if (!columns.contains(key)) {
+                object.remove(key);
+            }
+        });
         return object;
     }
 
