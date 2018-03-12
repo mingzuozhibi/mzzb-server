@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.Transient;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -270,11 +271,9 @@ public class Disc extends BaseModel implements Comparable<Disc> {
 
     public JSONObject toJSON(Set<String> columns) {
         JSONObject object = toJSON();
-        object.keys().forEachRemaining(key -> {
-            if (!columns.contains(key)) {
-                object.remove(key);
-            }
-        });
+        new HashSet<>(object.keySet()).stream()
+                .filter(key -> !columns.contains(key))
+                .forEach(object::remove);
         return object;
     }
 
