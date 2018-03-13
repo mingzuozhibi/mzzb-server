@@ -1,6 +1,7 @@
 package mingzuozhibi.action;
 
 import mingzuozhibi.persist.disc.Disc;
+import mingzuozhibi.persist.disc.Disc.UpdateType;
 import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.persist.disc.Sakura.ViewType;
 import mingzuozhibi.support.JsonArg;
@@ -16,7 +17,6 @@ import java.util.List;
 import java.util.Set;
 
 import static mingzuozhibi.action.DiscController.buildSet;
-import static mingzuozhibi.persist.disc.Sakura.ViewType.PrivateList;
 
 @RestController
 public class SakuraController extends BaseController {
@@ -32,7 +32,7 @@ public class SakuraController extends BaseController {
         List<Sakura> sakuras = dao.query(session -> {
             Criteria criteria = session.createCriteria(Sakura.class);
             if (isPublic) {
-                criteria.add(Restrictions.ne("viewType", PrivateList));
+                criteria.add(Restrictions.ne("viewType", ViewType.PrivateList));
                 criteria.add(Restrictions.eq("enabled", true));
             }
             return criteria.list();
@@ -208,7 +208,7 @@ public class SakuraController extends BaseController {
 
         JSONArray discs = new JSONArray();
         sakura.getDiscs().stream()
-                .filter(disc -> !isPublic || disc.getUpdateType() != Disc.UpdateType.None)
+                .filter(disc -> !isPublic || disc.getUpdateType() != UpdateType.None)
                 .forEach(disc -> discs.put(disc.toJSON(getColumns(discColumns))));
         result.put("discs", discs);
 

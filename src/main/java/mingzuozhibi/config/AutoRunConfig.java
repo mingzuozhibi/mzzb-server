@@ -1,8 +1,8 @@
 package mingzuozhibi.config;
 
+import mingzuozhibi.service.AmazonScheduler;
 import mingzuozhibi.service.HourlyMission;
 import mingzuozhibi.service.SakuraSpeedSpider;
-import mingzuozhibi.service.AmazonScheduler;
 import mingzuozhibi.support.Dao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

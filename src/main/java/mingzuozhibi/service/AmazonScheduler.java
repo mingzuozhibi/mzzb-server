@@ -3,6 +3,7 @@ package mingzuozhibi.service;
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.UpdateType;
 import mingzuozhibi.persist.disc.Sakura;
+import mingzuozhibi.persist.disc.Sakura.ViewType;
 import mingzuozhibi.service.amazon.AmazonTask;
 import mingzuozhibi.service.amazon.AmazonTaskService;
 import mingzuozhibi.service.amazon.DocumentReader;
@@ -22,9 +23,6 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static mingzuozhibi.persist.disc.Sakura.ViewType.SakuraList;
-import static mingzuozhibi.service.AmazonScheduler.AmazonFetchStatus.*;
 
 @Component
 public class AmazonScheduler {
@@ -48,7 +46,7 @@ public class AmazonScheduler {
         service.debugStatus();
         LOGGER.info("[Amazon调度器状态={}]", amazonFetchStatus);
         if (amazonFetchStatus == AmazonFetchStatus.waitingForUpdate) {
-            amazonFetchStatus = startHotUpdate;
+            amazonFetchStatus = AmazonFetchStatus.startHotUpdate;
             checkAmazonHotData();
         }
     }
@@ -71,7 +69,7 @@ public class AmazonScheduler {
             });
         } else {
             LOGGER.info("[结束检测Amazon(Hot)数据][未找到可以检测的Amazon(Hot)数据]]");
-            amazonFetchStatus = waitingForUpdate;
+            amazonFetchStatus = AmazonFetchStatus.waitingForUpdate;
         }
     }
 
@@ -82,20 +80,20 @@ public class AmazonScheduler {
             getRank(task).ifPresent(rank -> {
                 newRank.set(rank);
                 if (!rank.equals(disc.getThisRank())) {
-                    amazonFetchStatus = startFullUpdate;
+                    amazonFetchStatus = AmazonFetchStatus.startFullUpdate;
                 }
             });
             LOGGER.debug("[正在检测Amazon(Hot)数据][{}][{}->{}][还剩{}个][asin={}]",
                     Objects.equals(disc.getThisRank(), newRank.get()) ? "无变化" : "有变化",
                     disc.getThisRank(), newRank.get(), updateCount.get(), disc.getAsin());
             if (updateCount.get() == 0) {
-                if (amazonFetchStatus == startFullUpdate) {
+                if (amazonFetchStatus == AmazonFetchStatus.startFullUpdate) {
                     LOGGER.info("[成功检测Amazon(Hot)数据，数据有变化]");
                     startFullUpdate();
                 } else {
                     LOGGER.info("[成功检测Amazon(Hot)数据，数据无变化]");
                     service.debugStatus();
-                    amazonFetchStatus = waitingForUpdate;
+                    amazonFetchStatus = AmazonFetchStatus.waitingForUpdate;
                 }
             }
         };
@@ -201,7 +199,7 @@ public class AmazonScheduler {
                 }
             });
             dao.findAll(Sakura.class).stream()
-                    .filter(sakura -> sakura.getViewType() != SakuraList)
+                    .filter(sakura -> sakura.getViewType() != ViewType.SakuraList)
                     .forEach(sakura -> {
                         sakura.setModifyTime(fullUpdateTime.get());
                     });
