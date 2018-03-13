@@ -193,7 +193,8 @@ public class SakuraController extends BaseController {
     @GetMapping(value = "/api/sakuras/key/{key}/discs", produces = MEDIA_TYPE)
     public String findDiscs(
             @PathVariable String key,
-            @RequestParam(defaultValue = DISC_COLUMNS) String discColumns) {
+            @RequestParam(defaultValue = DISC_COLUMNS) String discColumns,
+            @RequestParam(name = "public", defaultValue = "true") boolean isPublic) {
         Sakura sakura = dao.lookup(Sakura.class, "key", key);
 
         if (sakura == null) {
@@ -207,7 +208,7 @@ public class SakuraController extends BaseController {
 
         JSONArray discs = new JSONArray();
         sakura.getDiscs().stream()
-                .filter(disc -> disc.getUpdateType() != Disc.UpdateType.None)
+                .filter(disc -> !isPublic || disc.getUpdateType() != Disc.UpdateType.None)
                 .forEach(disc -> discs.put(disc.toJSON(getColumns(discColumns))));
         result.put("discs", discs);
 
