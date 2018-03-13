@@ -5,6 +5,7 @@ import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.UpdateType;
 import mingzuozhibi.persist.disc.Record;
 import mingzuozhibi.persist.disc.Sakura;
+import mingzuozhibi.persist.disc.Sakura.ViewType;
 import mingzuozhibi.support.Dao;
 import mingzuozhibi.support.SakuraHelper;
 import org.hibernate.criterion.Restrictions;
@@ -20,7 +21,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static mingzuozhibi.persist.disc.Sakura.ViewType.SakuraList;
 import static mingzuozhibi.support.SakuraHelper.*;
 
 @Service
@@ -53,7 +53,7 @@ public class HourlyMission {
             List<Sakura> sakuras = session.createCriteria(Sakura.class)
                     .add(Restrictions.ne("key", "9999-99"))
                     .add(Restrictions.eq("enabled", true))
-                    .add(Restrictions.eq("viewType", SakuraList))
+                    .add(Restrictions.eq("viewType", ViewType.SakuraList))
                     .list();
 
             sakuras.forEach(sakura -> {

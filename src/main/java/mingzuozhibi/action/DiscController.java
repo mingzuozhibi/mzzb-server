@@ -5,7 +5,6 @@ import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.persist.disc.Disc.UpdateType;
 import mingzuozhibi.service.amazon.AmazonTaskService;
 import mingzuozhibi.support.JsonArg;
-import org.hibernate.criterion.Order;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +28,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static mingzuozhibi.persist.disc.Disc.UpdateType.Both;
 import static mingzuozhibi.service.amazon.DocumentReader.getNode;
 import static mingzuozhibi.service.amazon.DocumentReader.getText;
 import static mingzuozhibi.support.SakuraHelper.*;
@@ -265,7 +263,7 @@ public class DiscController extends BaseController {
                     } else {
                         releaseDate = LocalDate.now();
                     }
-                    Disc newDisc = new Disc(asin, title, type, Both, amazon, releaseDate);
+                    Disc newDisc = new Disc(asin, title, type, UpdateType.Both, amazon, releaseDate);
                     if (rankText != null) {
                         newDisc.setThisRank(new Integer(rankText));
                     }

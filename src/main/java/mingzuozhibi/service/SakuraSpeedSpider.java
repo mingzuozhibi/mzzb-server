@@ -4,6 +4,7 @@ import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.persist.disc.Disc.UpdateType;
 import mingzuozhibi.persist.disc.Sakura;
+import mingzuozhibi.persist.disc.Sakura.ViewType;
 import mingzuozhibi.support.Dao;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -22,7 +23,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static mingzuozhibi.persist.disc.Sakura.ViewType.SakuraList;
 import static mingzuozhibi.service.SakuraSpeedSpider.Util.*;
 import static mingzuozhibi.support.SakuraHelper.noExpiredSakura;
 
@@ -59,7 +59,7 @@ public class SakuraSpeedSpider {
                 return;
             }
             sakura.setEnabled(true);
-            sakura.setViewType(SakuraList);
+            sakura.setViewType(ViewType.SakuraList);
             sakura.setModifyTime(time);
             updateSakuraDiscs(sakura, table.select("tr").stream().skip(1));
         });
@@ -74,7 +74,7 @@ public class SakuraSpeedSpider {
     private Sakura getOrCreateSakura(String key) {
         Sakura sakura = dao.lookup(Sakura.class, "key", key);
         if (sakura == null) {
-            sakura = new Sakura(key, null, true, SakuraList);
+            sakura = new Sakura(key, null, true, ViewType.SakuraList);
             dao.save(sakura);
             LOGGER.info("发现新的Sakura列表, title={}", sakura.getTitle());
         }
