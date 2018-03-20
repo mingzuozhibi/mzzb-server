@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
+echo 'Try Stop Mzzb Server'
 sh ./stop-server.sh
 
-mvn clean package
-nohup java -jar target/*.jar --target.name=mzzb-server --spring.profiles.active=pro > /dev/null 2>&1 &
+cd $(cd `dirname $0`; pwd)
+
+echo 'Build Mzzb Server'
+mvn clean package > /dev/null
+
 echo 'Start Mzzb Server'
+nohup java -jar target/*.jar --target.name=mzzb-server --spring.profiles.active=pro > /dev/null 2>&1 &
