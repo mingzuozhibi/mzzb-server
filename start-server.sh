@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
+cd $(cd `dirname $0`; pwd)
+
 echo 'Try Stop Mzzb Server'
 sh ./stop-server.sh
-
-cd $(cd `dirname $0`; pwd)
 
 echo 'Build Mzzb Server'
 mvn clean package > /dev/null
