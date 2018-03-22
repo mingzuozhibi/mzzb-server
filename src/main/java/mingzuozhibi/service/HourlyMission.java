@@ -83,9 +83,10 @@ public class HourlyMission {
     }
 
     public void recordDiscsRankAndComputePt() {
-        LocalDateTime japanTime = LocalDateTime.now().plusHours(1);
-        LocalDate date = japanTime.toLocalDate();
-        int hour = japanTime.getHour();
+        // +9 timezone and prev hour, so +1h -1h = +0h
+        LocalDateTime recordTime = LocalDateTime.now();
+        LocalDate date = recordTime.toLocalDate();
+        int hour = recordTime.getHour();
 
         dao.execute(session -> {
             @SuppressWarnings("unchecked")
@@ -99,7 +100,7 @@ public class HourlyMission {
             sakuras.forEach(sakura -> {
                 sakura.getDiscs().stream()
                         .filter(disc -> disc.getUpdateType() != UpdateType.None)
-                        .filter(SakuraHelper::noExpiredDisc)
+                        .filter(disc -> disc.getReleaseDate().isAfter(date))
                         .forEach(discs::add);
             });
 
