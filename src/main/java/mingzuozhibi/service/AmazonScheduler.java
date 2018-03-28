@@ -77,13 +77,14 @@ public class AmazonScheduler {
         return task -> {
             updateCount.decrementAndGet();
             AtomicReference<Integer> newRank = new AtomicReference<>();
-            getRank(task).ifPresent(rank -> {
+            if (task.isDone()) {
+                Integer rank = getRank(task);
                 newRank.set(rank);
-                if (!rank.equals(disc.getThisRank())) {
+                if (!Objects.equals(rank, disc.getThisRank())) {
                     amazonFetchStatus = AmazonFetchStatus.startFullUpdate;
                 }
-            });
-            LOGGER.debug("[正在检测Amazon(Hot)数据][{}][{}->{}][还剩{}个][asin={}]",
+            }
+            LOGGER.info("[正在检测Amazon(Hot)数据][{}][{}->{}][还剩{}个][asin={}]",
                     Objects.equals(disc.getThisRank(), newRank.get()) ? "无变化" : "有变化",
                     disc.getThisRank(), newRank.get(), updateCount.get(), disc.getAsin());
             if (updateCount.get() == 0) {
@@ -99,13 +100,9 @@ public class AmazonScheduler {
         };
     }
 
-    private Optional<Integer> getRank(AmazonTask task) {
-        if (task.isDone()) {
-            String rankText = DocumentReader.getText(task.getDocument(), "Items", "Item", "SalesRank");
-            return Optional.ofNullable(rankText).map(Integer::parseInt);
-        } else {
-            return Optional.empty();
-        }
+    private Integer getRank(AmazonTask task) {
+        String rankText = DocumentReader.getText(task.getDocument(), "Items", "Item", "SalesRank");
+        return rankText == null ? Integer.valueOf(0) : Integer.valueOf(rankText);
     }
 
     @SuppressWarnings("unchecked")
@@ -169,9 +166,9 @@ public class AmazonScheduler {
     private Consumer<AmazonTask> fullUpdateCB(Set<Disc> discs, Map<String, Integer> results, AtomicInteger updateCount) {
         return task -> {
             updateCount.decrementAndGet();
-            getRank(task).ifPresent(rank -> {
-                results.put(task.getAsin(), rank);
-            });
+            if (task.isDone()) {
+                results.put(task.getAsin(), getRank(task));
+            }
             if (updateCount.get() % 5 == 0 || updateCount.get() < 10) {
                 LOGGER.info("[正在更新Amazon(ALL)数据][还剩{}个][asin={}]", updateCount.get(), task.getAsin());
             } else {
