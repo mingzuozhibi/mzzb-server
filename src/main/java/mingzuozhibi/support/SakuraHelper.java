@@ -120,7 +120,7 @@ public abstract class SakuraHelper {
         IntStream.Builder builder = IntStream.builder();
         for (int i = 0; i < 24; i++) {
             Integer rank = record.getRank(i);
-            if (rank != null) {
+            if (rank != null && rank != 0) {
                 builder.add(rank);
             }
         }
@@ -136,7 +136,7 @@ public abstract class SakuraHelper {
                 }
                 int hour = 23 - i;
                 Integer rank = record.getRank(hour);
-                if (rank != null) {
+                if (rank != null && rank != 0) {
                     JSONObject object = new JSONObject();
                     object.put("date", record.getDate());
                     object.put("hour", String.format("%02d", hour));
@@ -237,7 +237,7 @@ public abstract class SakuraHelper {
             } else {
                 lastRank.set(rank);
             }
-            if (rank != null) {
+            if (rank != null && rank != 0) {
                 recordPt += computeHourPt(disc, rank);
             }
         }
