@@ -9,7 +9,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.OptionalDouble;
@@ -93,7 +92,12 @@ public abstract class SakuraHelper {
 
     public static JSONArray buildRecords(Dao dao, Disc disc) {
         JSONArray array = new JSONArray();
-        findRecords(dao, disc, Order.desc("date")).forEach(record -> {
+        @SuppressWarnings("unchecked")
+        List<Record> records = dao.create(Record.class)
+                .add(Restrictions.eq("disc", disc))
+                .addOrder(Order.desc("date"))
+                .list();
+        records.forEach(record -> {
             JSONObject object = new JSONObject();
             object.put("id", record.getId());
             object.put("date", record.getDate());
@@ -105,15 +109,6 @@ public abstract class SakuraHelper {
             array.put(object);
         });
         return array;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static List<Record> findRecords(Dao dao, Disc disc, Order order) {
-        return dao.create(Record.class)
-                .add(Restrictions.eq("disc", disc))
-                .add(Restrictions.lt("date", disc.getReleaseDate()))
-                .addOrder(order)
-                .list();
     }
 
     private static OptionalDouble getAverRank(Record record) {
@@ -161,11 +156,13 @@ public abstract class SakuraHelper {
     public static void computeAndUpdateSakuraPt(Dao dao, Disc disc) {
         AtomicReference<Integer> lastTotalPt = new AtomicReference<>(0);
 
-        LocalDate today = LocalDateTime.now().plusHours(1).toLocalDate();
+        LocalDate today = LocalDate.now();
         LocalDate seven = today.minusDays(7);
         AtomicReference<Integer> sevenPt = new AtomicReference<>();
 
-        findRecords(dao, disc, Order.asc("date")).forEach(record -> {
+        disc.setTodayPt(null);
+
+        findRecords(dao, disc).forEach(record -> {
             if (record.getTotalPt() != null) {
                 if (lastTotalPt.get() != null) {
                     int todayPt = record.getTotalPt() - lastTotalPt.get();
@@ -186,13 +183,13 @@ public abstract class SakuraHelper {
         AtomicReference<Integer> lastRank = new AtomicReference<>();
         AtomicReference<Double> lastTotalPt = new AtomicReference<>(0d);
 
-        LocalDate today = LocalDateTime.now().plusHours(1).toLocalDate();
+        LocalDate today = LocalDate.now();
         LocalDate seven = today.minusDays(7);
         AtomicReference<Integer> sevenPt = new AtomicReference<>();
 
         disc.setTodayPt(null);
 
-        findRecords(dao, disc, Order.asc("date")).forEach(record -> {
+        findRecords(dao, disc).forEach(record -> {
             double todayPt = computeRecordPt(disc, record, lastRank);
             double totalPt = lastTotalPt.get() + todayPt;
             lastTotalPt.set(totalPt);
@@ -205,6 +202,15 @@ public abstract class SakuraHelper {
         disc.setTotalPt(lastTotalPt.get().intValue());
 
         updateGuessPt(disc, today, lastTotalPt.get().intValue(), sevenPt.get());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Record> findRecords(Dao dao, Disc disc) {
+        return dao.create(Record.class)
+                .add(Restrictions.eq("disc", disc))
+                .add(Restrictions.lt("date", disc.getReleaseDate()))
+                .addOrder(Order.asc("date"))
+                .list();
     }
 
     private static void checkToday(Record record, LocalDate today, Disc disc) {
@@ -286,11 +292,11 @@ public abstract class SakuraHelper {
     }
 
     public static boolean isExpiredDisc(Disc disc) {
-        return disc.getReleaseDate().isBefore(LocalDate.now().minusDays(7));
+        return !noExpiredDisc(disc);
     }
 
     public static boolean noExpiredDisc(Disc disc) {
-        return !isExpiredDisc(disc);
+        return disc.getReleaseDate().isAfter(LocalDate.now().minusDays(7));
     }
 
 }
