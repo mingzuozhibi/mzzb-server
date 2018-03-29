@@ -72,8 +72,8 @@ public class AmazonTaskService {
                 try {
                     AmazonTask doneTask = doneTasks.take();
                     doneTask.getConsumer().accept(doneTask);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    LOGGER.warn("[Amazon更新服务][任务执行遇到异常]", e);
                 }
             }
         });
