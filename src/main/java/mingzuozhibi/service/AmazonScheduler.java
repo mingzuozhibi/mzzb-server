@@ -6,10 +6,7 @@ import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.persist.disc.Sakura.ViewType;
 import mingzuozhibi.service.amazon.AmazonTask;
 import mingzuozhibi.service.amazon.AmazonTaskService;
-import mingzuozhibi.service.amazon.DocumentReader;
 import mingzuozhibi.support.Dao;
-import org.hibernate.Session;
-import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +17,9 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import static mingzuozhibi.service.amazon.DocumentReader.getText;
 
 @Component
 public class AmazonScheduler {
@@ -53,24 +50,37 @@ public class AmazonScheduler {
 
     private void checkAmazonHotData() {
         LOGGER.info("[开始检测Amazon(Hot)数据]");
-        Set<Disc> discs = new LinkedHashSet<>();
-        dao.execute(session -> {
-            findActiveSakura(session).forEach(sakura -> {
-                findAmazonDiscs(sakura).filter(needUpdate()).forEach(discs::add);
-            });
-        });
 
-        Set<Disc> hotDiscs = discs.stream().unordered().limit(10).collect(Collectors.toSet());
-        if (hotDiscs.size() > 0) {
-            LOGGER.debug("[开始检测Amazon(Hot)数据][共{}个]", hotDiscs.size());
-            AtomicInteger updateCount = new AtomicInteger(hotDiscs.size());
-            hotDiscs.forEach(disc -> {
+        Set<Disc> discs = findNeedUpdateDiscs().stream()
+                .unordered().limit(10).collect(Collectors.toSet());
+
+        if (discs.size() > 0) {
+            LOGGER.debug("[开始检测Amazon(Hot)数据][共{}个]", discs.size());
+            AtomicInteger updateCount = new AtomicInteger(discs.size());
+            discs.forEach(disc -> {
                 service.createRankTask(disc.getAsin(), checkHotCB(updateCount, disc));
             });
         } else {
             LOGGER.info("[结束检测Amazon(Hot)数据][未找到可以检测的Amazon(Hot)数据]]");
             amazonFetchStatus = AmazonFetchStatus.waitingForUpdate;
         }
+    }
+
+    private Set<Disc> findNeedUpdateDiscs() {
+        Set<Disc> discs = new LinkedHashSet<>();
+        dao.execute(session -> {
+            dao.findBy(Sakura.class, "enabled", true).forEach(sakura -> {
+                sakura.getDiscs().stream().filter(disc -> {
+                    UpdateType updateType = disc.getUpdateType();
+                    return updateType == UpdateType.Amazon || updateType == UpdateType.Both;
+                }).filter(disc -> {
+                    if (fullUpdateTime.get() == null) return true;
+                    if (disc.getModifyTime() == null) return true;
+                    return disc.getModifyTime().isBefore(fullUpdateTime.get());
+                }).forEach(discs::add);
+            });
+        });
+        return discs;
     }
 
     private Consumer<AmazonTask> checkHotCB(AtomicInteger updateCount, Disc disc) {
@@ -101,23 +111,8 @@ public class AmazonScheduler {
     }
 
     private Integer getRank(AmazonTask task) {
-        String rankText = DocumentReader.getText(task.getDocument(), "Items", "Item", "SalesRank");
+        String rankText = getText(task.getDocument(), "Items", "Item", "SalesRank");
         return rankText == null ? Integer.valueOf(0) : Integer.valueOf(rankText);
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<Sakura> findActiveSakura(Session session) {
-        return (List<Sakura>) session.createCriteria(Sakura.class)
-                .add(Restrictions.eq("enabled", true))
-                .add(Restrictions.ne("key", "9999-99"))
-                .list();
-    }
-
-    private Stream<Disc> findAmazonDiscs(Sakura sakura) {
-        return sakura.getDiscs().stream().filter(disc -> {
-            UpdateType updateType = disc.getUpdateType();
-            return updateType == UpdateType.Amazon || updateType == UpdateType.Both;
-        });
     }
 
     private void startFullUpdate() {
@@ -125,14 +120,9 @@ public class AmazonScheduler {
 
         updateFullUpdateTime();
 
-        LinkedHashSet<Disc> discs = new LinkedHashSet<>();
-        LinkedHashMap<String, Integer> results = new LinkedHashMap<>();
+        Map<String, Integer> results = new LinkedHashMap<>();
 
-        dao.execute(session -> {
-            findActiveSakura(session).forEach(sakura -> {
-                findAmazonDiscs(sakura).filter(needUpdate()).forEach(discs::add);
-            });
-        });
+        Set<Disc> discs = findNeedUpdateDiscs();
 
         if (discs.size() > 0) {
             AtomicInteger updateCount = new AtomicInteger(discs.size());
@@ -144,14 +134,6 @@ public class AmazonScheduler {
             LOGGER.info("[结束更新Amazon(ALL)数据][未找到可以更新的Amazon(ALL)数据]");
             amazonFetchStatus = AmazonFetchStatus.waitingForUpdate;
         }
-    }
-
-    private Predicate<Disc> needUpdate() {
-        return disc -> {
-            if (fullUpdateTime.get() == null) return true;
-            if (disc.getModifyTime() == null) return true;
-            return disc.getModifyTime().isBefore(fullUpdateTime.get());
-        };
     }
 
     private void updateFullUpdateTime() {
