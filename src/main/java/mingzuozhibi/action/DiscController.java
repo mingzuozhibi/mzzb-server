@@ -25,6 +25,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -255,14 +257,10 @@ public class DiscController extends BaseController {
                     String release = getText(itemAttributes, "ReleaseDate");
                     Objects.requireNonNull(title);
                     Objects.requireNonNull(group);
+                    title = formatTitle(title);
                     DiscType type = getType(group, title);
                     boolean amazon = title.startsWith("【Amazon.co.jp限定】");
-                    LocalDate releaseDate;
-                    if (release != null) {
-                        releaseDate = LocalDate.parse(release, formatter);
-                    } else {
-                        releaseDate = LocalDate.now();
-                    }
+                    LocalDate releaseDate = getReleaseDate(release);
                     Disc newDisc = new Disc(asin, title, type, UpdateType.Both, amazon, releaseDate);
                     if (rankText != null) {
                         newDisc.setThisRank(new Integer(rankText));
@@ -285,7 +283,38 @@ public class DiscController extends BaseController {
         });
     }
 
-    private DiscType getType(String group, String title) {
+    private LocalDate getReleaseDate(String release) {
+        if (release != null) {
+            return LocalDate.parse(release, formatter);
+        } else {
+            return LocalDate.now();
+        }
+    }
+
+    private String formatTitle(String title) {
+        title = decodeAmazonText(title);
+        if (title.length() > 500) {
+            title = title.substring(0, 500);
+        }
+        return title;
+    }
+
+    private static Pattern pattern = Pattern.compile("&#x([0-9a-f]{4});");
+
+    private static String decodeAmazonText(String input) {
+        StringBuffer buffer = new StringBuffer();
+        Matcher matcher = pattern.matcher(input);
+        while (matcher.find()) {
+            matcher.appendReplacement(buffer, decodeHex(matcher));
+        }
+        return matcher.appendTail(buffer).toString();
+    }
+
+    private static String decodeHex(Matcher matcher) {
+        return new String(Character.toChars(Integer.parseInt(matcher.group(1), 16)));
+    }
+
+    private static DiscType getType(String group, String title) {
         switch (group) {
             case "Music":
                 return DiscType.Cd;
