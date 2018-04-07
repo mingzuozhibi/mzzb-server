@@ -29,7 +29,7 @@ public class AmazonTaskService {
     private ArrayBlockingQueue<AmazonTaskFetcher> fetchers;
     private ExecutorService service;
 
-    private ArrayBlockingQueue<AmazonTask> discTasks = new ArrayBlockingQueue<>(1000, true);
+    private ArrayBlockingQueue<AmazonTask> findTasks = new ArrayBlockingQueue<>(1000, true);
     private ArrayBlockingQueue<AmazonTask> rankTasks = new ArrayBlockingQueue<>(1000, true);
     private ArrayBlockingQueue<AmazonTask> doneTasks = new ArrayBlockingQueue<>(1000, true);
 
@@ -51,9 +51,9 @@ public class AmazonTaskService {
             LOGGER.info("[Amazon更新服务][任务添加线程已就绪]");
             while (!service.isShutdown()) {
                 takeFetcher().ifPresent(fetcher -> {
-                    AmazonTask discTask = discTasks.poll();
-                    if (discTask != null) {
-                        submitTask(fetcher, discTask);
+                    AmazonTask findTask = findTasks.poll();
+                    if (findTask != null) {
+                        submitTask(fetcher, findTask);
                         return;
                     }
                     AmazonTask rankTask = rankTasks.poll();
@@ -113,14 +113,20 @@ public class AmazonTaskService {
         }
     }
 
-    public void createDiscTask(String asin, Consumer<AmazonTask> consumer) {
+    public void createFindTask(String asin, Consumer<AmazonTask> consumer) {
         AmazonTask task = new AmazonTask(asin, "ItemAttributes,SalesRank", consumer, 3);
-        discTasks.offer(task);
+        findTasks.offer(task);
         nodifyTaskLock();
     }
 
     public void createRankTask(String asin, Consumer<AmazonTask> consumer) {
         AmazonTask task = new AmazonTask(asin, "SalesRank", consumer, 3);
+        rankTasks.offer(task);
+        nodifyTaskLock();
+    }
+
+    public void createDiscTask(String asin, Consumer<AmazonTask> consumer) {
+        AmazonTask task = new AmazonTask(asin, "ItemAttributes,SalesRank", consumer, 3);
         rankTasks.offer(task);
         nodifyTaskLock();
     }
@@ -144,8 +150,8 @@ public class AmazonTaskService {
     }
 
     public void debugStatus() {
-        LOGGER.debug("[Amazon更新服务][fetchers={}][discTasks={}][rankTasks={}][doneTasks={}]",
-                fetchers.size(), discTasks.size(), rankTasks.size(), doneTasks.size());
+        LOGGER.debug("[Amazon更新服务][fetchers={}][findTasks={}][rankTasks={}][doneTasks={}]",
+                fetchers.size(), findTasks.size(), rankTasks.size(), doneTasks.size());
         fetchers.forEach(fetcher -> {
             LOGGER.debug("[Amazon更新服务][更新器tag:{}][创建时间:{}][运行时间:{}秒][运行效率:{}毫秒/任务]" +
                             "[总共任务:{}][失败任务:{}][总共连接:{}][503失败:{}][400失败:{}][doc失败:{}][其他失败:{}]",

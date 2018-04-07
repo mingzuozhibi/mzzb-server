@@ -44,7 +44,7 @@ public class DiscController extends BaseController {
     @Autowired
     private AmazonTaskService service;
 
-    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Transactional
     @GetMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
@@ -246,7 +246,7 @@ public class DiscController extends BaseController {
             infoRequest("[查找碟片][从Amazon查询开始][asin={}]", asin);
         }
 
-        service.createDiscTask(asin, task -> {
+        service.createFindTask(asin, task -> {
             if (task.isDone()) {
                 Node node = getNode(task.getDocument(), "Items", "Item", "ItemAttributes");
                 String rankText = getText(task.getDocument(), "Items", "Item", "SalesRank");
@@ -283,7 +283,7 @@ public class DiscController extends BaseController {
         });
     }
 
-    private LocalDate getReleaseDate(String release) {
+    public static LocalDate getReleaseDate(String release) {
         if (release != null) {
             return LocalDate.parse(release, formatter);
         } else {
@@ -291,7 +291,7 @@ public class DiscController extends BaseController {
         }
     }
 
-    private String formatTitle(String title) {
+    public static String formatTitle(String title) {
         title = decodeAmazonText(title);
         if (title.length() > 500) {
             title = title.substring(0, 500);
