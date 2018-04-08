@@ -171,6 +171,7 @@ public class HourlyMission {
                         }
                     }
                 }
+                count.decrementAndGet();
                 if (count.get() % 5 == 0 || count.get() < 10) {
                     LOGGER.info("[正在更新碟片信息][还剩{}个][asin={}]", count.get(), task.getAsin());
                 } else {
