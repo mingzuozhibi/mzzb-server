@@ -67,6 +67,7 @@ public class AmazonScheduler {
     }
 
     private Set<Disc> findNeedUpdateDiscs() {
+        LocalDateTime needUpdate = LocalDateTime.now().minusMinutes(20);
         Set<Disc> discs = new LinkedHashSet<>();
         dao.execute(session -> {
             dao.findBy(Sakura.class, "enabled", true).forEach(sakura -> {
@@ -74,9 +75,11 @@ public class AmazonScheduler {
                     UpdateType updateType = disc.getUpdateType();
                     return updateType == UpdateType.Amazon || updateType == UpdateType.Both;
                 }).filter(disc -> {
-                    if (fullUpdateTime.get() == null) return true;
-                    if (disc.getModifyTime() == null) return true;
-                    return disc.getModifyTime().isBefore(fullUpdateTime.get());
+                    LocalDateTime lastUpdate = fullUpdateTime.get();
+                    LocalDateTime lastModify = disc.getModifyTime();
+                    if (lastUpdate == null || lastUpdate.isBefore(needUpdate)) return true;
+                    if (lastModify == null || lastModify.isBefore(lastUpdate)) return true;
+                    return false;
                 }).forEach(discs::add);
             });
         });
@@ -138,7 +141,8 @@ public class AmazonScheduler {
 
     private void updateFullUpdateTime() {
         LocalDateTime nowTime = LocalDateTime.now().withNano(0);
-        if (fullUpdateTime.get() == null || nowTime.isAfter(fullUpdateTime.get().plusMinutes(20))) {
+        LocalDateTime canFull = nowTime.minusMinutes(20);
+        if (fullUpdateTime.get() == null || fullUpdateTime.get().isBefore(canFull)) {
             fullUpdateTime.set(nowTime);
         } else {
             LOGGER.info("[补充更新Amazon(ALL)数据][上次更新时间:{}]", fullUpdateTime.get());

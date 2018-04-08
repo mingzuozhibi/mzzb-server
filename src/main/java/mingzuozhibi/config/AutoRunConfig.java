@@ -49,6 +49,13 @@ public class AutoRunConfig {
         LOGGER.info("每小时任务完成");
     }
 
+    @Scheduled(cron = "0 7 4 * * ?")
+    public void runEveryDateTask() {
+        LOGGER.info("每天任务开始");
+        hourlyMission.updateDiscsTitleAndRelease();
+        LOGGER.info("每天任务完成");
+    }
+
     @Scheduled(cron = "10 0/2 * * * ?")
     public void fetchSakuraSpeedData() {
         fetchSakuraSpeedData(3);

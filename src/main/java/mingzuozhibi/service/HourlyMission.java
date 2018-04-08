@@ -6,6 +6,7 @@ import mingzuozhibi.persist.disc.Disc.UpdateType;
 import mingzuozhibi.persist.disc.Record;
 import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.persist.disc.Sakura.ViewType;
+import mingzuozhibi.service.amazon.AmazonTaskService;
 import mingzuozhibi.support.Dao;
 import mingzuozhibi.support.SakuraHelper;
 import org.hibernate.criterion.Restrictions;
@@ -13,22 +14,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static mingzuozhibi.action.DiscController.formatTitle;
+import static mingzuozhibi.action.DiscController.getReleaseDate;
+import static mingzuozhibi.service.amazon.DocumentReader.getNode;
+import static mingzuozhibi.service.amazon.DocumentReader.getText;
 import static mingzuozhibi.support.SakuraHelper.*;
 
 @Service
 public class HourlyMission {
 
+    public static final Logger LOGGER = LoggerFactory.getLogger(HourlyMission.class);
+
     @Autowired
     private Dao dao;
-    public static final Logger LOGGER = LoggerFactory.getLogger(HourlyMission.class);
+
+    @Autowired
+    private AmazonTaskService service;
 
     public void removeExpiredAutoLoginData() {
         dao.execute(session -> {
@@ -124,5 +137,63 @@ public class HourlyMission {
         });
     }
 
+    public void updateDiscsTitleAndRelease() {
+        LOGGER.info("[开始更新碟片信息]");
+
+        Set<Disc> discs = new LinkedHashSet<>();
+
+        dao.execute(session -> {
+            @SuppressWarnings("unchecked")
+            List<Sakura> sakuras = session.createCriteria(Sakura.class)
+                    .add(Restrictions.eq("enabled", true))
+                    .list();
+
+            sakuras.forEach(sakura -> {
+                discs.addAll(sakura.getDiscs());
+            });
+        });
+
+        AtomicInteger count = new AtomicInteger(discs.size());
+        LOGGER.info("[开始更新碟片信息][共{}个]", discs.size());
+
+        discs.forEach(disc -> {
+            service.createDiscTask(disc.getAsin(), task -> {
+                if (task.isDone()) {
+                    Node node = getNode(task.getDocument(), "Items", "Item", "ItemAttributes");
+                    if (node != null) {
+                        Document itemAttributes = node.getOwnerDocument();
+                        String title = getText(itemAttributes, "Title");
+                        String release = getText(itemAttributes, "ReleaseDate");
+                        Objects.requireNonNull(title);
+                        disc.setTitle(formatTitle(title));
+                        if (release != null) {
+                            disc.setReleaseDate(getReleaseDate(release));
+                        }
+                    }
+                }
+                count.decrementAndGet();
+                if (count.get() % 5 == 0 || count.get() < 10) {
+                    LOGGER.info("[正在更新碟片信息][还剩{}个][asin={}]", count.get(), task.getAsin());
+                } else {
+                    LOGGER.debug("[正在更新碟片信息][还剩{}个][asin={}]", count.get(), task.getAsin());
+                }
+                if (count.get() == 0) {
+                    writeDiscInfos(discs);
+                }
+            });
+        });
+    }
+
+    private void writeDiscInfos(Set<Disc> discs) {
+        LOGGER.info("[正在写入碟片信息]");
+        dao.execute(session -> {
+            discs.forEach(disc -> {
+                Disc theDisc = dao.get(Disc.class, disc.getId());
+                theDisc.setTitle(disc.getTitle());
+                theDisc.setReleaseDate(disc.getReleaseDate());
+            });
+        });
+        LOGGER.info("[成功更新碟片信息]");
+    }
 
 }
