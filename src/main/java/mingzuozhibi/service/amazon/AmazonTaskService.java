@@ -126,7 +126,7 @@ public class AmazonTaskService {
     }
 
     public void createDiscTask(String asin, Consumer<AmazonTask> consumer) {
-        AmazonTask task = new AmazonTask(asin, "ItemAttributes,SalesRank", consumer, 3);
+        AmazonTask task = new AmazonTask(asin, "ItemAttributes", consumer, 3);
         rankTasks.offer(task);
         nodifyTaskLock();
     }
