@@ -1,15 +1,13 @@
 package mingzuozhibi.service.amazon;
 
+import org.jsoup.Connection.Response;
+import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
+import java.io.ByteArrayInputStream;
+import java.net.SocketTimeoutException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -33,7 +31,6 @@ public class AmazonTaskFetcher {
     private long errorConnectCount;
     private long er503ConnectCount;
     private long er400ConnectCount;
-    private long erdocConnectCount;
 
     public AmazonTaskFetcher(String accessKey, String secretKey, String associateTag) {
         initRequestHelper(accessKey, secretKey, associateTag);
@@ -67,39 +64,54 @@ public class AmazonTaskFetcher {
 
         while (task.getErrorCount() <= task.getMaxRetryCount()) {
             try {
+                LOGGER.debug("[Amazon更新器][正在更新Amazon数据][ASIN={}][RETRY={}]",
+                        task.getAsin(), task.getErrorCount());
                 totalConnectCount++;
-                task.setDocument(getDocument(requestUrl));
-                task.setDone(true);
-                task.setFinishTime(LocalDateTime.now().withNano(0));
-                consumer.accept(task);
-                return;
-            } catch (IOException e) {
-                if (e.getMessage().startsWith("Server returned HTTP response code: 503")) {
+                Response response = Jsoup.connect(requestUrl)
+                        .ignoreHttpErrors(true)
+                        .ignoreContentType(true)
+                        .execute();
+                if (response.statusCode() == 200) {
+                    byte[] bytes = response.bodyAsBytes();
+                    task.setDocument(dbf.newDocumentBuilder().parse(new ByteArrayInputStream(bytes)));
+                    task.setDone(true);
+                    task.setFinishTime(LocalDateTime.now().withNano(0));
+                    break;
+                }
+
+                task.setErrorCount(task.getErrorCount() + 1);
+                if (response.statusCode() == 503) {
                     er503ConnectCount++;
                     threadSleep(1000);
-                    continue;
-                }
-                if (e.getMessage().startsWith("Server returned HTTP response code: 400")) {
+                } else if (response.statusCode() == 400) {
                     er400ConnectCount++;
-                    task.setErrorCount(task.getErrorCount() + 1);
-                    task.setErrorMessage(e.getMessage());
+                    LOGGER.warn("[Amazon更新器][更新Amazon数据错误][ASIN={}][RETRY={}][AMAZON 400 ERROR]",
+                            task.getAsin(), task.getErrorCount());
                 } else {
                     errorConnectCount++;
-                    task.setErrorCount(task.getErrorCount() + 1);
-                    task.setErrorMessage(e.getMessage());
+                    LOGGER.warn("[Amazon更新器][更新Amazon数据错误][ASIN={}][RETRY={}][AMAZON {} ERROR]",
+                            task.getAsin(), task.getErrorCount(), response.statusCode());
                 }
-            } catch (ParserConfigurationException | SAXException e) {
-                erdocConnectCount++;
+            } catch (Exception e) {
                 task.setErrorCount(task.getErrorCount() + 1);
-                task.setErrorMessage(e.getMessage());
+                errorConnectCount++;
+
+                if (!(e instanceof SocketTimeoutException)) {
+                    LOGGER.warn("[Amazon更新器][更新Amazon数据错误][ASIN={}][RETRY={}][ERROR={}]",
+                            task.getAsin(), task.getErrorCount(), e.getClass());
+                    LOGGER.debug("[Amazon更新器][更新Amazon数据错误]", e);
+                }
             }
         }
-        errorTaskCount++;
-    }
-
-    private Document getDocument(String requestUrl) throws IOException, SAXException, ParserConfigurationException {
-        InputStream inputStream = new URL(requestUrl).openStream();
-        return dbf.newDocumentBuilder().parse(inputStream);
+        if (!task.isDone()) {
+            errorTaskCount++;
+            LOGGER.debug("[Amazon更新器][更新Amazon数据失败][ASIN={}][RETRY={}]",
+                    task.getAsin(), task.getErrorCount());
+        } else {
+            LOGGER.debug("[Amazon更新器][成功更新Amazon数据][ASIN={}][RETRY={}]",
+                    task.getAsin(), task.getErrorCount());
+        }
+        consumer.accept(task);
     }
 
     private void threadSleep(int timeout) {
@@ -154,10 +166,6 @@ public class AmazonTaskFetcher {
 
     public long getEr400ConnectCount() {
         return er400ConnectCount;
-    }
-
-    public long getErdocConnectCount() {
-        return erdocConnectCount;
     }
 
     public long computeCostPerTask() {

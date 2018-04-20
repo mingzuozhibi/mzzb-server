@@ -91,15 +91,18 @@ public class AmazonScheduler {
             updateCount.decrementAndGet();
             AtomicReference<Integer> newRank = new AtomicReference<>();
             if (task.isDone()) {
-                Integer rank = getRank(task);
-                newRank.set(rank);
-                if (!Objects.equals(rank, disc.getThisRank())) {
+                newRank.set(getRank(task));
+                boolean rankNotChange = Objects.equals(disc.getThisRank(), newRank.get());
+                if (!rankNotChange) {
                     amazonFetchStatus = AmazonFetchStatus.startFullUpdate;
                 }
+                LOGGER.info("[正在检测Amazon(Hot)数据][{}][{}->{}][还剩{}个][asin={}]",
+                        rankNotChange ? "无变化" : "有变化",
+                        disc.getThisRank(), newRank.get(), updateCount.get(), disc.getAsin());
+            } else {
+                LOGGER.info("[正在检测Amazon(Hot)数据][检测失败跳过][还剩{}个][asin={}]",
+                        updateCount.get(), disc.getAsin());
             }
-            LOGGER.info("[正在检测Amazon(Hot)数据][{}][{}->{}][还剩{}个][asin={}]",
-                    Objects.equals(disc.getThisRank(), newRank.get()) ? "无变化" : "有变化",
-                    disc.getThisRank(), newRank.get(), updateCount.get(), disc.getAsin());
             if (updateCount.get() == 0) {
                 if (amazonFetchStatus == AmazonFetchStatus.startFullUpdate) {
                     LOGGER.info("[成功检测Amazon(Hot)数据，数据有变化]");
