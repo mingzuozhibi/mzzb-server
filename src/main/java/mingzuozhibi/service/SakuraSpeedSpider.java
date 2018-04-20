@@ -110,11 +110,7 @@ public class SakuraSpeedSpider {
         if (isTop100) {
             sakura.setDiscs(new LinkedList<>(toAdd));
         } else {
-            boolean noExpiredSakura = noExpiredSakura(sakura);
             sakura.getDiscs().stream()
-                    .filter(disc -> {
-                        return disc.getUpdateType() != UpdateType.Sakura || noExpiredSakura;
-                    })
                     .filter(disc -> !toAdd.contains(disc))
                     .forEach(disc -> {
                         if (disc.getUpdateType() == UpdateType.Sakura) {
