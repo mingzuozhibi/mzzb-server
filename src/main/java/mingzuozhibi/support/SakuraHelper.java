@@ -175,8 +175,9 @@ public abstract class SakuraHelper {
         });
 
         disc.setTotalPt(lastTotalPt.get());
-
-        updateGuessPt(disc, today, lastTotalPt.get(), sevenPt.get());
+        if (disc.getTodayPt() != null && disc.getTodayPt() != 0) {
+            updateGuessPt(disc, today, lastTotalPt.get(), sevenPt.get());
+        }
     }
 
     public static void computeAndUpdateAmazonPt(Dao dao, Disc disc) {
