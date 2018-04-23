@@ -35,18 +35,18 @@ public class SakuraSpeedSpider {
     @Autowired
     private Dao dao;
 
-    public void fetch() throws IOException {
+    public void fetch(boolean forceUpdate) throws IOException {
         Document document = Jsoup.connect(SAKURA_SPEED_URL)
                 .timeout(30000)
                 .get();
         Elements tables = document.select("table");
         Elements fonts = document.select("b>font[color=red]");
         for (int i = 0; i < tables.size(); i++) {
-            updateSakura(tables.get(i), fonts.get(i).text());
+            updateSakura(tables.get(i), fonts.get(i).text(), forceUpdate);
         }
     }
 
-    private void updateSakura(Element table, String timeText) {
+    private void updateSakura(Element table, String timeText, boolean forceUpdate) {
         dao.execute(session -> {
             Sakura sakura = getOrCreateSakura(findSakuraKey(table));
             if (timeText.equals("更新中")) {
@@ -54,7 +54,7 @@ public class SakuraSpeedSpider {
                 return;
             }
             LocalDateTime time = parseTime(timeText);
-            if (time.equals(sakura.getModifyTime())) {
+            if (!forceUpdate && time.equals(sakura.getModifyTime())) {
                 LOGGER.debug("不需要更新[{}]列表", sakura.getTitle());
                 return;
             }

@@ -33,9 +33,9 @@ import static mingzuozhibi.service.amazon.DocumentReader.getText;
 import static mingzuozhibi.support.SakuraHelper.*;
 
 @Service
-public class HourlyMission {
+public class ScheduleMission {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(HourlyMission.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(ScheduleMission.class);
 
     @Autowired
     private Dao dao;
