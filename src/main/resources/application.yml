@@ -11,6 +11,10 @@ spring:
     properties:
       hibernate:
         current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
+  datasource:
+    testWhileIdle: true
+    validationQuery: SELECT 1
+    timeBetweenEvictionRunsMillis: 3600000
   profiles:
     active:
       - dev
