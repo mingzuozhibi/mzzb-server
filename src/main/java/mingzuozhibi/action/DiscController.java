@@ -268,8 +268,10 @@ public class DiscController extends BaseController {
                     dao.save(newDisc);
                     disc.set(newDisc);
                 } else {
-                    error.append(task.getErrorMessage());
+                    error.append(getText(task.getDocument(), "Items", "Request", "Errors", "Message"));
                 }
+            } else {
+                error.append(task.getErrorMessage());
             }
 
             if (LOGGER.isInfoEnabled()) {
