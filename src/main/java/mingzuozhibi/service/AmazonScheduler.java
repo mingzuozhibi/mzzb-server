@@ -31,7 +31,8 @@ public class AmazonScheduler {
     private static final Logger LOGGER = LoggerFactory.getLogger(AmazonScheduler.class);
 
     private transient AmazonFetchStatus amazonFetchStatus = AmazonFetchStatus.waitingForUpdate;
-    private AtomicReference<LocalDateTime> fullUpdateTime = new AtomicReference<>();
+    private transient LocalDateTime fullUpdateTime = null;
+    private transient int skipCheckHot = 0;
 
     @Autowired
     private AmazonTaskService service;
@@ -42,9 +43,12 @@ public class AmazonScheduler {
     public void fetchData() {
         service.debugStatus();
         LOGGER.info("[Amazon调度器状态={}]", amazonFetchStatus);
-        if (amazonFetchStatus == AmazonFetchStatus.waitingForUpdate) {
+        if (amazonFetchStatus == AmazonFetchStatus.waitingForUpdate || skipCheckHot > 5) {
             amazonFetchStatus = AmazonFetchStatus.startHotUpdate;
             checkAmazonHotData();
+            skipCheckHot = 0;
+        } else {
+            skipCheckHot++;
         }
     }
 
@@ -75,7 +79,7 @@ public class AmazonScheduler {
                     UpdateType updateType = disc.getUpdateType();
                     return updateType == UpdateType.Amazon || updateType == UpdateType.Both;
                 }).filter(disc -> {
-                    LocalDateTime lastUpdate = fullUpdateTime.get();
+                    LocalDateTime lastUpdate = fullUpdateTime;
                     LocalDateTime lastModify = disc.getModifyTime();
                     if (lastUpdate == null || lastUpdate.isBefore(needUpdate)) return true;
                     if (lastModify == null || lastModify.isBefore(lastUpdate)) return true;
@@ -145,10 +149,10 @@ public class AmazonScheduler {
     private void updateFullUpdateTime() {
         LocalDateTime nowTime = LocalDateTime.now().withNano(0);
         LocalDateTime canFull = nowTime.minusMinutes(20);
-        if (fullUpdateTime.get() == null || fullUpdateTime.get().isBefore(canFull)) {
-            fullUpdateTime.set(nowTime);
+        if (fullUpdateTime == null || fullUpdateTime.isBefore(canFull)) {
+            fullUpdateTime = nowTime;
         } else {
-            LOGGER.info("[补充更新Amazon(ALL)数据][上次更新时间:{}]", fullUpdateTime.get());
+            LOGGER.info("[补充更新Amazon(ALL)数据][上次更新时间:{}]", fullUpdateTime);
         }
     }
 
@@ -178,16 +182,16 @@ public class AmazonScheduler {
                 disc.setPrevRank(disc.getThisRank());
                 if (rank != null) {
                     disc.setThisRank(rank);
-                    disc.setUpdateTime(fullUpdateTime.get());
+                    disc.setUpdateTime(fullUpdateTime);
                 }
                 if (!Objects.equals(disc.getThisRank(), disc.getPrevRank())) {
-                    disc.setModifyTime(fullUpdateTime.get());
+                    disc.setModifyTime(fullUpdateTime);
                 }
             });
             dao.findAll(Sakura.class).stream()
                     .filter(sakura -> sakura.getViewType() != ViewType.SakuraList)
                     .forEach(sakura -> {
-                        sakura.setModifyTime(fullUpdateTime.get());
+                        sakura.setModifyTime(fullUpdateTime);
                     });
         });
         LOGGER.info("[成功更新Amazon(ALL)数据]");
