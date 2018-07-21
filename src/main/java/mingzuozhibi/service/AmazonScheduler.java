@@ -104,8 +104,8 @@ public class AmazonScheduler {
                         rankNotChange ? "无变化" : "有变化",
                         disc.getThisRank(), newRank.get(), updateCount.get(), disc.getAsin());
             } else {
-                LOGGER.info("[正在检测Amazon(Hot)数据][检测失败跳过][还剩{}个][asin={}]",
-                        updateCount.get(), disc.getAsin());
+                LOGGER.info("[正在检测Amazon(Hot)数据][检测失败跳过][还剩{}个][asin={}][error={}]",
+                        updateCount.get(), disc.getAsin(), task.getErrorMessage());
             }
             if (updateCount.get() == 0) {
                 if (amazonFetchStatus == AmazonFetchStatus.startFullUpdate) {

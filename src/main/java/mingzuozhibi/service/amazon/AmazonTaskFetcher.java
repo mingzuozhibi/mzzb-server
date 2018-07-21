@@ -80,6 +80,7 @@ public class AmazonTaskFetcher {
                 }
 
                 task.setErrorCount(task.getErrorCount() + 1);
+                task.setErrorMessage(String.format("%d: %s", response.statusCode(), response.statusMessage()));
                 if (response.statusCode() == 503) {
                     er503ConnectCount++;
                     threadSleep(1000);
@@ -94,6 +95,8 @@ public class AmazonTaskFetcher {
                 }
             } catch (Exception e) {
                 task.setErrorCount(task.getErrorCount() + 1);
+                task.setErrorMessage(String.format("%s: %s", e.getClass().getName(), e.getMessage()));
+                System.out.println(task.getErrorMessage());
                 errorConnectCount++;
 
                 if (!(e instanceof SocketTimeoutException)) {
