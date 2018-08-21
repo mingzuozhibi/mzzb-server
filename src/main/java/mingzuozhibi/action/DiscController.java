@@ -3,6 +3,7 @@ package mingzuozhibi.action;
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.persist.disc.Disc.UpdateType;
+import mingzuozhibi.service.AmazonNewDiscSpider;
 import mingzuozhibi.service.amazon.AmazonTaskService;
 import mingzuozhibi.support.JsonArg;
 import org.json.JSONArray;
@@ -43,6 +44,9 @@ public class DiscController extends BaseController {
 
     @Autowired
     private AmazonTaskService service;
+
+    @Autowired
+    private AmazonNewDiscSpider amazonNewDiscSpider;
 
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -223,6 +227,9 @@ public class DiscController extends BaseController {
 
         JSONArray result = new JSONArray();
         JSONObject discJSON = disc.get().toJSON();
+
+        amazonNewDiscSpider.updateNewDiscFollowd(disc.get());
+
         if (LOGGER.isInfoEnabled()) {
             infoRequest("[查找碟片成功][碟片信息={}]", discJSON);
         }
