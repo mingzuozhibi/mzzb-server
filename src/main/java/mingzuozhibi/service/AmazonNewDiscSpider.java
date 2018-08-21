@@ -68,31 +68,33 @@ public class AmazonNewDiscSpider {
             for (int retry = 1; retry <= 3; retry++) {
                 try (Session session = factory.create()) {
                     session.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36");
-                    session.navigateAndWait(url, WaitUntil.DomReady, 60000);
-                    LOGGER.debug("Dom已就绪({}/{})", page, maxPage);
-                        Document document = Jsoup.parse(session.getOuterHtml("body"));
-                        Elements elements = document.select("#s-results-list-atf > li");
+                    session.navigate(url);
+                    session.waitDocumentReady(38000);
+                    session.wait(2000);
 
-                        LOGGER.debug("发现{}个结果({}/{})", elements.size(), page, maxPage);
-                        if (elements.size() > 0) {
-                            elements.forEach(element -> {
-                                String asin = element.attr("data-asin");
-                                if (asin != null && asin.length() > 0) {
-                                    DiscInfo discInfo = dao.lookup(DiscInfo.class, "asin", asin);
-                                    if (discInfo == null) {
-                                        String title = element.select("a.a-link-normal").attr("title");
-                                        dao.save(createDiscInfo(asin, title));
-                                        if (LOGGER.isDebugEnabled()) {
-                                            LOGGER.debug("[发现新碟片][ASIN={}][title={}]", asin, title);
-                                        }
+                    Document document = Jsoup.parse(session.getOuterHtml("body"));
+                    Elements elements = document.select("#s-results-list-atf > li");
+
+                    LOGGER.debug("发现{}个结果({}/{})", elements.size(), page, maxPage);
+                    if (elements.size() > 0) {
+                        elements.forEach(element -> {
+                            String asin = element.attr("data-asin");
+                            if (asin != null && asin.length() > 0) {
+                                DiscInfo discInfo = dao.lookup(DiscInfo.class, "asin", asin);
+                                if (discInfo == null) {
+                                    String title = element.select("a.a-link-normal").attr("title");
+                                    dao.save(createDiscInfo(asin, title));
+                                    if (LOGGER.isDebugEnabled()) {
+                                        LOGGER.debug("[发现新碟片][asin={}][title={}]", asin, title);
                                     }
                                 }
-                            });
-                            break;
-                        }
-                        LOGGER.debug(String.format("[扫描新碟片数据异常][retry=%d/3][size=%d]", retry, elements.size()));
+                            }
+                        });
+                        break;
+                    }
+                    LOGGER.debug(String.format("[扫描新碟片数据异常][retry=%d/3][size=%d]", retry, elements.size()));
                 } catch (RuntimeException e) {
-                    LOGGER.debug(String.format("[扫描新碟片遇到错误][retry=%d/3]", retry), e);
+                    LOGGER.debug(String.format("[扫描新碟片遇到错误][retry=%d/3][message=%s]", retry, e.getMessage()), e);
                 }
             }
             threadSleep(5);
