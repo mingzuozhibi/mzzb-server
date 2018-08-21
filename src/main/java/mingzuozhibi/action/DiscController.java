@@ -62,6 +62,10 @@ public class DiscController extends BaseController {
             return errorMessage("指定的碟片Id不存在");
         }
 
+        return responseDisc(disc);
+    }
+
+    private String responseDisc(Disc disc) {
         JSONObject result = disc.toJSON();
 
         if (LOGGER.isDebugEnabled()) {
@@ -71,6 +75,21 @@ public class DiscController extends BaseController {
         result.put("ranks", buildRanks(dao, disc));
 
         return objectResult(result);
+    }
+
+    @Transactional
+    @GetMapping(value = "/api/discs/asin/{asin}", produces = MEDIA_TYPE)
+    public String getOne(@PathVariable String asin) {
+
+        Disc disc = dao.lookup(Disc.class, "asin", asin);
+        if (disc == null) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[获取碟片失败][指定的碟片Asin不存在][Asin={}]", asin);
+            }
+            return errorMessage("指定的碟片Asin不存在");
+        }
+
+        return responseDisc(disc);
     }
 
     @Transactional
