@@ -38,7 +38,6 @@ public class AutoRunConfig {
         scheduleMission.removeExpiredDiscsFromList();
         scheduleMission.removeExpiredAutoLoginData();
         scheduleMission.recordDiscsRankAndComputePt();
-        amazonNewDiscSpider.fetch();
     }
 
     @Scheduled(cron = "0 2 * * * ?")
