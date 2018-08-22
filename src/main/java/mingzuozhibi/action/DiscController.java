@@ -3,6 +3,7 @@ package mingzuozhibi.action;
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.persist.disc.Disc.UpdateType;
+import mingzuozhibi.service.AmazonNewDiscSpider;
 import mingzuozhibi.service.amazon.AmazonTaskService;
 import mingzuozhibi.support.JsonArg;
 import org.json.JSONArray;
@@ -44,6 +45,9 @@ public class DiscController extends BaseController {
     @Autowired
     private AmazonTaskService service;
 
+    @Autowired
+    private AmazonNewDiscSpider amazonNewDiscSpider;
+
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Transactional
@@ -58,6 +62,10 @@ public class DiscController extends BaseController {
             return errorMessage("指定的碟片Id不存在");
         }
 
+        return responseDisc(disc);
+    }
+
+    private String responseDisc(Disc disc) {
         JSONObject result = disc.toJSON();
 
         if (LOGGER.isDebugEnabled()) {
@@ -67,6 +75,21 @@ public class DiscController extends BaseController {
         result.put("ranks", buildRanks(dao, disc));
 
         return objectResult(result);
+    }
+
+    @Transactional
+    @GetMapping(value = "/api/discs/asin/{asin}", produces = MEDIA_TYPE)
+    public String getOne(@PathVariable String asin) {
+
+        Disc disc = dao.lookup(Disc.class, "asin", asin);
+        if (disc == null) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[获取碟片失败][指定的碟片Asin不存在][Asin={}]", asin);
+            }
+            return errorMessage("指定的碟片Asin不存在");
+        }
+
+        return responseDisc(disc);
     }
 
     @Transactional
@@ -223,6 +246,9 @@ public class DiscController extends BaseController {
 
         JSONArray result = new JSONArray();
         JSONObject discJSON = disc.get().toJSON();
+
+        amazonNewDiscSpider.updateNewDiscFollowd(disc.get());
+
         if (LOGGER.isInfoEnabled()) {
             infoRequest("[查找碟片成功][碟片信息={}]", discJSON);
         }

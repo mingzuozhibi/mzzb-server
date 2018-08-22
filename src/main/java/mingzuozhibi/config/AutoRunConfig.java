@@ -1,9 +1,9 @@
 package mingzuozhibi.config;
 
+import mingzuozhibi.service.AmazonNewDiscSpider;
 import mingzuozhibi.service.AmazonScheduler;
-import mingzuozhibi.service.ScheduleMission;
 import mingzuozhibi.service.SakuraSpeedSpider;
-import mingzuozhibi.support.Dao;
+import mingzuozhibi.service.ScheduleMission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +19,6 @@ public class AutoRunConfig {
     public static final Logger LOGGER = LoggerFactory.getLogger(AutoRunConfig.class);
 
     @Autowired
-    private Dao dao;
-
-    @Autowired
     private AmazonScheduler scheduler;
 
     @Autowired
@@ -30,14 +27,18 @@ public class AutoRunConfig {
     @Autowired
     private SakuraSpeedSpider sakuraSpeedSpider;
 
+    @Autowired
+    private AmazonNewDiscSpider amazonNewDiscSpider;
+
     /**
      * call by MzzbServerApplication
      */
     public void runStartupServer() {
-        fetchSakuraSpeedData(3, true);
+//        fetchSakuraSpeedData(3, true);
         scheduleMission.removeExpiredDiscsFromList();
         scheduleMission.removeExpiredAutoLoginData();
         scheduleMission.recordDiscsRankAndComputePt();
+        amazonNewDiscSpider.fetch();
     }
 
     @Scheduled(cron = "0 2 * * * ?")
@@ -56,12 +57,17 @@ public class AutoRunConfig {
 
     @Scheduled(cron = "30 0 0 * * ?")
     public void runEveryDateTask() {
-        fetchSakuraSpeedData(3, true);
+//        fetchSakuraSpeedData(3, true);
     }
 
     @Scheduled(cron = "10 0/2 * * * ?")
     public void fetchSakuraSpeedData() {
-        fetchSakuraSpeedData(3, false);
+//        fetchSakuraSpeedData(3, false);
+    }
+
+    @Scheduled(cron = "15 15 0/6 * * ?")
+    public void fetchNewDiscData() {
+        amazonNewDiscSpider.fetch();
     }
 
     public void fetchSakuraSpeedData(int retry, boolean forceUpdate) {

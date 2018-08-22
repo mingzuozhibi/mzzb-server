@@ -24,13 +24,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static mingzuozhibi.service.SakuraSpeedSpider.Util.*;
-import static mingzuozhibi.support.SakuraHelper.noExpiredSakura;
 
 @Service
 public class SakuraSpeedSpider {
 
     private static final String SAKURA_SPEED_URL = "http://rankstker.net/index_news.cgi";
     private static final Logger LOGGER = LoggerFactory.getLogger(SakuraSpeedSpider.class);
+
+    @Autowired
+    private AmazonNewDiscSpider amazonNewDiscSpider;
 
     @Autowired
     private Dao dao;
@@ -134,6 +136,8 @@ public class SakuraSpeedSpider {
                     UpdateType.Sakura, isAmazonLimit(title), releaseDate);
             dao.save(disc);
             LOGGER.info("发现了新的碟片, title={}", disc.getTitle());
+
+            amazonNewDiscSpider.updateNewDiscFollowd(disc);
         }
         return disc;
     }
