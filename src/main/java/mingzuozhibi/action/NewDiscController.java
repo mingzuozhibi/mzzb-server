@@ -29,7 +29,7 @@ public class NewDiscController extends BaseController {
 
         @SuppressWarnings("unchecked")
         List<DiscInfo> discInfos = dao.create(DiscInfo.class)
-                .addOrder(Order.desc("createTime"))
+                .addOrder(Order.desc("id"))
                 .setFirstResult(page * maxSize)
                 .setMaxResults(maxSize)
                 .list();
