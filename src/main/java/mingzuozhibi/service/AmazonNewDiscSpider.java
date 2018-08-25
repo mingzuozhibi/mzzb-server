@@ -3,10 +3,11 @@ package mingzuozhibi.service;
 import io.webfolder.cdp.Launcher;
 import io.webfolder.cdp.session.Session;
 import io.webfolder.cdp.session.SessionFactory;
-import io.webfolder.cdp.session.WaitUntil;
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.DiscInfo;
 import mingzuozhibi.support.Dao;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -30,7 +31,6 @@ public class AmazonNewDiscSpider {
     @Autowired
     private Dao dao;
 
-    @Transactional
     public void fetch() {
         new Thread(() -> {
 
@@ -49,6 +49,44 @@ public class AmazonNewDiscSpider {
             }
         }).start();
     }
+
+    public void fetchFromJapan(String japanServerIp) {
+        new Thread(() -> {
+            int page = 0;
+
+            MAIN_LOOP:
+            while (true) {
+                LOGGER.info("扫描新碟片中({}/{})", page + 1, 20);
+                for (int retry = 1; retry <= 3; retry++) {
+                    try {
+                        String body = Jsoup.connect("http://" + japanServerIp + ":9090/api/newdiscs?page=" + page)
+                                .ignoreContentType(true)
+                                .timeout(10000)
+                                .execute()
+                                .body();
+                        JSONObject root = new JSONObject(body);
+                        JSONObject data = root.getJSONObject("data");
+
+                        JSONArray newdiscs = data.getJSONArray("newdiscs");
+                        for (int i = 0; i < newdiscs.length(); i++) {
+                            JSONObject newdisc = newdiscs.getJSONObject(i);
+                            tryCreateDiscInfo(newdisc.getString("asin"), newdisc.getString("title"));
+                        }
+
+                        JSONObject pageInfo = data.getJSONObject("pageInfo");
+                        if (++page > pageInfo.getInt("maxPage") || page >= 20) {
+                            break MAIN_LOOP;
+                        } else {
+                            break;
+                        }
+                    } catch (IOException e) {
+                        LOGGER.debug(String.format("[扫描新碟片遇到错误][retry=%d/3][message=%s]", retry, e.getMessage()), e);
+                    }
+                }
+            }
+        }).start();
+    }
+
 
     private void killChrome() {
         try {
@@ -79,16 +117,8 @@ public class AmazonNewDiscSpider {
                     if (elements.size() > 0) {
                         elements.forEach(element -> {
                             String asin = element.attr("data-asin");
-                            if (asin != null && asin.length() > 0) {
-                                DiscInfo discInfo = dao.lookup(DiscInfo.class, "asin", asin);
-                                if (discInfo == null) {
-                                    String title = element.select("a.a-link-normal").attr("title");
-                                    dao.save(createDiscInfo(asin, title));
-                                    if (LOGGER.isDebugEnabled()) {
-                                        LOGGER.debug("[发现新碟片][asin={}][title={}]", asin, title);
-                                    }
-                                }
-                            }
+                            String title = element.select("a.a-link-normal").attr("title");
+                            tryCreateDiscInfo(asin, title);
                         });
                         break;
                     }
@@ -101,9 +131,18 @@ public class AmazonNewDiscSpider {
         }
     }
 
+    private void tryCreateDiscInfo(String asin, String title) {
+        if (asin != null && asin.length() > 0) {
+            DiscInfo discInfo = dao.lookup(DiscInfo.class, "asin", asin);
+            if (discInfo == null) {
+                dao.save(createDiscInfo(asin, title));
+                LOGGER.info("[发现新碟片][asin={}][title={}]", asin, title);
+            }
+        }
+    }
+
     private DiscInfo createDiscInfo(String asin, String title) {
-        DiscInfo discInfo;
-        discInfo = new DiscInfo(asin, title);
+        DiscInfo discInfo = new DiscInfo(asin, title);
         if (dao.lookup(Disc.class, "asin", asin) != null) {
             discInfo.setFollowed(true);
         }
