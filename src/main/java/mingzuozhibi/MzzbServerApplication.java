@@ -23,7 +23,7 @@ public class MzzbServerApplication {
     public static void main(String[] args) {
         ApplicationContext context = SpringApplication.run(MzzbServerApplication.class, args);
         LOGGER.info("MzzbServer服务已启动");
-        context.getBean(AutoRunConfig.class).runStartupServer();
+        context.getBean(AutoRunConfig.class).runOnStartupServer();
     }
 
     @Bean

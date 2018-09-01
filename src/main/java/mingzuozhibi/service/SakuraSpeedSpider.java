@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -37,14 +38,32 @@ public class SakuraSpeedSpider {
     @Autowired
     private Dao dao;
 
-    public void fetch(boolean forceUpdate) throws IOException {
-        Document document = Jsoup.connect(SAKURA_SPEED_URL)
-                .timeout(30000)
-                .get();
-        Elements tables = document.select("table");
-        Elements fonts = document.select("b>font[color=red]");
-        for (int i = 0; i < tables.size(); i++) {
-            updateSakura(tables.get(i), fonts.get(i).text(), forceUpdate);
+    public void fetch(boolean forceUpdate) {
+        fetch(3, forceUpdate);
+    }
+
+    public void fetch(int retry, boolean forceUpdate) {
+        LOGGER.debug("正在更新Sakura(Speed)数据 (还有{}次机会)", retry);
+        try {
+            Document document = Jsoup.connect(SAKURA_SPEED_URL)
+                    .timeout(30000)
+                    .get();
+            Elements tables = document.select("table");
+            Elements fonts = document.select("b>font[color=red]");
+            for (int i = 0; i < tables.size(); i++) {
+                updateSakura(tables.get(i), fonts.get(i).text(), forceUpdate);
+            }
+            LOGGER.debug("成功更新Sakura(Speed)数据");
+        } catch (SocketTimeoutException e) {
+            if (retry > 0) {
+                LOGGER.debug("抓取Sakura(Speed)数据超时，正在进行重试");
+                fetch(retry - 1, forceUpdate);
+            } else {
+                LOGGER.warn("抓取超时, 更新Sakura(Speed)数据失败");
+            }
+        } catch (IOException e) {
+            LOGGER.warn("抓取Sakura(Speed)数据遇到意外错误, Message={}", e.getMessage());
+            LOGGER.debug("抓取Sakura(Speed)数据遇到意外错误", e);
         }
     }
 
