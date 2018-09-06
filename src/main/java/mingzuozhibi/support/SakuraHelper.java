@@ -256,11 +256,7 @@ public abstract class SakuraHelper {
             case Cd:
                 return computeHourPt(150, 5.25, rank);
             case Auto:
-                if (disc.getTitle().contains("Blu-ray")) {
-                    return computePtOfBD(rank);
-                } else {
-                    return computeHourPt(100, 4.2, rank);
-                }
+                return computePtOfBD(rank);
             case Bluray:
                 return computePtOfBD(rank);
             case Dvd:

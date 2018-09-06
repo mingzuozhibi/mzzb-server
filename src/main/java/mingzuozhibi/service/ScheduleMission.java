@@ -26,8 +26,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static mingzuozhibi.action.DiscController.formatTitle;
-import static mingzuozhibi.action.DiscController.getReleaseDate;
+import static mingzuozhibi.action.DiscController.*;
 import static mingzuozhibi.service.amazon.DocumentReader.getNode;
 import static mingzuozhibi.service.amazon.DocumentReader.getText;
 import static mingzuozhibi.support.SakuraHelper.*;
@@ -163,9 +162,14 @@ public class ScheduleMission {
                     if (node != null) {
                         Document itemAttributes = node.getOwnerDocument();
                         String title = getText(itemAttributes, "Title");
+                        String group = getText(itemAttributes, "ProductGroup");
                         String release = getText(itemAttributes, "ReleaseDate");
                         Objects.requireNonNull(title);
+                        Objects.requireNonNull(group);
                         disc.setTitle(formatTitle(title));
+                        if (disc.getDiscType() == Disc.DiscType.Auto) {
+                            disc.setDiscType(getType(group, title));
+                        }
                         if (release != null) {
                             disc.setReleaseDate(getReleaseDate(release));
                         }

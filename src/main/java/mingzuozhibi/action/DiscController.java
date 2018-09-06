@@ -284,7 +284,7 @@ public class DiscController extends BaseController {
                     Objects.requireNonNull(title);
                     Objects.requireNonNull(group);
                     title = formatTitle(title);
-                    DiscType type = getType(group);
+                    DiscType type = getType(group, title);
                     boolean amazon = title.startsWith("【Amazon.co.jp限定】");
                     LocalDate releaseDate = getReleaseDate(release);
                     Disc newDisc = new Disc(asin, title, type, UpdateType.Both, amazon, releaseDate);
@@ -327,7 +327,7 @@ public class DiscController extends BaseController {
         return title;
     }
 
-    private static Pattern pattern = Pattern.compile("&#x([0-9a-f]{4});");
+    private static Pattern pattern = Pattern.compile("&#x([0-9a-f]{4,8});");
 
     private static String decodeAmazonText(String input) {
         StringBuffer buffer = new StringBuffer();
@@ -342,11 +342,27 @@ public class DiscController extends BaseController {
         return new String(Character.toChars(Integer.parseInt(matcher.group(1), 16)));
     }
 
-    private static DiscType getType(String group) {
+    public static DiscType getType(String group, String title) {
         switch (group) {
             case "Music":
                 return DiscType.Cd;
             case "DVD":
+                boolean isBD = title.contains("[Blu-ray]");
+                boolean isDVD = title.contains("[DVD]");
+                boolean hasBD = title.contains("Blu-ray");
+                boolean hasDVD = title.contains("DVD");
+                if (isBD && !isDVD) {
+                    return DiscType.Bluray;
+                }
+                if (isDVD && !isBD) {
+                    return DiscType.Dvd;
+                }
+                if (hasBD && !hasDVD) {
+                    return DiscType.Bluray;
+                }
+                if (hasDVD && !hasBD) {
+                    return DiscType.Dvd;
+                }
                 return DiscType.Auto;
             default:
                 return DiscType.Other;
