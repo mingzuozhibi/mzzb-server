@@ -211,7 +211,7 @@ public class SakuraSpeedSpider {
                 case "○":
                     return DiscType.Dvd;
                 case "◎":
-                    return DiscType.Box;
+                    return DiscType.Auto;
                 default:
                     return DiscType.Other;
             }

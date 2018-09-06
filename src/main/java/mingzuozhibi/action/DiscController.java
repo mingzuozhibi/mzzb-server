@@ -284,7 +284,7 @@ public class DiscController extends BaseController {
                     Objects.requireNonNull(title);
                     Objects.requireNonNull(group);
                     title = formatTitle(title);
-                    DiscType type = getType(group, title);
+                    DiscType type = getType(group);
                     boolean amazon = title.startsWith("【Amazon.co.jp限定】");
                     LocalDate releaseDate = getReleaseDate(release);
                     Disc newDisc = new Disc(asin, title, type, UpdateType.Both, amazon, releaseDate);
@@ -342,16 +342,12 @@ public class DiscController extends BaseController {
         return new String(Character.toChars(Integer.parseInt(matcher.group(1), 16)));
     }
 
-    private static DiscType getType(String group, String title) {
+    private static DiscType getType(String group) {
         switch (group) {
             case "Music":
                 return DiscType.Cd;
             case "DVD":
-                if (title.contains("Blu-ray")) {
-                    return DiscType.Bluray;
-                } else {
-                    return DiscType.Dvd;
-                }
+                return DiscType.Auto;
             default:
                 return DiscType.Other;
         }

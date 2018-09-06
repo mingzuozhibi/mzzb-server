@@ -255,26 +255,34 @@ public abstract class SakuraHelper {
         switch (disc.getDiscType()) {
             case Cd:
                 return computeHourPt(150, 5.25, rank);
-            case Other:
-                return 0d;
-            default:
+            case Auto:
                 if (disc.getTitle().contains("Blu-ray")) {
-                    if (rank <= 10) {
-                        return computeHourPt(100, 3.2, rank);
-                    } else if (rank <= 20) {
-                        return computeHourPt(100, 3.3, rank);
-                    } else if (rank <= 50) {
-                        return computeHourPt(100, 3.4, rank);
-                    } else if (rank <= 100) {
-                        return computeHourPt(100, 3.6, rank);
-                    } else if (rank <= 300) {
-                        return computeHourPt(100, 3.8, rank);
-                    } else {
-                        return computeHourPt(100, 3.9, rank);
-                    }
+                    return computePtOfBD(rank);
                 } else {
                     return computeHourPt(100, 4.2, rank);
                 }
+            case Bluray:
+                return computePtOfBD(rank);
+            case Dvd:
+                return computeHourPt(100, 4.2, rank);
+            default:
+                return 0d;
+        }
+    }
+
+    private static double computePtOfBD(int rank) {
+        if (rank <= 10) {
+            return computeHourPt(100, 3.2, rank);
+        } else if (rank <= 20) {
+            return computeHourPt(100, 3.3, rank);
+        } else if (rank <= 50) {
+            return computeHourPt(100, 3.4, rank);
+        } else if (rank <= 100) {
+            return computeHourPt(100, 3.6, rank);
+        } else if (rank <= 300) {
+            return computeHourPt(100, 3.8, rank);
+        } else {
+            return computeHourPt(100, 3.9, rank);
         }
     }
 
