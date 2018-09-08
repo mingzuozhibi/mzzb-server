@@ -33,19 +33,12 @@ public class AmazonNewDiscSpider {
 
     public void fetch() {
         new Thread(() -> {
-
-            killChrome();
-
             List<String> command = new ArrayList<>();
             command.add("--headless");
             Launcher launcher = new Launcher();
             try (SessionFactory factory = launcher.launch(command)) {
                 fetchPage(factory, 60, "https://www.amazon.co.jp/s/ref=sr_pg_1?rh=n%3A561958%2Cn%3A%21562002%2Cn%3A562020&sort=date-desc-rank&ie=UTF8");
                 fetchPage(factory, 10, "https://www.amazon.co.jp/s/ref=sr_pg_1?rh=n%3A561958%2Cn%3A%21562002%2Cn%3A562026%2Cn%3A2201429051&sort=date-desc-rank&&ie=UTF8");
-            } finally {
-
-                killChrome();
-
             }
         }).start();
     }
@@ -87,18 +80,8 @@ public class AmazonNewDiscSpider {
         }).start();
     }
 
-
-    private void killChrome() {
-        try {
-            Runtime.getRuntime().exec("ps -ef | grep chrome | awk '{print $2}' | xargs -t -i kill -9 {}");
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            threadSleep(5);
-        }
-    }
-
     private void fetchPage(SessionFactory factory, int maxPage, String baseUrl) {
+        int error = 0;
         for (int page = 1; page <= maxPage; page++) {
             LOGGER.info("扫描新碟片中({}/{})", page, maxPage);
 
@@ -120,14 +103,19 @@ public class AmazonNewDiscSpider {
                             String title = element.select("a.a-link-normal").attr("title");
                             tryCreateDiscInfo(asin, title);
                         });
+                        error = 0;
                         break;
+                    }
+                    if (++error > 10) {
+                        LOGGER.error("[扫描新碟片数据异常][连续10次没有获取到数据][document={}]", document.outerHtml());
+                        return;
                     }
                     LOGGER.debug(String.format("[扫描新碟片数据异常][retry=%d/3][size=%d]", retry, elements.size()));
                 } catch (RuntimeException e) {
                     LOGGER.debug(String.format("[扫描新碟片遇到错误][retry=%d/3][message=%s]", retry, e.getMessage()), e);
                 }
             }
-            threadSleep(5);
+            threadSleep(10);
         }
     }
 

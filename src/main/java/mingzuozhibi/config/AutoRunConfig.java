@@ -79,14 +79,14 @@ public class AutoRunConfig {
         }
     }
 
-    @Scheduled(cron = "0 40 1/2 * * ?")
+    @Scheduled(cron = "0 40 5/6 * * ?")
     public void fetchNewDiscData() {
         if (isJapanServer) {
             amazonNewDiscSpider.fetch();
         }
     }
 
-    @Scheduled(cron = "0 0,20 0/2 * * ?")
+    @Scheduled(cron = "0 0,20 0/6 * * ?")
     public void fetchNewDiscDataFromJapan() {
         if (!isJapanServer) {
             amazonNewDiscSpider.fetchFromJapan(japanServerIp);
