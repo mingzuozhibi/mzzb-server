@@ -79,7 +79,7 @@ public class AutoRunConfig {
         }
     }
 
-    @Scheduled(cron = "0 40 5/6 * * ?")
+    @Scheduled(cron = "0 0 5/6 * * ?")
     public void fetchNewDiscData() {
         if (isJapanServer) {
             amazonNewDiscSpider.fetch();

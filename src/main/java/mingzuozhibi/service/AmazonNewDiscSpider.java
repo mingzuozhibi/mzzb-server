@@ -115,7 +115,7 @@ public class AmazonNewDiscSpider {
                     LOGGER.debug(String.format("[扫描新碟片遇到错误][retry=%d/3][message=%s]", retry, e.getMessage()), e);
                 }
             }
-            threadSleep(10);
+            threadSleep(20);
         }
     }
 
