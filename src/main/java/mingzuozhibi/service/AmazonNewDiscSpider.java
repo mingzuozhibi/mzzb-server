@@ -6,6 +6,7 @@ import io.webfolder.cdp.session.SessionFactory;
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.DiscInfo;
 import mingzuozhibi.support.Dao;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +35,9 @@ public class AmazonNewDiscSpider {
 
     public void fetch() {
         new Thread(() -> {
+
+            killChrome();
+
             List<String> command = new ArrayList<>();
             command.add("--headless");
             Launcher launcher = new Launcher();
@@ -41,6 +46,18 @@ public class AmazonNewDiscSpider {
                 fetchPage(factory, 10, "https://www.amazon.co.jp/s/ref=sr_pg_1?rh=n%3A561958%2Cn%3A%21562002%2Cn%3A562026%2Cn%3A2201429051&sort=date-desc-rank&&ie=UTF8");
             }
         }).start();
+    }
+
+    private void killChrome() {
+        try {
+            Process exec = Runtime.getRuntime().exec("ps -xf | grep google-chrome | awk '{print $1}' | xargs kill -9");
+            String output = IOUtils.toString(exec.getInputStream(), Charset.defaultCharset());
+            LOGGER.info("KillChrome: {}", output);
+        } catch (IOException e) {
+            LOGGER.info("KillChrome: " + e.getMessage(), e);
+        } finally {
+            threadSleep(10);
+        }
     }
 
     public void fetchFromJapan(String japanServerIp) {
@@ -106,6 +123,11 @@ public class AmazonNewDiscSpider {
                         error = 0;
                         break;
                     }
+                    String outerHtml = document.outerHtml();
+                    if (outerHtml.contains("api-services-support@amazon.com")) {
+                        LOGGER.error("[扫描新碟片数据异常][侦测到Amazon反发爬虫系统]");
+                        return;
+                    }
                     if (++error > 10) {
                         LOGGER.error("[扫描新碟片数据异常][连续10次没有获取到数据][document={}]", document.outerHtml());
                         return;
@@ -115,7 +137,7 @@ public class AmazonNewDiscSpider {
                     LOGGER.debug(String.format("[扫描新碟片遇到错误][retry=%d/3][message=%s]", retry, e.getMessage()), e);
                 }
             }
-            threadSleep(20);
+            threadSleep(30);
         }
     }
 
