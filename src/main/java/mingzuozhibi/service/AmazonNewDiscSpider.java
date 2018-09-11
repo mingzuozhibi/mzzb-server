@@ -111,9 +111,9 @@ public class AmazonNewDiscSpider {
                     session.wait(2000);
 
                     Document document = Jsoup.parse(session.getOuterHtml("body"));
-                    Elements elements = document.select("#s-results-list-atf > li");
+                    Elements elements = document.select("#s-results-list-atf > li[data-result-rank]");
 
-                    LOGGER.debug("发现{}个结果({}/{})", elements.size(), page, maxPage);
+                    LOGGER.info("发现{}个结果({}/{})", elements.size(), page, maxPage);
                     if (elements.size() > 0) {
                         elements.forEach(element -> {
                             String asin = element.attr("data-asin");
