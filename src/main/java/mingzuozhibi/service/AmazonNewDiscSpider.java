@@ -29,7 +29,7 @@ public class AmazonNewDiscSpider {
                 LOGGER.info("扫描新碟片中({}/{})", p + 1, 20);
                 for (int retry = 1; retry <= 3; retry++) {
                     try {
-                        String body = Jsoup.connect("http://" + japanServerIp + ":8762/newDiscs?page=" + p)
+                        String body = Jsoup.connect(String.format("http://%s:8762/newDiscs?page=%d&sort=id,desc", japanServerIp, p))
                                 .ignoreContentType(true)
                                 .timeout(10000)
                                 .execute()

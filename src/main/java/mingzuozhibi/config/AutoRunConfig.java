@@ -60,7 +60,7 @@ public class AutoRunConfig {
 
     @GetMapping("/requestNewDiscs")
     public void fetchNewDiscsDataRequest() {
-        amazonNewDiscSpider.fetchFromJapan(japanServerIp);
+        fetchNewDiscDataFromJapan();
     }
 
     @Scheduled(cron = "0 0,20 0/6 * * ?")
