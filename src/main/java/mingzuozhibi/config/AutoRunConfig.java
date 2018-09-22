@@ -27,7 +27,7 @@ public class AutoRunConfig {
     @Autowired
     private AmazonNewDiscSpider amazonNewDiscSpider;
 
-    @Value("${JAPAN_SERVER_IP}")
+    @Value("${BCLOUD_IP}")
     private String japanServerIp;
 
     /**
