@@ -41,6 +41,8 @@ public class AmazonNewDiscSpider {
                             JSONObject newdisc = data.getJSONObject(i);
                             tryCreateDiscInfo(newdisc.getString("asin"), newdisc.getString("title"));
                         }
+
+                        break;
                     } catch (IOException e) {
                         LOGGER.debug(String.format("[扫描新碟片遇到错误][retry=%d/3][message=%s]", retry, e.getMessage()), e);
                     }
