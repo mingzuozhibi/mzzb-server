@@ -231,7 +231,7 @@ public class SakuraController extends BaseController {
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/api/sakuras/{id}/discs/{discId}", produces = MEDIA_TYPE)
-    public String pushDiscs(
+    public synchronized String pushDiscs(
             @PathVariable("id") Long id,
             @PathVariable("discId") Long discId,
             @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS) String discColumns) {
@@ -264,16 +264,19 @@ public class SakuraController extends BaseController {
 
         sakura.getDiscs().add(disc);
 
+        dao.session().flush();
+
         if (LOGGER.isInfoEnabled()) {
             infoRequest("[添加碟片到列表成功][ASIN={}][列表={}]", disc.getAsin(), sakura.getTitle());
         }
+
         return objectResult(disc.toJSON(getColumns(discColumns)));
     }
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @DeleteMapping(value = "/api/sakuras/{id}/discs/{discId}", produces = MEDIA_TYPE)
-    public String dropDiscs(
+    public synchronized String dropDiscs(
             @PathVariable("id") Long id,
             @PathVariable("discId") Long discId,
             @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS) String discColumns) {
@@ -299,6 +302,8 @@ public class SakuraController extends BaseController {
         }
 
         sakura.getDiscs().remove(disc);
+
+        dao.session().flush();
 
         if (LOGGER.isInfoEnabled()) {
             infoRequest("[从列表移除碟片成功][ASIN={}][列表={}]", disc.getAsin(), sakura.getTitle());

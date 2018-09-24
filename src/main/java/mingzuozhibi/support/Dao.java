@@ -34,4 +34,6 @@ public interface Dao {
 
     Criteria create(Class<?> klass);
 
+    Session session();
+
 }
