@@ -90,6 +90,10 @@ public class ScheduleMission {
                         LOGGER.info("[Sakura列表为空: setEnabled(false)]");
                     }
                 }
+
+                session.flush();
+                session.clear();
+                Thread.yield();
             });
         });
     }
@@ -122,6 +126,10 @@ public class ScheduleMission {
                 Record record = getOrCreateRecord(dao, disc, date);
                 record.setRank(hour, disc.getThisRank());
                 record.setTotalPt(disc.getTotalPt());
+
+                session.flush();
+                session.clear();
+                Thread.yield();
             });
 
             LOGGER.info("[定时任务][计算碟片PT][碟片数量为:{}]", discs.size());
@@ -132,6 +140,10 @@ public class ScheduleMission {
                 } else {
                     computeAndUpdateSakuraPt(dao, disc);
                 }
+
+                session.flush();
+                session.clear();
+                Thread.yield();
             });
         });
     }
@@ -171,7 +183,11 @@ public class ScheduleMission {
                             disc.setDiscType(getType(group, title));
                         }
                         if (release != null) {
-                            disc.setReleaseDate(getReleaseDate(release));
+                            LocalDate newDate = getReleaseDate(release);
+                            LocalDate oldDate = disc.getReleaseDate();
+                            if (oldDate == null || oldDate.isBefore(newDate)) {
+                                disc.setReleaseDate(newDate);
+                            }
                         }
                     }
                 }

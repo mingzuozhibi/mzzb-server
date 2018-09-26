@@ -48,21 +48,19 @@ public class AutoRunConfig {
         LOGGER.info("每小时任务完成");
     }
 
+    @GetMapping("/requestDiscInfos")
     @Scheduled(cron = "0 12 4 * * ?")
     public void runOnEveryDate() {
         scheduleMission.updateDiscsTitleAndRelease();
     }
 
+    @GetMapping("/requestDiscRanks")
     @Scheduled(cron = "10 1/2 * * * ?")
     public void fetchAmazonRankData() {
         scheduler.fetchData();
     }
 
     @GetMapping("/requestNewDiscs")
-    public void fetchNewDiscsDataRequest() {
-        fetchNewDiscDataFromJapan();
-    }
-
     @Scheduled(cron = "0 0,20 0/6 * * ?")
     public void fetchNewDiscDataFromJapan() {
         amazonNewDiscSpider.fetchFromJapan(japanServerIp);
