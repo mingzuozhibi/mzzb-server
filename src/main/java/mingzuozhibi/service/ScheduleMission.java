@@ -59,45 +59,6 @@ public class ScheduleMission {
         });
     }
 
-    public void removeExpiredDiscsFromList() {
-        dao.execute(session -> {
-            @SuppressWarnings("unchecked")
-            List<Sakura> sakuras = session.createCriteria(Sakura.class)
-                    .add(Restrictions.ne("key", "9999-99"))
-                    .add(Restrictions.eq("enabled", true))
-                    .add(Restrictions.eq("viewType", ViewType.SakuraList))
-                    .list();
-
-            sakuras.forEach(sakura -> {
-                boolean expiredSakura = isExpiredSakura(sakura);
-                List<Disc> toDelete = sakura.getDiscs().stream()
-                        .filter(disc -> disc.getUpdateType() != UpdateType.Sakura)
-                        .filter(disc -> disc.getUpdateType() == UpdateType.None || expiredSakura)
-                        .filter(SakuraHelper::isExpiredDisc)
-                        .collect(Collectors.toList());
-                sakura.getDiscs().removeAll(toDelete);
-
-                if (sakura.getDiscs().isEmpty()) {
-                    sakura.setEnabled(false);
-                }
-
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("[定时任务][移除过期的Sakura碟片][sakura={}, delete={}]",
-                            sakura.getTitle(), toDelete.size());
-                    toDelete.forEach(disc -> LOGGER.info("[移除碟片][sakura={}, disc={}]",
-                            sakura.getTitle(), disc.getTitle()));
-                    if (!sakura.isEnabled() && toDelete.size() > 0) {
-                        LOGGER.info("[Sakura列表为空: setEnabled(false)]");
-                    }
-                }
-
-                session.flush();
-                session.clear();
-                Thread.yield();
-            });
-        });
-    }
-
     public void recordDiscsRankAndComputePt() {
         // +9 timezone and prev hour, so +1h -1h = +0h
         LocalDateTime recordTime = LocalDateTime.now();
@@ -128,7 +89,7 @@ public class ScheduleMission {
                 record.setTotalPt(disc.getTotalPt());
 
                 session.flush();
-                session.clear();
+                session.evict(record);
                 Thread.yield();
             });
 
@@ -137,12 +98,7 @@ public class ScheduleMission {
             discs.forEach(disc -> {
                 if (disc.getUpdateType() != UpdateType.Sakura) {
                     computeAndUpdateAmazonPt(dao, disc);
-                } else {
-                    computeAndUpdateSakuraPt(dao, disc);
                 }
-
-                session.flush();
-                session.clear();
                 Thread.yield();
             });
         });

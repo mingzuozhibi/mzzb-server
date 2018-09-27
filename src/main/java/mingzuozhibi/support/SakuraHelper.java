@@ -2,81 +2,18 @@ package mingzuozhibi.support;
 
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Record;
-import mingzuozhibi.persist.disc.Sakura;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.OptionalDouble;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 public abstract class SakuraHelper {
-
-    public static int mergeRankText(Dao dao, Disc disc, String text) {
-        String regex = "【(\\d{4})年 (\\d{2})月 (\\d{2})日 (\\d{2})時\\(.\\)】 ([*,\\d]{7})位";
-        Pattern pattern = Pattern.compile(regex);
-        String[] strings = text.split("\n");
-        int matchLine = 0;
-        for (String string : strings) {
-            Matcher matcher = pattern.matcher(string);
-            if (matcher.find()) {
-                Integer rank = parseNumber(matcher.group(5));
-                if (rank == null) {
-                    continue;
-                }
-                int year = Integer.parseInt(matcher.group(1));
-                int month = Integer.parseInt(matcher.group(2));
-                int date = Integer.parseInt(matcher.group(3));
-                int hour = Integer.parseInt(matcher.group(4));
-                LocalDate localDate = LocalDate.of(year, month, date);
-
-                Record record = getOrCreateRecord(dao, disc, localDate);
-                record.setRank(hour, rank);
-                matchLine++;
-            }
-        }
-        return matchLine;
-    }
-
-    public static int mergePtText(Dao dao, Disc disc, String text) {
-        String regex = "【(\\d{4})年 (\\d{2})月 (\\d{2})日\\(.\\)】 ([*,\\d]{7})";
-        Pattern pattern = Pattern.compile(regex);
-        String[] strings = text.split("\n");
-        int matchLine = 0;
-        for (String string : strings) {
-            Matcher matcher = pattern.matcher(string);
-            if (matcher.find()) {
-                Integer totalPt = parseNumber(matcher.group(4));
-                if (totalPt == null) {
-                    continue;
-                }
-                int year = Integer.parseInt(matcher.group(1));
-                int month = Integer.parseInt(matcher.group(2));
-                int date = Integer.parseInt(matcher.group(3));
-                LocalDate localDate = LocalDate.of(year, month, date);
-
-                Record record = getOrCreateRecord(dao, disc, localDate);
-                record.setTotalPt(totalPt);
-                matchLine++;
-            }
-        }
-        return matchLine;
-    }
-
-    private static Integer parseNumber(String text) {
-        String rankText = text.replaceAll("[*,]", "");
-        if (!rankText.isEmpty()) {
-            return new Integer(rankText);
-        }
-        return null;
-    }
 
     public static Record getOrCreateRecord(Dao dao, Disc disc, LocalDate date) {
         Record record = (Record) dao.create(Record.class)
@@ -153,33 +90,6 @@ public abstract class SakuraHelper {
                 .list();
     }
 
-    public static void computeAndUpdateSakuraPt(Dao dao, Disc disc) {
-        AtomicReference<Integer> lastTotalPt = new AtomicReference<>(0);
-
-        LocalDate today = LocalDate.now();
-        LocalDate seven = today.minusDays(7);
-        AtomicReference<Integer> sevenPt = new AtomicReference<>();
-
-        disc.setTodayPt(null);
-
-        findRecords(dao, disc).forEach(record -> {
-            if (record.getTotalPt() != null) {
-                if (lastTotalPt.get() != null) {
-                    int todayPt = record.getTotalPt() - lastTotalPt.get();
-                    record.setTodayPt(todayPt);
-                    checkToday(record, today, disc);
-                    checkSeven(record, seven, sevenPt);
-                }
-                lastTotalPt.set(record.getTotalPt());
-            }
-        });
-
-        disc.setTotalPt(lastTotalPt.get());
-        if (disc.getTodayPt() != null && disc.getTodayPt() != 0) {
-            updateGuessPt(disc, today, lastTotalPt.get(), sevenPt.get());
-        }
-    }
-
     public static void computeAndUpdateAmazonPt(Dao dao, Disc disc) {
         AtomicReference<Integer> lastRank = new AtomicReference<>();
         AtomicReference<Double> lastTotalPt = new AtomicReference<>(0d);
@@ -198,6 +108,9 @@ public abstract class SakuraHelper {
             record.setTodayPt((int) todayPt);
             checkToday(record, today, disc);
             checkSeven(record, seven, sevenPt);
+
+            dao.session().flush();
+            dao.session().evict(record);
         });
 
         disc.setTotalPt(lastTotalPt.get().intValue());
@@ -284,20 +197,6 @@ public abstract class SakuraHelper {
 
     private static double computeHourPt(int div, double base, int rank) {
         return div / Math.exp(Math.log(rank) / Math.log(base));
-    }
-
-    public static boolean isExpiredSakura(Sakura sakura) {
-        return !noExpiredSakura(sakura);
-    }
-
-    public static boolean noExpiredSakura(Sakura sakura) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate sakuraDate = LocalDate.parse(sakura.getKey() + "-01", formatter);
-        return LocalDate.now().isBefore(sakuraDate.plusMonths(3));
-    }
-
-    public static boolean isExpiredDisc(Disc disc) {
-        return !noExpiredDisc(disc);
     }
 
     public static boolean noExpiredDisc(Disc disc) {

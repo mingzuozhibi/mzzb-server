@@ -34,7 +34,6 @@ public class AutoRunConfig {
      * call by MzzbServerApplication
      */
     public void runOnStartupServer() {
-        scheduleMission.removeExpiredDiscsFromList();
         scheduleMission.removeExpiredAutoLoginData();
         scheduleMission.recordDiscsRankAndComputePt();
     }
@@ -42,7 +41,6 @@ public class AutoRunConfig {
     @Scheduled(cron = "0 2 * * * ?")
     public void runOnEveryHour() {
         LOGGER.info("每小时任务开始");
-        scheduleMission.removeExpiredDiscsFromList();
         scheduleMission.removeExpiredAutoLoginData();
         scheduleMission.recordDiscsRankAndComputePt();
         LOGGER.info("每小时任务完成");

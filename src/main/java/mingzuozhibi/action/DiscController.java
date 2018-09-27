@@ -174,53 +174,13 @@ public class DiscController extends BaseController {
     @Transactional
     @PutMapping(value = "/api/discs/{id}/ranks", produces = MEDIA_TYPE)
     public String mergeRanks(@PathVariable Long id, @JsonArg String text) {
-        Disc disc = dao.get(Disc.class, id);
-        if (disc == null) {
-            if (LOGGER.isWarnEnabled()) {
-                warnRequest("[提交排名失败][指定的碟片Id不存在][Id={}]", id);
-            }
-            return errorMessage("指定的碟片Id不存在");
-        }
-
-        int matchLine = mergeRankText(dao, disc, text);
-
-        computeAndUpdateAmazonPt(dao, disc);
-
-        JSONObject result = disc.toJSON();
-
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[提交排名成功][提交记录数={}][碟片信息={}]", matchLine, result);
-        }
-
-        result.put("records", buildRecords(dao, disc));
-
-        return objectResult(result);
+        return errorMessage("不支持的操作");
     }
 
     @Transactional
     @PutMapping(value = "/api/discs/{id}/pts", produces = MEDIA_TYPE)
     public String mergePts(@PathVariable Long id, @JsonArg String text) {
-        Disc disc = dao.get(Disc.class, id);
-        if (disc == null) {
-            if (LOGGER.isWarnEnabled()) {
-                warnRequest("[提交PT失败][指定的碟片Id不存在][Id={}]", id);
-            }
-            return errorMessage("指定的碟片Id不存在");
-        }
-
-        int matchLine = mergePtText(dao, disc, text);
-
-        computeAndUpdateSakuraPt(dao, disc);
-
-        JSONObject result = disc.toJSON();
-
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[提交PT成功][提交记录数={}][碟片信息={}]", matchLine, result);
-        }
-
-        result.put("records", buildRecords(dao, disc));
-
-        return objectResult(result);
+        return errorMessage("不支持的操作");
     }
 
     @Transactional
