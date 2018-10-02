@@ -189,6 +189,7 @@ public class AmazonScheduler {
                 }
             });
             dao.findAll(Sakura.class).stream()
+                    .filter(Sakura::isEnabled)
                     .filter(sakura -> sakura.getViewType() != ViewType.SakuraList)
                     .forEach(sakura -> {
                         sakura.setModifyTime(fullUpdateTime);

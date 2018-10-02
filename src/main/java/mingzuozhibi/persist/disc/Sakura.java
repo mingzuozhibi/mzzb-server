@@ -5,7 +5,10 @@ import org.json.JSONObject;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -103,9 +106,9 @@ public class Sakura extends BaseModel implements Comparable<Sakura> {
         object.put("title", getTitle());
         object.put("enabled", isEnabled());
         object.put("viewType", getViewType());
-        Optional.ofNullable(getModifyTime()).ifPresent(modifyTime -> {
+        if (isEnabled() && getModifyTime() != null) {
             object.put("modifyTime", toEpochMilli(modifyTime));
-        });
+        }
         return object;
     }
 

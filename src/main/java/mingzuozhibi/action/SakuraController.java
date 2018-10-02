@@ -33,7 +33,6 @@ public class SakuraController extends BaseController {
             Criteria criteria = session.createCriteria(Sakura.class);
             if (isPublic) {
                 criteria.add(Restrictions.ne("viewType", ViewType.PrivateList));
-                criteria.add(Restrictions.eq("enabled", true));
             }
             return criteria.list();
         });
