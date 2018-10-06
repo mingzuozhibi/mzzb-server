@@ -56,8 +56,9 @@ public class AmazonDiscSpider {
         for (int i = 0; i < discRanks.length(); i++) {
             JSONObject discRank = discRanks.getJSONObject(i);
             String asin = discRank.getString("asin");
-            int rank = discRank.getInt("rank");
-            results.put(asin, rank);
+            if (discRank.has("rank")) {
+                results.put(asin, discRank.getInt("rank"));
+            }
         }
         LocalDateTime modifyTime = Instant.ofEpochMilli(root.getLong("updateOn"))
                 .atZone(ZoneId.systemDefault()).toLocalDateTime();
