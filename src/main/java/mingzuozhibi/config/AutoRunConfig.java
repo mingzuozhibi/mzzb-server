@@ -1,7 +1,7 @@
 package mingzuozhibi.config;
 
+import mingzuozhibi.service.AmazonDiscSpider;
 import mingzuozhibi.service.AmazonNewDiscSpider;
-import mingzuozhibi.service.AmazonScheduler;
 import mingzuozhibi.service.ScheduleMission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,10 +19,10 @@ public class AutoRunConfig {
     public static final Logger LOGGER = LoggerFactory.getLogger(AutoRunConfig.class);
 
     @Autowired
-    private AmazonScheduler scheduler;
+    private ScheduleMission scheduleMission;
 
     @Autowired
-    private ScheduleMission scheduleMission;
+    private AmazonDiscSpider amazonDiscSpider;
 
     @Autowired
     private AmazonNewDiscSpider amazonNewDiscSpider;
@@ -46,22 +46,18 @@ public class AutoRunConfig {
         LOGGER.info("每小时任务完成");
     }
 
-    @GetMapping("/requestDiscInfos")
-    @Scheduled(cron = "0 12 4 * * ?")
-    public void runOnEveryDate() {
-        scheduleMission.updateDiscsTitleAndRelease();
+    @GetMapping("/requestNewDiscs")
+    @Scheduled(cron = "0 0,20 0/6 * * ?")
+    public void fetchNewDiscs() {
+        amazonNewDiscSpider.fetchFromJapan(japanServerIp);
     }
 
     @GetMapping("/requestDiscRanks")
-    @Scheduled(cron = "10 1/2 * * * ?")
-    public void fetchAmazonRankData() {
-        scheduler.fetchData();
-    }
-
-    @GetMapping("/requestNewDiscs")
-    @Scheduled(cron = "0 0,20 0/6 * * ?")
-    public void fetchNewDiscDataFromJapan() {
-        amazonNewDiscSpider.fetchFromJapan(japanServerIp);
+    @Scheduled(cron = "0 2/5 * * * ?")
+    public void fetchDiscRanks() {
+        new Thread(() -> {
+            amazonDiscSpider.fetchFromBCloud();
+        }).start();
     }
 
 }
