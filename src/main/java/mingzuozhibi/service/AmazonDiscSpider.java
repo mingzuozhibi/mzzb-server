@@ -1,6 +1,7 @@
 package mingzuozhibi.service;
 
 import mingzuozhibi.persist.disc.Disc;
+import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.support.Dao;
 import org.json.JSONArray;
@@ -15,9 +16,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Service
 public class AmazonDiscSpider {
@@ -32,11 +37,7 @@ public class AmazonDiscSpider {
 
     public JSONObject fetchDiscInfo(String asin) {
         LOGGER.info("开始更新日亚碟片, ASIN={}", asin);
-        JSONObject root = new JSONObject(discInfosAsinGet(asin));
-        if (root.getBoolean("success")) {
-            return root.getJSONObject("data");
-        }
-        return null;
+        return new JSONObject(discInfosAsinGet(asin));
     }
 
     @Transactional
@@ -51,41 +52,42 @@ public class AmazonDiscSpider {
                 });
         discRanksActivePut(asins);
         JSONObject root = new JSONObject(discRanksActiveGet());
-        Map<String, Integer> results = new HashMap<>();
-        JSONArray discRanks = root.getJSONArray("data");
-        for (int i = 0; i < discRanks.length(); i++) {
-            JSONObject discRank = discRanks.getJSONObject(i);
-            String asin = discRank.getString("asin");
-            if (discRank.has("rank")) {
-                results.put(asin, discRank.getInt("rank"));
-            }
-        }
-        LocalDateTime modifyTime = Instant.ofEpochMilli(root.getLong("updateOn"))
-                .atZone(ZoneId.systemDefault()).toLocalDateTime();
-        finishTheUpdate(results, modifyTime);
-    }
 
-    private void finishTheUpdate(Map<String, Integer> results, LocalDateTime updateOn) {
-        LOGGER.info("[正在写入Amazon(ALL)数据]]");
-        results.forEach((asin, rank) -> {
+        LocalDateTime updateOn = Instant.ofEpochMilli(root.getLong("updateOn"))
+                .atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+
+        JSONArray discInfos = root.getJSONArray("data");
+        for (int i = 0; i < discInfos.length(); i++) {
+            JSONObject discInfo = discInfos.getJSONObject(i);
+            String asin = discInfo.getString("asin");
             Disc disc = dao.lookup(Disc.class, "asin", asin);
             if (disc != null) {
-                if (disc.getModifyTime() == null || updateOn.isAfter(disc.getModifyTime())) {
-                    disc.setPrevRank(disc.getThisRank());
-                    disc.setThisRank(rank);
-                    if (!Objects.equals(disc.getThisRank(), disc.getPrevRank())) {
-                        disc.setModifyTime(updateOn);
+                disc.setTitle(discInfo.getString("title"));
+                disc.setDiscType(DiscType.valueOf(discInfo.getString("type")));
+
+                LocalDate date = LocalDate.parse(discInfo.getString("date"), formatter);
+                if (date.isAfter(disc.getReleaseDate())) {
+                    disc.setReleaseDate(date);
+                }
+
+                if (discInfo.has("rank")) {
+                    if (disc.getModifyTime() == null || updateOn.isAfter(disc.getModifyTime())) {
+                        disc.setPrevRank(disc.getThisRank());
+                        disc.setThisRank(discInfo.getInt("rank"));
+                        if (!Objects.equals(disc.getThisRank(), disc.getPrevRank())) {
+                            disc.setModifyTime(updateOn);
+                        }
+                        disc.setUpdateTime(updateOn);
                     }
-                    disc.setUpdateTime(updateOn);
                 }
             }
-        });
-        dao.findAll(Sakura.class).stream()
-                .filter(Sakura::isEnabled)
-                .forEach(sakura -> {
-                    sakura.setModifyTime(updateOn);
-                });
-        LOGGER.info("[成功更新Amazon(ALL)数据]");
+        }
+
+        for (Sakura sakura : dao.findBy(Sakura.class, "enabled", true)) {
+            sakura.setModifyTime(updateOn);
+        }
     }
 
     private String discRanksActivePut(Set<String> asins) {

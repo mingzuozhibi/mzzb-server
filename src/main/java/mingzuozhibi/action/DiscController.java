@@ -175,24 +175,29 @@ public class DiscController extends BaseController {
         return errorMessage("不支持的操作");
     }
 
-
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping(value = "/api/discs/search/{asin}", produces = MEDIA_TYPE)
     public String search(@PathVariable String asin) {
-        LOGGER.info("申请查询日亚碟片, ASIN={}", asin);
+        LOGGER.info("申请查询碟片, ASIN={}", asin);
         Disc disc = dao.lookup(Disc.class, "asin", asin);
         if (disc == null) {
-            JSONObject discInfo = amazonDiscSpider.fetchDiscInfo(asin);
-            disc = new Disc(
-                    asin,
-                    discInfo.getString("title"),
-                    DiscType.valueOf(discInfo.getString("type")),
-                    UpdateType.Both,
-                    false,
-                    LocalDate.parse(discInfo.getString("date"), formatter2)
-            );
-            dao.save(disc);
+            LOGGER.info("开始从日亚查询碟片, ASIN={}", asin);
+            JSONObject root = amazonDiscSpider.fetchDiscInfo(asin);
+            if (root.getBoolean("success")) {
+                JSONObject discInfo = root.getJSONObject("data");
+                disc = new Disc(
+                        asin,
+                        discInfo.getString("title"),
+                        DiscType.valueOf(discInfo.getString("type")),
+                        UpdateType.Both,
+                        false,
+                        LocalDate.parse(discInfo.getString("date"), formatter2)
+                );
+                dao.save(disc);
+            } else {
+                return root.toString();
+            }
         }
 
         JSONArray result = new JSONArray();
