@@ -65,7 +65,10 @@ public class AmazonDiscSpider {
             Disc disc = dao.lookup(Disc.class, "asin", asin);
             if (disc != null) {
                 disc.setTitle(discInfo.getString("title"));
-                disc.setDiscType(DiscType.valueOf(discInfo.getString("type")));
+
+                if (disc.getDiscType() == DiscType.Auto || disc.getDiscType() == DiscType.Other) {
+                    disc.setDiscType(DiscType.valueOf(discInfo.getString("type")));
+                }
 
                 LocalDate date = LocalDate.parse(discInfo.getString("date"), formatter);
                 if (date.isAfter(disc.getReleaseDate())) {
