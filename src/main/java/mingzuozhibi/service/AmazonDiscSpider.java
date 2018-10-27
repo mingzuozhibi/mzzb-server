@@ -88,8 +88,13 @@ public class AmazonDiscSpider {
             }
         }
 
-        for (Sakura sakura : dao.findBy(Sakura.class, "enabled", true)) {
-            sakura.setModifyTime(updateOn);
+        if (discInfos.length() > 0) {
+            LOGGER.info("成功更新日亚排名：共{}个", discInfos.length());
+            for (Sakura sakura : dao.findBy(Sakura.class, "enabled", true)) {
+                sakura.setModifyTime(updateOn);
+            }
+        } else {
+            LOGGER.warn("未能更新日亚排名");
         }
     }
 
