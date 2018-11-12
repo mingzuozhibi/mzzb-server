@@ -7,6 +7,7 @@ import mingzuozhibi.persist.disc.Record;
 import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.support.Dao;
 import mingzuozhibi.support.SakuraHelper;
+import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,20 +55,8 @@ public class ScheduleMission {
         int hour = recordTime.getHour();
 
         dao.execute(session -> {
-            @SuppressWarnings("unchecked")
-            List<Sakura> sakuras = session.createCriteria(Sakura.class)
-                    .add(Restrictions.ne("key", "9999-99"))
-                    .add(Restrictions.eq("enabled", true))
-                    .list();
 
-            Set<Disc> discs = new LinkedHashSet<>();
-
-            sakuras.forEach(sakura -> {
-                sakura.getDiscs().stream()
-                        .filter(disc -> disc.getUpdateType() != UpdateType.None)
-                        .filter(SakuraHelper::noExpiredDisc)
-                        .forEach(discs::add);
-            });
+            Set<Disc> discs = getActiveDiscs(session);
 
             LOGGER.info("[定时任务][记录碟片排名][碟片数量为:{}]", discs.size());
 
@@ -91,6 +80,24 @@ public class ScheduleMission {
             });
             LOGGER.info("[定时任务][计算碟片PT完成]", discs.size());
         });
+    }
+
+    public static Set<Disc> getActiveDiscs(Session session) {
+        @SuppressWarnings("unchecked")
+        List<Sakura> sakuras = session.createCriteria(Sakura.class)
+                .add(Restrictions.ne("key", "9999-99"))
+                .add(Restrictions.eq("enabled", true))
+                .list();
+
+        Set<Disc> discs = new LinkedHashSet<>();
+
+        sakuras.forEach(sakura -> {
+            sakura.getDiscs().stream()
+                    .filter(disc -> disc.getUpdateType() != UpdateType.None)
+                    .filter(SakuraHelper::noExpiredDisc)
+                    .forEach(discs::add);
+        });
+        return discs;
     }
 
 }
