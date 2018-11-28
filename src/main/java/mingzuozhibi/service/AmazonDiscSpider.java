@@ -6,6 +6,7 @@ import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.support.Dao;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.jsoup.Connection;
 import org.jsoup.Connection.Method;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
@@ -20,9 +21,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+
+import static mingzuozhibi.service.ScheduleMission.getActiveAsins;
 
 @Service
 public class AmazonDiscSpider {
@@ -43,14 +45,11 @@ public class AmazonDiscSpider {
     @Transactional
     public void fetchFromBCloud() {
         LOGGER.info("开始更新日亚排名");
-        Set<String> asins = new HashSet<>();
-        dao.findBy(Sakura.class, "enabled", true)
-                .forEach(sakura -> {
-                    sakura.getDiscs().forEach(disc -> {
-                        asins.add(disc.getAsin());
-                    });
-                });
-        discRanksActivePut(asins);
+
+        dao.execute(session -> {
+            discRanksActivePut(getActiveAsins(session));
+        });
+
         JSONObject root = new JSONObject(discRanksActiveGet());
 
         LocalDateTime updateOn = Instant.ofEpochMilli(root.getLong("updateOn"))
@@ -126,27 +125,14 @@ public class AmazonDiscSpider {
     }
 
     private String discRanksActiveGet() {
-        String url = "http://" + bcloudIp + ":8762/discRanks/active";
-        Exception lastThrown = null;
-        for (int retry = 0; retry < 3; retry++) {
-            try {
-                return Jsoup.connect(url)
-                        .ignoreContentType(true)
-                        .method(Method.GET)
-                        .timeout(30000)
-                        .execute()
-                        .body();
-            } catch (Exception e) {
-                lastThrown = e;
-            }
-        }
-        String format = "Jsoup: 无法获取网页内容[url=%s][message=%s]";
-        String message = String.format(format, url, lastThrown.getMessage());
-        throw new RuntimeException(message, lastThrown);
+        return getJSON("http://" + bcloudIp + ":8762/discRanks/active");
     }
 
     private String discInfosAsinGet(String asin) {
-        String url = "http://" + bcloudIp + ":8762/discInfos/" + asin;
+        return getJSON("http://" + bcloudIp + ":8762/discInfos/" + asin);
+    }
+
+    private String getJSON(String url) {
         Exception lastThrown = null;
         for (int retry = 0; retry < 3; retry++) {
             try {

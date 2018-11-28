@@ -20,6 +20,7 @@ import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static mingzuozhibi.support.SakuraHelper.computeAndUpdateAmazonPt;
 import static mingzuozhibi.support.SakuraHelper.getOrCreateRecord;
@@ -99,6 +100,11 @@ public class ScheduleMission {
                     .forEach(discs::add);
         });
         return discs;
+    }
+
+    public static Set<String> getActiveAsins(Session session) {
+        return getActiveDiscs(session).stream().map(Disc::getAsin)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
 }
