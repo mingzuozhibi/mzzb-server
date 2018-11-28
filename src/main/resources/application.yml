@@ -20,14 +20,6 @@ spring:
       - dev
 
 ---
-server:
-  port: 9443
-  ssl:
-    key-store: config/keystore.p12
-    key-store-password: fuhaiwei
-    server.ssl.keyStoreType: PKCS12
-    server.ssl.keyAlias: dev-mzzb-server
-
 spring:
   profiles: dev
   datasource:

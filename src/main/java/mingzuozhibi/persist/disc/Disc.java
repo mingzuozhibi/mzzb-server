@@ -17,7 +17,7 @@ import java.util.Set;
 public class Disc extends BaseModel implements Comparable<Disc> {
 
     public enum DiscType {
-        Cd, Dvd, Bluray, Box, Other
+        Cd, Dvd, Bluray, Auto, Other
     }
 
     public enum UpdateType {
