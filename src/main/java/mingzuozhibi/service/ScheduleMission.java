@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.Comparator.*;
 import static mingzuozhibi.support.SakuraHelper.computeAndUpdateAmazonPt;
 import static mingzuozhibi.support.SakuraHelper.getOrCreateRecord;
 
@@ -81,6 +82,18 @@ public class ScheduleMission {
                 Thread.yield();
             });
             LOGGER.info("[定时任务][计算碟片PT完成]", discs.size());
+        });
+    }
+
+    public void updateSakuraModifyTime() {
+        LOGGER.info("start updateSakuraModifyTime()");
+        dao.execute(session -> {
+            Comparator<Disc> comparator = comparing(Disc::getUpdateTime, nullsFirst(naturalOrder()));
+            dao.findBy(Sakura.class, "enabled", true).forEach(sakura -> {
+                sakura.getDiscs().stream().max(comparator).ifPresent(disc -> {
+                    sakura.setModifyTime(disc.getUpdateTime());
+                });
+            });
         });
     }
 

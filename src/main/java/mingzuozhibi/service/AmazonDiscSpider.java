@@ -2,11 +2,9 @@ package mingzuozhibi.service;
 
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
-import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.support.Dao;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.jsoup.Connection;
 import org.jsoup.Connection.Method;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
@@ -37,10 +35,15 @@ public class AmazonDiscSpider {
     @Autowired
     private Dao dao;
 
+    @Autowired
+    private ScheduleMission scheduleMission;
+
     public JSONObject fetchDiscInfo(String asin) {
         LOGGER.info("开始更新日亚碟片, ASIN={}", asin);
         return new JSONObject(discInfosAsinGet(asin));
     }
+
+    private LocalDateTime prevTime = null;
 
     @Transactional
     public void fetchFromBCloud() {
@@ -54,6 +57,11 @@ public class AmazonDiscSpider {
 
         LocalDateTime updateOn = Instant.ofEpochMilli(root.getLong("updateOn"))
                 .atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+        if (prevTime != null && prevTime.isEqual(updateOn)) {
+            LOGGER.info("日亚排名信息没有变化");
+            return;
+        }
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
@@ -89,19 +97,17 @@ public class AmazonDiscSpider {
 
         if (discInfos.length() > 0) {
             LOGGER.info("成功更新日亚排名：共{}个", discInfos.length());
-            for (Sakura sakura : dao.findBy(Sakura.class, "enabled", true)) {
-                sakura.setModifyTime(updateOn);
-            }
+            scheduleMission.updateSakuraModifyTime();
         } else {
             LOGGER.warn("未能更新日亚排名");
         }
+
+        prevTime = updateOn;
     }
 
     private String discRanksActivePut(Set<String> asins) {
         JSONArray array = new JSONArray();
         asins.forEach(array::put);
-
-        System.out.println(array.toString().length());
 
         String url = "http://" + bcloudIp + ":8762/discRanks/active";
         Exception lastThrown = null;
