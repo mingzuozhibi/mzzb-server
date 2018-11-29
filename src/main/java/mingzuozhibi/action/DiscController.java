@@ -5,7 +5,6 @@ import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.persist.disc.Disc.UpdateType;
 import mingzuozhibi.service.AmazonDiscSpider;
 import mingzuozhibi.service.AmazonNewDiscSpider;
-import mingzuozhibi.service.ScheduleMission;
 import mingzuozhibi.support.JsonArg;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -21,12 +20,12 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static mingzuozhibi.support.SakuraHelper.buildRanks;
-import static mingzuozhibi.support.SakuraHelper.buildRecords;
+import static mingzuozhibi.utils.DiscUtils.needUpdateAsins;
+import static mingzuozhibi.utils.RecordUtils.buildRanks;
+import static mingzuozhibi.utils.RecordUtils.buildRecords;
 
 @RestController
 public class DiscController extends BaseController {
@@ -44,14 +43,10 @@ public class DiscController extends BaseController {
     @Autowired
     private AmazonDiscSpider amazonDiscSpider;
 
+    @Transactional
     @GetMapping(value = "/api/discs/activeCount")
     public String activeCount() {
-        AtomicReference<Integer> count = new AtomicReference<>();
-        dao.execute(session -> {
-            Set<Disc> discs = ScheduleMission.getActiveDiscs(session);
-            count.set(discs.size());
-        });
-        return objectResult(count.get());
+        return objectResult(needUpdateAsins(dao.session()).size());
     }
 
     @Transactional

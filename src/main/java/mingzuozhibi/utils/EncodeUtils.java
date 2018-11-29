@@ -1,33 +1,21 @@
-package mingzuozhibi.support;
+package mingzuozhibi.utils;
 
-import mingzuozhibi.persist.core.User;
-import org.springframework.stereotype.Service;
-
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Objects;
 
-@Service
-public class PassUtil {
+public abstract class EncodeUtils {
 
-    public static void main(String[] args) {
-        System.out.println(new PassUtil().md5("admin"));
-    }
-
-    public boolean vaild(User user, String password) {
-        String md5Password = md5(user.getUsername() + md5(password));
-        return md5Password.equals(user.getPassword());
-    }
-
-    public String encode(String username, String password) {
+    public static String encode(String username, String password) {
         Objects.requireNonNull(username);
         Objects.requireNonNull(password);
         return md5(username + md5(password));
     }
 
-    private String md5(String text) {
+    private static String md5(String text) {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] bytes = md.digest(text.getBytes("utf-8"));
+            byte[] bytes = md.digest(text.getBytes(StandardCharsets.UTF_8));
             return toHex(bytes);
         } catch (Exception e) {
             throw new RuntimeException(e);

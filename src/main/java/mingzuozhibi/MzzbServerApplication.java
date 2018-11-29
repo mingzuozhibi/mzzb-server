@@ -27,7 +27,6 @@ public class MzzbServerApplication {
     }
 
     @Bean
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public SessionFactory sessionFactory(EntityManagerFactory emf) {
         LOGGER.info("EntityManagerFactory已成功注入");
         return emf.unwrap(SessionFactory.class);

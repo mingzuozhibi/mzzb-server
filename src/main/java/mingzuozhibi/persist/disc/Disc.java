@@ -21,7 +21,31 @@ public class Disc extends BaseModel implements Comparable<Disc> {
     }
 
     public enum UpdateType {
-        Sakura, Amazon, Both, None
+
+        @Deprecated Sakura(true, false),
+
+        @Deprecated Amazon(true, true),
+
+        Both(true, true),
+
+        None(false, false);
+
+        private boolean needRecord;
+        private boolean needUpdate;
+
+        UpdateType(boolean needRecord, boolean needUpdate) {
+            this.needRecord = needRecord;
+            this.needUpdate = needUpdate;
+        }
+
+        public boolean isNeedRecord() {
+            return needRecord;
+        }
+
+        public boolean isNeedUpdate() {
+            return needUpdate;
+        }
+
     }
 
     private String asin;

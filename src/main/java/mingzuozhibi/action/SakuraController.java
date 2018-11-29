@@ -21,31 +21,22 @@ import static mingzuozhibi.action.DiscController.buildSet;
 @RestController
 public class SakuraController extends BaseController {
 
-    public final static String DISC_COLUMNS = "id,asin,thisRank,totalPt,title,titlePc,titleMo,surplusDays";
+    private final static String DISC_COLUMNS = "id,asin,thisRank,totalPt,title,titlePc,titleMo,surplusDays";
 
-    public static Set<String> DISC_COLUMNS_SET = buildSet(DISC_COLUMNS);
+    private static Set<String> DISC_COLUMNS_SET = buildSet(DISC_COLUMNS);
 
     @Transactional
+    @SuppressWarnings("unchecked")
     @GetMapping(value = "/api/sakuras", produces = MEDIA_TYPE)
     public String findAll(@RequestParam(name = "public", defaultValue = "true") boolean isPublic) {
-        @SuppressWarnings("unchecked")
-        List<Sakura> sakuras = dao.query(session -> {
-            Criteria criteria = session.createCriteria(Sakura.class);
-            if (isPublic) {
-                criteria.add(Restrictions.ne("viewType", ViewType.PrivateList));
-            }
-            return criteria.list();
-        });
+        Criteria criteria = dao.session().createCriteria(Sakura.class);
+        if (isPublic) {
+            criteria.add(Restrictions.ne("viewType", ViewType.PrivateList));
+        }
+        List<Sakura> sakuras = criteria.list();
 
         JSONArray result = new JSONArray();
-
-        sakuras.forEach(sakura -> {
-            result.put(sakura.toJSON());
-        });
-
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[获取多个列表成功][列表数量={}]", sakuras.size());
-        }
+        sakuras.stream().map(Sakura::toJSON).forEach(result::put);
         return objectResult(result);
     }
 
@@ -61,12 +52,7 @@ public class SakuraController extends BaseController {
             return errorMessage("指定的列表索引不存在");
         }
 
-        JSONObject result = sakura.toJSON();
-
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[获取列表成功][列表信息={}]", sakura.toJSON());
-        }
-        return objectResult(result);
+        return objectResult(sakura.toJSON());
     }
 
     @Transactional
@@ -77,6 +63,7 @@ public class SakuraController extends BaseController {
             @JsonArg String title,
             @JsonArg(defaults = "true") boolean enabled,
             @JsonArg(defaults = "PublicList") ViewType viewType) {
+
         if (key.isEmpty()) {
             if (LOGGER.isWarnEnabled()) {
                 warnRequest("[创建列表失败][列表索引不能为空]");

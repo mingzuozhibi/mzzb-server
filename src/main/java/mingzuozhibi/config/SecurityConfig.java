@@ -4,7 +4,7 @@ import com.allanditzel.springframework.security.web.csrf.CsrfTokenResponseHeader
 import mingzuozhibi.persist.core.User;
 import mingzuozhibi.security.CustomAccessDeniedHandler;
 import mingzuozhibi.support.Dao;
-import mingzuozhibi.support.PassUtil;
+import mingzuozhibi.utils.EncodeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +55,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         logger.info("设置Security安全策略");
 
         dao.execute(session -> {
-            String encode = new PassUtil().encode("admin", adminPassword);
+            String encode = EncodeUtils.encode("admin", adminPassword);
             User user = dao.lookup(User.class, "username", "admin");
             if (user == null) {
                 user = new User("admin", encode, true);

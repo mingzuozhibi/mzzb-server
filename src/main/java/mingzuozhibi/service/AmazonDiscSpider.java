@@ -2,6 +2,7 @@ package mingzuozhibi.service;
 
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
+import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.support.Dao;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -19,10 +20,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
 
-import static mingzuozhibi.service.ScheduleMission.getActiveAsins;
+import static java.util.Comparator.*;
+import static mingzuozhibi.utils.DiscUtils.needUpdateAsins;
 
 @Service
 public class AmazonDiscSpider {
@@ -35,9 +38,6 @@ public class AmazonDiscSpider {
     @Autowired
     private Dao dao;
 
-    @Autowired
-    private ScheduleMission scheduleMission;
-
     public JSONObject fetchDiscInfo(String asin) {
         LOGGER.info("开始更新日亚碟片, ASIN={}", asin);
         return new JSONObject(discInfosAsinGet(asin));
@@ -49,9 +49,7 @@ public class AmazonDiscSpider {
     public void fetchFromBCloud() {
         LOGGER.info("开始更新日亚排名");
 
-        dao.execute(session -> {
-            discRanksActivePut(getActiveAsins(session));
-        });
+        discRanksActivePut(needUpdateAsins(dao.session()));
 
         JSONObject root = new JSONObject(discRanksActiveGet());
 
@@ -59,7 +57,7 @@ public class AmazonDiscSpider {
                 .atZone(ZoneId.systemDefault()).toLocalDateTime();
 
         if (prevTime != null && prevTime.isEqual(updateOn)) {
-            LOGGER.info("日亚排名信息没有变化");
+            LOGGER.info("日亚排名没有变化");
             return;
         }
 
@@ -97,12 +95,21 @@ public class AmazonDiscSpider {
 
         if (discInfos.length() > 0) {
             LOGGER.info("成功更新日亚排名：共{}个", discInfos.length());
-            scheduleMission.updateSakuraModifyTime();
+            updateSakuraModifyTime();
         } else {
             LOGGER.warn("未能更新日亚排名");
         }
 
         prevTime = updateOn;
+    }
+
+    private void updateSakuraModifyTime() {
+        Comparator<Disc> comparator = comparing(Disc::getUpdateTime, nullsFirst(naturalOrder()));
+        dao.findBy(Sakura.class, "enabled", true).forEach(sakura -> {
+            sakura.getDiscs().stream().max(comparator).ifPresent(disc -> {
+                sakura.setModifyTime(disc.getUpdateTime());
+            });
+        });
     }
 
     private String discRanksActivePut(Set<String> asins) {

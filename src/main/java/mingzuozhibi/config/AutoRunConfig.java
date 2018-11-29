@@ -42,7 +42,8 @@ public class AutoRunConfig {
      * call by MzzbServerApplication
      */
     public void runOnStartupServer() {
-        scheduleMission.updateSakuraModifyTime();
+        scheduleMission.removeExpiredAutoLoginData();
+        scheduleMission.recordDiscsRankAndComputePt();
     }
 
     @Scheduled(cron = "0 2 * * * ?")
