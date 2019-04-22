@@ -61,7 +61,7 @@ public class AutoRunConfig {
     }
 
     @GetMapping("/requestDiscRanks")
-    @Scheduled(cron = "0 2/5 * * * ?")
+    @Scheduled(cron = "0 4/5 * * * ?")
     public void fetchDiscRanks() {
         new Thread(() -> {
             amazonDiscSpider.fetchFromBCloud();
