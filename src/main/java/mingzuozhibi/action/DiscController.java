@@ -93,6 +93,59 @@ public class DiscController extends BaseController {
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
+    @PutMapping(value = "/api/discs2/{id}", produces = MEDIA_TYPE)
+    public String setOne2(@PathVariable Long id,
+                         @JsonArg String titlePc,
+                         @JsonArg DiscType discType,
+                         @JsonArg String releaseDate) {
+
+        if (releaseDate.isEmpty()) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[编辑碟片失败][发售日期不能为空]");
+            }
+            return errorMessage("发售日期不能为空");
+        }
+
+        LocalDate localDate;
+        try {
+            localDate = LocalDate.parse(releaseDate, formatter);
+        } catch (DateTimeParseException e) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[编辑碟片失败][发售日期格式不正确]");
+            }
+            return errorMessage("发售日期格式不正确");
+        }
+
+        Disc disc = dao.get(Disc.class, id);
+        if (disc == null) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[编辑碟片失败][指定的碟片Id不存在][Id={}]", id);
+            }
+            return errorMessage("指定的碟片Id不存在");
+        }
+
+        JSONObject before = disc.toJSON();
+        if (LOGGER.isDebugEnabled()) {
+            debugRequest("[编辑碟片开始][修改前={}]", before);
+        }
+
+        disc.setTitlePc(titlePc);
+        disc.setDiscType(discType);
+        disc.setReleaseDate(localDate);
+
+        JSONObject result = disc.toJSON();
+
+        if (LOGGER.isDebugEnabled()) {
+            debugRequest("[编辑碟片成功][修改后={}]", result);
+        }
+
+        result.put("ranks", buildRanks(dao, disc));
+
+        return objectResult(result);
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('BASIC')")
     @PutMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
     public String setOne(@PathVariable Long id,
                          @JsonArg String titlePc,
