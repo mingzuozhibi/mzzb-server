@@ -107,8 +107,8 @@ public class DiscController extends BaseController {
 
         // 修改前
         JSONObject before = disc.toJSON();
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[编辑碟片开始][修改前={}]", before);
+        if (LOGGER.isInfoEnabled()) {
+            infoRequest("[编辑碟片开始][修改前={}]", before);
         }
 
         // 修改中
@@ -118,8 +118,8 @@ public class DiscController extends BaseController {
 
         // 修改后
         JSONObject result = disc.toJSON();
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[编辑碟片成功][修改后={}]", result);
+        if (LOGGER.isInfoEnabled()) {
+            infoRequest("[编辑碟片成功][修改后={}]", result);
         }
         return objectResult(result);
     }
