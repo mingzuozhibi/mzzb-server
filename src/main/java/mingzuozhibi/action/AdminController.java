@@ -18,14 +18,6 @@ import static mingzuozhibi.utils.DiscUtils.needUpdateAsins;
 @RestController
 public class AdminController extends BaseController {
 
-    @Deprecated
-    @Transactional
-    @PreAuthorize("hasRole('BASIC')")
-    @GetMapping(value = "/api/discs/activeCount")
-    public String deprecatedFetchCount() {
-        return fetchCount();
-    }
-
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping(value = "/api/admin/fetchCount")
@@ -43,14 +35,6 @@ public class AdminController extends BaseController {
 
     @Autowired
     private AmazonDiscSpider amazonDiscSpider;
-
-    @Deprecated
-    @Transactional
-    @PreAuthorize("hasRole('BASIC')")
-    @GetMapping(value = "/api/discs/search/{asin}", produces = MEDIA_TYPE)
-    public String searchDiscDeprecated(@PathVariable String asin) {
-        return searchDisc(asin);
-    }
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")

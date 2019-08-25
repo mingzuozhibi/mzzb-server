@@ -58,17 +58,6 @@ public class DiscController extends BaseController {
         return objectResult(disc.toJSON());
     }
 
-    @Deprecated
-    @Transactional
-    @PreAuthorize("hasRole('BASIC')")
-    @PutMapping(value = "/api/discs2/{id}", produces = MEDIA_TYPE)
-    public String setOneDeprecated(@PathVariable Long id,
-                                   @JsonArg String titlePc,
-                                   @JsonArg DiscType discType,
-                                   @JsonArg String releaseDate) {
-        return setOne(id, titlePc, discType, releaseDate);
-    }
-
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PutMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
