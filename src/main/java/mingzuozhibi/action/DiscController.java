@@ -6,6 +6,7 @@ import mingzuozhibi.persist.disc.Disc.UpdateType;
 import mingzuozhibi.service.AmazonDiscSpider;
 import mingzuozhibi.service.AmazonNewDiscSpider;
 import mingzuozhibi.support.JsonArg;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static mingzuozhibi.utils.RecordUtils.buildRanks;
 import static mingzuozhibi.utils.RecordUtils.buildRecords;
 
 @RestController
@@ -33,7 +33,6 @@ public class DiscController extends BaseController {
         return Stream.of(columns.split(",")).collect(Collectors.toSet());
     }
 
-    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
     @Autowired
@@ -90,24 +89,14 @@ public class DiscController extends BaseController {
                          @JsonArg String titlePc,
                          @JsonArg DiscType discType,
                          @JsonArg String releaseDate) {
-
-        if (releaseDate.isEmpty()) {
-            if (LOGGER.isWarnEnabled()) {
-                warnRequest("[编辑碟片失败][发售日期不能为空]");
-            }
-            return errorMessage("发售日期不能为空");
+        // 校验
+        ReleaseDateChecker dateChecker = new ReleaseDateChecker(releaseDate);
+        if (dateChecker.hasError()) {
+            return errorMessage(dateChecker.error);
         }
+        LocalDate localDate = dateChecker.getData();
 
-        LocalDate localDate;
-        try {
-            localDate = LocalDate.parse(releaseDate, formatter);
-        } catch (DateTimeParseException e) {
-            if (LOGGER.isWarnEnabled()) {
-                warnRequest("[编辑碟片失败][发售日期格式不正确]");
-            }
-            return errorMessage("发售日期格式不正确");
-        }
-
+        // 查询
         Disc disc = dao.get(Disc.class, id);
         if (disc == null) {
             if (LOGGER.isWarnEnabled()) {
@@ -116,23 +105,22 @@ public class DiscController extends BaseController {
             return errorMessage("指定的碟片Id不存在");
         }
 
+        // 修改前
         JSONObject before = disc.toJSON();
         if (LOGGER.isDebugEnabled()) {
             debugRequest("[编辑碟片开始][修改前={}]", before);
         }
 
+        // 修改中
         disc.setTitlePc(titlePc);
         disc.setDiscType(discType);
         disc.setReleaseDate(localDate);
 
+        // 修改后
         JSONObject result = disc.toJSON();
-
         if (LOGGER.isDebugEnabled()) {
             debugRequest("[编辑碟片成功][修改后={}]", result);
         }
-
-        result.put("ranks", buildRanks(dao, disc));
-
         return objectResult(result);
     }
 
@@ -140,6 +128,7 @@ public class DiscController extends BaseController {
     @GetMapping(value = "/api/discs/{id}/records", produces = MEDIA_TYPE)
     public String findRecords(@PathVariable Long id) {
         Disc disc = dao.get(Disc.class, id);
+
         if (disc == null) {
             if (LOGGER.isWarnEnabled()) {
                 warnRequest("[获取碟片排名失败][指定的碟片Id不存在][Id={}]", id);
@@ -148,26 +137,8 @@ public class DiscController extends BaseController {
         }
 
         JSONObject result = disc.toJSON();
-
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[获取碟片排名成功][碟片信息={}]", result);
-        }
-
         result.put("records", buildRecords(dao, disc));
-
         return objectResult(result);
-    }
-
-    @Transactional
-    @PutMapping(value = "/api/discs/{id}/ranks", produces = MEDIA_TYPE)
-    public String mergeRanks(@PathVariable Long id, @JsonArg String text) {
-        return errorMessage("不支持的操作");
-    }
-
-    @Transactional
-    @PutMapping(value = "/api/discs/{id}/pts", produces = MEDIA_TYPE)
-    public String mergePts(@PathVariable Long id, @JsonArg String text) {
-        return errorMessage("不支持的操作");
     }
 
     @Transactional
@@ -205,6 +176,52 @@ public class DiscController extends BaseController {
         }
         result.put(discJSON);
         return objectResult(result);
+    }
+
+    public class ReleaseDateChecker {
+        private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        private final String input;
+        private LocalDate data;
+        private String error;
+
+        public ReleaseDateChecker(String input) {
+            this.input = input;
+        }
+
+        public boolean hasError() {
+            if (StringUtils.isEmpty(input)) {
+                if (LOGGER.isWarnEnabled()) {
+                    warnRequest("[编辑碟片失败][发售日期不能为空]");
+                }
+                return setError("发售日期不能为空");
+            }
+            try {
+                return setData(LocalDate.parse(input, formatter));
+            } catch (DateTimeParseException e) {
+                if (LOGGER.isWarnEnabled()) {
+                    warnRequest("[编辑碟片失败][发售日期格式不正确]");
+                }
+                return setError("发售日期格式不正确");
+            }
+        }
+
+        private boolean setData(LocalDate data) {
+            this.data = data;
+            return false;
+        }
+
+        public LocalDate getData() {
+            return data;
+        }
+
+        private boolean setError(String error) {
+            this.error = error;
+            return true;
+        }
+
+        public String getError() {
+            return error;
+        }
     }
 
 }
