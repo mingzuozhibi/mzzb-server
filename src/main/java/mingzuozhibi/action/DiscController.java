@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static mingzuozhibi.utils.DiscUtils.needUpdateAsins;
 import static mingzuozhibi.utils.RecordUtils.buildRanks;
 import static mingzuozhibi.utils.RecordUtils.buildRecords;
 
@@ -42,12 +41,6 @@ public class DiscController extends BaseController {
 
     @Autowired
     private AmazonDiscSpider amazonDiscSpider;
-
-    @Transactional
-    @GetMapping(value = "/api/discs/activeCount")
-    public String activeCount() {
-        return objectResult(needUpdateAsins(dao.session()).size());
-    }
 
     @Transactional
     @GetMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
@@ -95,9 +88,9 @@ public class DiscController extends BaseController {
     @PreAuthorize("hasRole('BASIC')")
     @PutMapping(value = "/api/discs2/{id}", produces = MEDIA_TYPE)
     public String setOne2(@PathVariable Long id,
-                         @JsonArg String titlePc,
-                         @JsonArg DiscType discType,
-                         @JsonArg String releaseDate) {
+                          @JsonArg String titlePc,
+                          @JsonArg DiscType discType,
+                          @JsonArg String releaseDate) {
 
         if (releaseDate.isEmpty()) {
             if (LOGGER.isWarnEnabled()) {
