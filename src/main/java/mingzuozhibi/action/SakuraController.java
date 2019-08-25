@@ -6,7 +6,6 @@ import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.persist.disc.Sakura.ViewType;
 import mingzuozhibi.support.JsonArg;
 import org.hibernate.Criteria;
-import org.hibernate.criterion.Restrictions;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,38 +14,42 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collector;
 
 import static mingzuozhibi.action.DiscController.buildSet;
+import static org.hibernate.criterion.Restrictions.ne;
 
 @RestController
 public class SakuraController extends BaseController {
 
-    public final static String DISC_COLUMNS = "id,asin,thisRank,totalPt,title,titlePc,titleMo,surplusDays";
+    private final static String DISC_COLUMNS = "id,asin,thisRank,totalPt,title,titlePc,titleMo,surplusDays";
 
-    public static Set<String> DISC_COLUMNS_SET = buildSet(DISC_COLUMNS);
+    private static Set<String> DISC_COLUMNS_SET = buildSet(DISC_COLUMNS);
 
     @Transactional
+    @SuppressWarnings("unchecked")
     @GetMapping(value = "/api/sakuras", produces = MEDIA_TYPE)
     public String findAll(@RequestParam(name = "public", defaultValue = "true") boolean isPublic) {
-        @SuppressWarnings("unchecked")
-        List<Sakura> sakuras = dao.query(session -> {
-            Criteria criteria = session.createCriteria(Sakura.class);
-            if (isPublic) {
-                criteria.add(Restrictions.ne("viewType", ViewType.PrivateList));
-            }
-            return criteria.list();
-        });
-
-        JSONArray result = new JSONArray();
-
-        sakuras.forEach(sakura -> {
-            result.put(sakura.toJSON());
-        });
-
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[获取多个列表成功][列表数量={}]", sakuras.size());
+        Criteria criteria = dao.session().createCriteria(Sakura.class);
+        if (isPublic) {
+            criteria.add(ne("viewType", ViewType.PrivateList));
         }
-        return objectResult(result);
+        List<Sakura> sakuras = criteria.list();
+
+        JSONArray array = sakuras.stream()
+                .map(this::toJSON)
+                .collect(toJSONArray());
+        return objectResult(array);
+    }
+
+    private JSONObject toJSON(Sakura sakura) {
+        return sakura.toJSON().put("discsSize", sakura.getDiscs().size());
+    }
+
+    private Collector<JSONObject, JSONArray, JSONArray> toJSONArray() {
+        return Collector.of(JSONArray::new, JSONArray::put, (objects, objects2) -> {
+            return objects.put(objects2.toList());
+        });
     }
 
     @Transactional
@@ -61,12 +64,7 @@ public class SakuraController extends BaseController {
             return errorMessage("指定的列表索引不存在");
         }
 
-        JSONObject result = sakura.toJSON();
-
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[获取列表成功][列表信息={}]", sakura.toJSON());
-        }
-        return objectResult(result);
+        return objectResult(sakura.toJSON());
     }
 
     @Transactional
@@ -77,6 +75,7 @@ public class SakuraController extends BaseController {
             @JsonArg String title,
             @JsonArg(defaults = "true") boolean enabled,
             @JsonArg(defaults = "PublicList") ViewType viewType) {
+
         if (key.isEmpty()) {
             if (LOGGER.isWarnEnabled()) {
                 warnRequest("[创建列表失败][列表索引不能为空]");

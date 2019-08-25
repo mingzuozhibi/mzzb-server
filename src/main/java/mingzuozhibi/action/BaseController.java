@@ -31,10 +31,18 @@ public class BaseController {
         LOGGER = LoggerFactory.getLogger(this.getClass());
     }
 
-    protected String objectResult(Object result) {
+    protected String objectResult(Object data) {
         JSONObject root = new JSONObject();
         root.put("success", true);
-        root.put("data", result);
+        root.put("data", data);
+        return root.toString();
+    }
+
+    protected String objectResult(Object data, Object page) {
+        JSONObject root = new JSONObject();
+        root.put("success", true);
+        root.put("data", data);
+        root.put("page", page);
         return root.toString();
     }
 

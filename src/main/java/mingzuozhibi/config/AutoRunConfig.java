@@ -1,8 +1,11 @@
 package mingzuozhibi.config;
 
+import mingzuozhibi.persist.disc.Disc;
+import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.service.AmazonDiscSpider;
 import mingzuozhibi.service.AmazonNewDiscSpider;
 import mingzuozhibi.service.ScheduleMission;
+import mingzuozhibi.support.Dao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +14,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Comparator;
+
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.nullsFirst;
 
 @Service
 @RestController
@@ -53,7 +61,7 @@ public class AutoRunConfig {
     }
 
     @GetMapping("/requestDiscRanks")
-    @Scheduled(cron = "0 2/5 * * * ?")
+    @Scheduled(cron = "0 4/5 * * * ?")
     public void fetchDiscRanks() {
         new Thread(() -> {
             amazonDiscSpider.fetchFromBCloud();

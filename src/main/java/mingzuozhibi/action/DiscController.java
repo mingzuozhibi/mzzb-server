@@ -5,7 +5,6 @@ import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.persist.disc.Disc.UpdateType;
 import mingzuozhibi.service.AmazonDiscSpider;
 import mingzuozhibi.service.AmazonNewDiscSpider;
-import mingzuozhibi.service.ScheduleMission;
 import mingzuozhibi.support.JsonArg;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -21,12 +20,12 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static mingzuozhibi.support.SakuraHelper.buildRanks;
-import static mingzuozhibi.support.SakuraHelper.buildRecords;
+import static mingzuozhibi.utils.DiscUtils.needUpdateAsins;
+import static mingzuozhibi.utils.RecordUtils.buildRanks;
+import static mingzuozhibi.utils.RecordUtils.buildRecords;
 
 @RestController
 public class DiscController extends BaseController {
@@ -44,14 +43,10 @@ public class DiscController extends BaseController {
     @Autowired
     private AmazonDiscSpider amazonDiscSpider;
 
+    @Transactional
     @GetMapping(value = "/api/discs/activeCount")
     public String activeCount() {
-        AtomicReference<Integer> count = new AtomicReference<>();
-        dao.execute(session -> {
-            Set<Disc> discs = ScheduleMission.getActiveDiscs(session);
-            count.set(discs.size());
-        });
-        return objectResult(count.get());
+        return objectResult(needUpdateAsins(dao.session()).size());
     }
 
     @Transactional
@@ -94,6 +89,59 @@ public class DiscController extends BaseController {
         }
 
         return responseDisc(disc);
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('BASIC')")
+    @PutMapping(value = "/api/discs2/{id}", produces = MEDIA_TYPE)
+    public String setOne2(@PathVariable Long id,
+                         @JsonArg String titlePc,
+                         @JsonArg DiscType discType,
+                         @JsonArg String releaseDate) {
+
+        if (releaseDate.isEmpty()) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[编辑碟片失败][发售日期不能为空]");
+            }
+            return errorMessage("发售日期不能为空");
+        }
+
+        LocalDate localDate;
+        try {
+            localDate = LocalDate.parse(releaseDate, formatter);
+        } catch (DateTimeParseException e) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[编辑碟片失败][发售日期格式不正确]");
+            }
+            return errorMessage("发售日期格式不正确");
+        }
+
+        Disc disc = dao.get(Disc.class, id);
+        if (disc == null) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[编辑碟片失败][指定的碟片Id不存在][Id={}]", id);
+            }
+            return errorMessage("指定的碟片Id不存在");
+        }
+
+        JSONObject before = disc.toJSON();
+        if (LOGGER.isDebugEnabled()) {
+            debugRequest("[编辑碟片开始][修改前={}]", before);
+        }
+
+        disc.setTitlePc(titlePc);
+        disc.setDiscType(discType);
+        disc.setReleaseDate(localDate);
+
+        JSONObject result = disc.toJSON();
+
+        if (LOGGER.isDebugEnabled()) {
+            debugRequest("[编辑碟片成功][修改后={}]", result);
+        }
+
+        result.put("ranks", buildRanks(dao, disc));
+
+        return objectResult(result);
     }
 
     @Transactional
