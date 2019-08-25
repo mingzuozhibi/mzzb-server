@@ -2,14 +2,9 @@ package mingzuozhibi.action;
 
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
-import mingzuozhibi.persist.disc.Disc.UpdateType;
-import mingzuozhibi.service.AmazonDiscSpider;
-import mingzuozhibi.service.AmazonNewDiscSpider;
 import mingzuozhibi.support.JsonArg;
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,14 +27,6 @@ public class DiscController extends BaseController {
     public static Set<String> buildSet(String columns) {
         return Stream.of(columns.split(",")).collect(Collectors.toSet());
     }
-
-    private static DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-
-    @Autowired
-    private AmazonNewDiscSpider amazonNewDiscSpider;
-
-    @Autowired
-    private AmazonDiscSpider amazonDiscSpider;
 
     @Transactional
     @GetMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
@@ -138,43 +125,6 @@ public class DiscController extends BaseController {
 
         JSONObject result = disc.toJSON();
         result.put("records", buildRecords(dao, disc));
-        return objectResult(result);
-    }
-
-    @Transactional
-    @PreAuthorize("hasRole('BASIC')")
-    @GetMapping(value = "/api/discs/search/{asin}", produces = MEDIA_TYPE)
-    public String search(@PathVariable String asin) {
-        LOGGER.info("申请查询碟片, ASIN={}", asin);
-        Disc disc = dao.lookup(Disc.class, "asin", asin);
-        if (disc == null) {
-            LOGGER.info("开始从日亚查询碟片, ASIN={}", asin);
-            JSONObject root = amazonDiscSpider.fetchDiscInfo(asin);
-            if (root.getBoolean("success")) {
-                JSONObject discInfo = root.getJSONObject("data");
-                disc = new Disc(
-                        asin,
-                        discInfo.getString("title"),
-                        DiscType.valueOf(discInfo.getString("type")),
-                        UpdateType.Both,
-                        false,
-                        LocalDate.parse(discInfo.getString("date"), formatter2)
-                );
-                dao.save(disc);
-            } else {
-                return root.toString();
-            }
-        }
-
-        JSONArray result = new JSONArray();
-        JSONObject discJSON = disc.toJSON();
-
-        amazonNewDiscSpider.updateNewDiscFollowd(disc);
-
-        if (LOGGER.isInfoEnabled()) {
-            infoRequest("[查找碟片成功][碟片信息={}]", discJSON);
-        }
-        result.put(discJSON);
         return objectResult(result);
     }
 
