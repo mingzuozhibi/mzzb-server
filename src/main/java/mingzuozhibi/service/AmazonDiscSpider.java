@@ -2,6 +2,7 @@ package mingzuozhibi.service;
 
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
+import mingzuozhibi.persist.disc.DiscInfo;
 import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.support.Dao;
 import org.json.JSONArray;
@@ -22,6 +23,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import static java.util.Comparator.*;
@@ -38,9 +40,18 @@ public class AmazonDiscSpider {
     @Autowired
     private Dao dao;
 
-    public JSONObject fetchDiscInfo(String asin) {
+    @Transactional
+    public JSONObject searchDisc(String asin) {
         LOGGER.info("开始更新日亚碟片, ASIN={}", asin);
         return new JSONObject(discInfosAsinGet(asin));
+    }
+
+    @Transactional
+    public void updateNewDiscFollowd(Disc disc) {
+        Optional.ofNullable(dao.lookup(DiscInfo.class, "asin", disc.getAsin()))
+                .ifPresent(discInfo -> {
+                    discInfo.setFollowed(true);
+                });
     }
 
     private LocalDateTime prevTime = null;

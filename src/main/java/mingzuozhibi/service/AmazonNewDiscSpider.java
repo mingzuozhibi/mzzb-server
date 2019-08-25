@@ -69,12 +69,4 @@ public class AmazonNewDiscSpider {
         return discInfo;
     }
 
-    @Transactional
-    public void updateNewDiscFollowd(Disc disc) {
-        Optional.ofNullable(dao.lookup(DiscInfo.class, "asin", disc.getAsin()))
-                .ifPresent(discInfo -> {
-                    discInfo.setFollowed(true);
-                });
-    }
-
 }
