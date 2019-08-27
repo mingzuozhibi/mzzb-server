@@ -15,18 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static mingzuozhibi.utils.RecordUtils.buildRecords;
 
 @RestController
 public class DiscController extends BaseController {
-
-    public static Set<String> buildSet(String columns) {
-        return Stream.of(columns.split(",")).collect(Collectors.toSet());
-    }
 
     @Transactional
     @GetMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)

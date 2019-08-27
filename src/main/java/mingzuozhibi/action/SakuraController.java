@@ -15,8 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static mingzuozhibi.action.DiscController.buildSet;
 import static org.hibernate.criterion.Restrictions.ne;
 
 @RestController
@@ -25,6 +26,10 @@ public class SakuraController extends BaseController {
     private final static String DISC_COLUMNS = "id,asin,thisRank,totalPt,title,titlePc,titleMo,surplusDays";
 
     private static Set<String> DISC_COLUMNS_SET = buildSet(DISC_COLUMNS);
+
+    private static Set<String> buildSet(String columns) {
+        return Stream.of(columns.split(",")).collect(Collectors.toSet());
+    }
 
     @Transactional
     @SuppressWarnings("unchecked")
