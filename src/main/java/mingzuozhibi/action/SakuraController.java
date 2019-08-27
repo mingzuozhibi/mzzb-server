@@ -65,42 +65,4 @@ public class SakuraController extends BaseController {
         }
     }
 
-    @Transactional
-    @PreAuthorize("hasRole('BASIC')")
-    @DeleteMapping(value = "/api/sakuras/{id}/discs/{discId}", produces = MEDIA_TYPE)
-    public synchronized String dropDiscs(
-            @PathVariable("id") Long id,
-            @PathVariable("discId") Long discId,
-            @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS) String discColumns) {
-
-        Sakura sakura = dao.get(Sakura.class, id);
-
-        if (sakura == null) {
-            if (LOGGER.isWarnEnabled()) {
-                warnRequest("[从列表移除碟片失败][指定的列表Id不存在][Id={}]", id);
-            }
-            return errorMessage("指定的列表Id不存在");
-        }
-
-        Disc disc = sakura.getDiscs().stream()
-                .filter(d -> d.getId().equals(discId))
-                .findFirst().orElse(null);
-
-        if (disc == null) {
-            if (LOGGER.isWarnEnabled()) {
-                warnRequest("[从列表移除碟片失败][指定的碟片不存在于列表][Id={}]", discId);
-            }
-            return errorMessage("指定的碟片不存在于列表");
-        }
-
-        sakura.getDiscs().remove(disc);
-
-        dao.session().flush();
-
-        if (LOGGER.isInfoEnabled()) {
-            infoRequest("[从列表移除碟片成功][ASIN={}][列表={}]", disc.getAsin(), sakura.getTitle());
-        }
-        return objectResult(disc.toJSON(getColumns(discColumns)));
-    }
-
 }
