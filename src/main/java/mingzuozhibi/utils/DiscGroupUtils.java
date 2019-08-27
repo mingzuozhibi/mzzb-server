@@ -26,9 +26,6 @@ public abstract class DiscGroupUtils {
                 return;
             }
 
-            disc.setTodayPt(null);
-            disc.setGuessPt(null);
-
             AtomicReference<Double> todayPtRef = new AtomicReference<>();
             AtomicReference<Double> totalPtRef = new AtomicReference<>();
 
@@ -41,16 +38,21 @@ public abstract class DiscGroupUtils {
             }
 
             hourRecord.getAverRank().ifPresent(rank -> {
-                todayPtRef.set(computeHourPt(disc, (int) rank) * 24);
-                if (totalPtRef.get() != null) {
-                    totalPtRef.set(totalPtRef.get() + todayPtRef.get());
-                } else {
-                    totalPtRef.set(todayPtRef.get());
-                }
-                hourRecord.setTodayPt(todayPtRef.get().intValue());
-                hourRecord.setTotalPt(totalPtRef.get().intValue());
+                if (hourRecord.getDate().isBefore(disc.getReleaseDate())) {
+                    todayPtRef.set(computeHourPt(disc, (int) rank) * 24);
+                    hourRecord.setTodayPt(todayPtRef.get().intValue());
+                    disc.setTodayPt(todayPtRef.get().intValue());
 
-                disc.setTodayPt(todayPtRef.get().intValue());
+                    if (totalPtRef.get() != null) {
+                        totalPtRef.set(totalPtRef.get() + todayPtRef.get());
+                    } else {
+                        totalPtRef.set(todayPtRef.get());
+                    }
+                } else {
+                    disc.setTodayPt(null);
+                    hourRecord.setTodayPt(null);
+                }
+                hourRecord.setTotalPt(totalPtRef.get().intValue());
                 disc.setTotalPt(totalPtRef.get().intValue());
 
                 DateRecord dateRecord_7 = (DateRecord) session.createCriteria(DateRecord.class)
