@@ -6,6 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -67,4 +68,25 @@ public class DiscGroupController extends BaseController {
         });
     }
 
+    @Deprecated
+    @Transactional
+    @GetMapping(value = "/api/sakuras/key/{key}", produces = MEDIA_TYPE)
+    public String findOneDeprecated(@PathVariable String key) {
+        return findOne(key);
+    }
+
+    @Transactional
+    @GetMapping(value = "/api/discGroups/key/{key}", produces = MEDIA_TYPE)
+    public String findOne(@PathVariable String key) {
+        Sakura sakura = dao.lookup(Sakura.class, "key", key);
+
+        if (sakura == null) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[获取列表失败][指定的列表索引不存在][Key={}]", key);
+            }
+            return errorMessage("指定的列表索引不存在");
+        }
+
+        return objectResult(sakura.toJSON());
+    }
 }

@@ -27,21 +27,6 @@ public class SakuraController extends BaseController {
     }
 
     @Transactional
-    @GetMapping(value = "/api/sakuras/key/{key}", produces = MEDIA_TYPE)
-    public String findOne(@PathVariable String key) {
-        Sakura sakura = dao.lookup(Sakura.class, "key", key);
-
-        if (sakura == null) {
-            if (LOGGER.isWarnEnabled()) {
-                warnRequest("[获取列表失败][指定的列表索引不存在][key={}]", key);
-            }
-            return errorMessage("指定的列表索引不存在");
-        }
-
-        return objectResult(sakura.toJSON());
-    }
-
-    @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/api/sakuras", produces = MEDIA_TYPE)
     public String addOne(
