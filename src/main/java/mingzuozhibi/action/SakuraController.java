@@ -27,36 +27,6 @@ public class SakuraController extends BaseController {
     }
 
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping(value = "/api/sakuras/{id}", produces = MEDIA_TYPE)
-    public String delOne(@PathVariable("id") Long id) {
-
-        Sakura sakura = dao.get(Sakura.class, id);
-
-        if (dao.get(Sakura.class, id) == null) {
-            if (LOGGER.isWarnEnabled()) {
-                warnRequest("[删除列表失败][指定的列表Id不存在][Key={}]", id);
-            }
-            return errorMessage("指定的列表Id不存在");
-        }
-
-        JSONObject before = sakura.toJSON();
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[删除列表开始][删除前={}]", before);
-        }
-
-        sakura.getDiscs().clear();
-
-        dao.delete(sakura);
-
-        JSONObject result = sakura.toJSON();
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[删除列表成功][修改后={}]", result);
-        }
-        return objectResult(result);
-    }
-
-    @Transactional
     @GetMapping(value = "/api/sakuras/key/{key}/discs", produces = MEDIA_TYPE)
     public String findDiscs(
             @PathVariable String key,

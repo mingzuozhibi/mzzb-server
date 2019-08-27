@@ -1,5 +1,6 @@
 package mingzuozhibi.action;
 
+import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.persist.disc.Sakura.ViewType;
 import mingzuozhibi.support.JsonArg;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collector;
 
 import static org.hibernate.criterion.Restrictions.ne;
@@ -203,6 +205,45 @@ public class DiscGroupController extends BaseController {
             infoRequest("[编辑列表成功][修改后={}]", result);
         }
         return objectResult(result);
+    }
+
+    @Deprecated
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping(value = "/api/sakuras/{id}", produces = MEDIA_TYPE)
+    public String delOneDeprecated(@PathVariable("id") Long id) {
+        return delOne(id);
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping(value = "/api/discGroups/{id}", produces = MEDIA_TYPE)
+    public String delOne(@PathVariable("id") Long id) {
+
+        Sakura sakura = dao.get(Sakura.class, id);
+        if (dao.get(Sakura.class, id) == null) {
+            if (LOGGER.isWarnEnabled()) {
+                warnRequest("[删除列表失败][指定的列表Id不存在][Id={}]", id);
+            }
+            return errorMessage("指定的列表Id不存在");
+        }
+
+        infoRequest("[删除列表开始][列表={}]", sakura.getTitle());
+        Set<Disc> discs = sakura.getDiscs();
+        if (LOGGER.isDebugEnabled()) {
+            discs.forEach(disc -> {
+                LOGGER.debug("[记录列表中的碟片][列表={}][碟片={}]", sakura.getTitle(), disc.getLogName());
+            });
+        }
+
+        int discCount = discs.size();
+        discs.clear();
+        dao.delete(sakura);
+
+        if (LOGGER.isDebugEnabled()) {
+            infoRequest("[删除列表成功][该列表共有碟片{}个]", discCount);
+        }
+        return objectResult(sakura.toJSON());
     }
 
 }
