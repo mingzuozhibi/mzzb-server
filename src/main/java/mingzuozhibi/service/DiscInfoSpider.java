@@ -47,11 +47,10 @@ public class DiscInfoSpider {
     }
 
     @Transactional
-    public void updateNewDiscFollowd(Disc disc) {
-        Optional.ofNullable(dao.lookup(DiscShelf.class, "asin", disc.getAsin()))
-                .ifPresent(discShelf -> {
-                    discShelf.setFollowed(true);
-                });
+    public void updateDiscShelfFollowd(Disc disc) {
+        Optional.ofNullable(dao.lookup(DiscShelf.class, "asin", disc.getAsin())).ifPresent(discShelf -> {
+            discShelf.setFollowed(true);
+        });
     }
 
     private LocalDateTime prevTime = null;

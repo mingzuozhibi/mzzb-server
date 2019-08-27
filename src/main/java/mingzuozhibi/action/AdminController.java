@@ -60,6 +60,7 @@ public class AdminController extends BaseController {
         }
         Disc disc = createDisc(asin, result.getJSONObject("data"));
         dao.save(disc);
+        discInfoSpider.updateDiscShelfFollowd(disc);
 
         JSONObject data = disc.toJSON();
         if (LOGGER.isInfoEnabled()) {
