@@ -44,7 +44,7 @@ public class DateRecord extends BaseModel {
         this.date = date;
     }
 
-    @Column
+    @Column(name = "`rank`")
     public Double getRank() {
         return rank;
     }

@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.OptionalDouble;
 import java.util.stream.IntStream;
 
-@Entity(name = "record")
+@Entity
 public class HourRecord extends BaseModel {
 
     private Disc disc;
