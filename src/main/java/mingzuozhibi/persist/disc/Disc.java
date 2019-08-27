@@ -20,38 +20,9 @@ public class Disc extends BaseModel implements Comparable<Disc> {
         Cd, Dvd, Bluray, Auto, Other
     }
 
-    public enum UpdateType {
-
-        @Deprecated Sakura(true, false),
-
-        @Deprecated Amazon(true, true),
-
-        Both(true, true),
-
-        None(false, false);
-
-        private boolean needRecord;
-        private boolean needUpdate;
-
-        UpdateType(boolean needRecord, boolean needUpdate) {
-            this.needRecord = needRecord;
-            this.needUpdate = needUpdate;
-        }
-
-        public boolean isNeedRecord() {
-            return needRecord;
-        }
-
-        public boolean isNeedUpdate() {
-            return needUpdate;
-        }
-
-    }
-
     private String asin;
     private String title;
     private String titlePc;
-    private String titleMo;
     private Integer thisRank;
     private Integer prevRank;
     private Integer nicoBook;
@@ -60,7 +31,6 @@ public class Disc extends BaseModel implements Comparable<Disc> {
     private Integer guessPt;
     private DiscType discType;
     private boolean amazonLimit;
-    private UpdateType updateType;
     private LocalDate releaseDate;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
@@ -69,12 +39,11 @@ public class Disc extends BaseModel implements Comparable<Disc> {
     public Disc() {
     }
 
-    public Disc(String asin, String title, DiscType discType, UpdateType updateType,
+    public Disc(String asin, String title, DiscType discType,
                 boolean amazonLimit, LocalDate releaseDate) {
         this.asin = asin;
         this.title = title;
         this.discType = discType;
-        this.updateType = updateType;
         this.amazonLimit = amazonLimit;
         this.releaseDate = releaseDate;
         this.createTime = LocalDateTime.now().withNano(0);
@@ -105,15 +74,6 @@ public class Disc extends BaseModel implements Comparable<Disc> {
 
     public void setTitlePc(String titlePc) {
         this.titlePc = titlePc;
-    }
-
-    @Column(length = 100)
-    public String getTitleMo() {
-        return titleMo;
-    }
-
-    public void setTitleMo(String titleMo) {
-        this.titleMo = titleMo;
     }
 
     @Column
@@ -186,15 +146,6 @@ public class Disc extends BaseModel implements Comparable<Disc> {
 
     public void setAmazonLimit(boolean amazonLimit) {
         this.amazonLimit = amazonLimit;
-    }
-
-    @Column(nullable = false)
-    public UpdateType getUpdateType() {
-        return updateType;
-    }
-
-    public void setUpdateType(UpdateType updateType) {
-        this.updateType = updateType;
     }
 
     @Column(nullable = false)
@@ -276,7 +227,6 @@ public class Disc extends BaseModel implements Comparable<Disc> {
         object.put("asin", getAsin());
         object.put("title", getTitle());
         object.put("titlePc", getTitlePc());
-        object.put("titleMo", getTitleMo());
         object.put("thisRank", getThisRank());
         object.put("prevRank", getPrevRank());
         object.put("nicoBook", getNicoBook());
@@ -285,7 +235,6 @@ public class Disc extends BaseModel implements Comparable<Disc> {
         object.put("guessPt", getGuessPt());
         object.put("amazonLimit", isAmazonLimit());
         object.put("discType", getDiscType().name());
-        object.put("updateType", getUpdateType().name());
         object.put("releaseDate", getReleaseDate().toString());
         object.put("createTime", toEpochMilli(getCreateTime()));
         Optional.ofNullable(getUpdateTime()).ifPresent(updateTime -> {

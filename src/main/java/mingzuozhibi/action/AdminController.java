@@ -73,7 +73,6 @@ public class AdminController extends BaseController {
                 asin,
                 discJson.getString("title"),
                 Disc.DiscType.valueOf(discJson.getString("type")),
-                Disc.UpdateType.Both,
                 false,
                 LocalDate.parse(discJson.getString("date"), formatter)
         );
