@@ -1,19 +1,15 @@
 package mingzuozhibi.utils;
 
 import mingzuozhibi.persist.disc.Disc;
-import mingzuozhibi.persist.disc.DiscGroup;
 import mingzuozhibi.persist.rank.DateRecord;
 import mingzuozhibi.persist.rank.HourRecord;
 import mingzuozhibi.support.Dao;
-import org.hibernate.Session;
-import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-public abstract class DiscGroupUtils {
+public abstract class ComputeUtils {
 
     public static void computeAndUpdateAmazonPt(Dao dao, Disc disc) {
         LocalDate today = LocalDate.now();
@@ -40,7 +36,7 @@ public abstract class DiscGroupUtils {
             hourRecord.getAverRank().ifPresent(rank -> {
                 if (hourRecord.getDate().isBefore(disc.getReleaseDate())) {
                     todayPtRef.set(computeHourPt(disc, (int) rank) * 24);
-                    hourRecord.setTodayPt(todayPtRef.get().intValue());
+                    hourRecord.setTodayPt(todayPtRef.get());
                     disc.setTodayPt(todayPtRef.get().intValue());
 
                     if (totalPtRef.get() != null) {
@@ -52,7 +48,7 @@ public abstract class DiscGroupUtils {
                     disc.setTodayPt(null);
                     hourRecord.setTodayPt(null);
                 }
-                hourRecord.setTotalPt(totalPtRef.get().intValue());
+                hourRecord.setTotalPt(totalPtRef.get());
                 disc.setTotalPt(totalPtRef.get().intValue());
 
                 DateRecord dateRecord_7 = (DateRecord) session.createCriteria(DateRecord.class)
@@ -60,19 +56,19 @@ public abstract class DiscGroupUtils {
                         .add(Restrictions.eq("date", today.minusDays(7)))
                         .uniqueResult();
                 if (dateRecord_7 != null) {
-                    Double sevenTotalPt = dateRecord_7.getTotalPt();
-                    if (sevenTotalPt != null) {
-                        updateGuessPt(disc, today, totalPtRef.get().intValue(), sevenTotalPt.intValue());
+                    Double sevenPt = dateRecord_7.getTotalPt();
+                    if (sevenPt != null) {
+                        updateGuessPt(disc, today, totalPtRef.get(), sevenPt);
                     }
                 }
             });
         });
     }
 
-    private static void updateGuessPt(Disc disc, LocalDate today, Integer totalPt, Integer sevenPt) {
+    private static void updateGuessPt(Disc disc, LocalDate today, Double totalPt, Double sevenPt) {
         long days = disc.getReleaseDate().toEpochDay() - today.toEpochDay() - 1;
         if (days <= 0) {
-            disc.setGuessPt(totalPt);
+            disc.setGuessPt(totalPt.intValue());
         } else if (sevenPt != null) {
             disc.setGuessPt((int) (totalPt + (totalPt - sevenPt) / 7d * days));
         }
@@ -110,14 +106,6 @@ public abstract class DiscGroupUtils {
 
     private static double computeHourPt(int div, double base, int rank) {
         return div / Math.exp(Math.log(rank) / Math.log(base));
-    }
-
-    @SuppressWarnings("unchecked")
-    public static List<DiscGroup> findActiveDiscGroups(Session session) {
-        return session.createCriteria(DiscGroup.class)
-                .add(Restrictions.eq("enabled", true))
-                .addOrder(Order.desc("key"))
-                .list();
     }
 
 }

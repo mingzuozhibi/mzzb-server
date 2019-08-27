@@ -43,10 +43,10 @@ public abstract class RecordUtils {
                 object.put("averRank", (int) rank);
             });
             Optional.ofNullable(hourRecord.getTodayPt()).ifPresent(addPt -> {
-                object.put("todayPt", addPt);
+                object.put("todayPt", addPt.intValue());
             });
             Optional.ofNullable(hourRecord.getTotalPt()).ifPresent(sumPt -> {
-                object.put("totalPt", sumPt);
+                object.put("totalPt", sumPt.intValue());
             });
             array.put(object);
         }
@@ -62,7 +62,7 @@ public abstract class RecordUtils {
             object.put("id", dateRecord.getId());
             object.put("date", dateRecord.getDate());
             Optional.ofNullable(dateRecord.getRank()).ifPresent(rank -> {
-                object.put("averRank", rank);
+                object.put("averRank", rank.intValue());
             });
             Optional.ofNullable(dateRecord.getTodayPt()).ifPresent(addPt -> {
                 object.put("todayPt", addPt.intValue());

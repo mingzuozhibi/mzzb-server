@@ -14,7 +14,7 @@ public class DateRecord extends BaseModel {
 
     private Disc disc;
     private LocalDate date;
-    private Integer rank;
+    private Double rank;
     private Double todayPt;
     private Double totalPt;
 
@@ -45,11 +45,11 @@ public class DateRecord extends BaseModel {
     }
 
     @Column
-    public Integer getRank() {
+    public Double getRank() {
         return rank;
     }
 
-    public void setRank(Integer rank) {
+    public void setRank(Double rank) {
         this.rank = rank;
     }
 

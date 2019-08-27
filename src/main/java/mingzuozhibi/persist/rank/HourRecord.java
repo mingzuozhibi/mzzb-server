@@ -17,8 +17,8 @@ public class HourRecord extends BaseModel {
     private Disc disc;
     private LocalDate date;
     private DateRank rank;
-    private Integer todayPt;
-    private Integer totalPt;
+    private Double todayPt;
+    private Double totalPt;
 
     public HourRecord() {
     }
@@ -57,20 +57,20 @@ public class HourRecord extends BaseModel {
     }
 
     @Column
-    public Integer getTodayPt() {
+    public Double getTodayPt() {
         return todayPt;
     }
 
-    public void setTodayPt(Integer todayPt) {
+    public void setTodayPt(Double todayPt) {
         this.todayPt = todayPt;
     }
 
     @Column
-    public Integer getTotalPt() {
+    public Double getTotalPt() {
         return totalPt;
     }
 
-    public void setTotalPt(Integer totalPt) {
+    public void setTotalPt(Double totalPt) {
         this.totalPt = totalPt;
     }
 

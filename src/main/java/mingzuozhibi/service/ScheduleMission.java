@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static mingzuozhibi.utils.DiscGroupUtils.computeAndUpdateAmazonPt;
+import static mingzuozhibi.utils.ComputeUtils.computeAndUpdateAmazonPt;
 import static mingzuozhibi.utils.RecordUtils.getOrCreateRecord;
 
 @Service
@@ -50,15 +50,9 @@ public class ScheduleMission {
                     .list();
             hourRecords.forEach(hourRecord -> {
                 DateRecord dateRecord = new DateRecord(hourRecord.getDisc(), hourRecord.getDate());
-                hourRecord.getAverRank().ifPresent(rank -> {
-                    dateRecord.setRank((int) rank);
-                });
-                Optional.ofNullable(hourRecord.getTodayPt()).ifPresent(todayPt -> {
-                    dateRecord.setTodayPt(todayPt.doubleValue());
-                });
-                Optional.ofNullable(hourRecord.getTotalPt()).ifPresent(totalPt -> {
-                    dateRecord.setTotalPt(totalPt.doubleValue());
-                });
+                hourRecord.getAverRank().ifPresent(dateRecord::setRank);
+                Optional.ofNullable(hourRecord.getTodayPt()).ifPresent(dateRecord::setTodayPt);
+                Optional.ofNullable(hourRecord.getTotalPt()).ifPresent(dateRecord::setTotalPt);
                 session.delete(hourRecord);
                 session.save(dateRecord);
             });
@@ -78,7 +72,6 @@ public class ScheduleMission {
             discs.forEach(disc -> {
                 HourRecord hourRecord = getOrCreateRecord(dao, disc, date);
                 hourRecord.setRank(hour, disc.getThisRank());
-                hourRecord.setTotalPt(disc.getTotalPt());
             });
             LOGGER.info("[定时任务][记录碟片排名][共{}个]", discs.size());
 
