@@ -16,8 +16,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
+import static mingzuozhibi.utils.DiscGroupUtils.computeAndUpdateAmazonPt;
 import static mingzuozhibi.utils.RecordUtils.getOrCreateRecord;
-import static mingzuozhibi.utils.SakuraUtils.computeAndUpdateAmazonPt;
 
 @Service
 public class ScheduleMission {

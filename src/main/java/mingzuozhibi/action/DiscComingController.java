@@ -1,6 +1,6 @@
 package mingzuozhibi.action;
 
-import mingzuozhibi.persist.disc.DiscInfo;
+import mingzuozhibi.persist.disc.DiscShelf;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.json.JSONArray;
@@ -17,12 +17,20 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-public class NewDiscController extends BaseController {
+public class DiscComingController extends BaseController {
 
+    @Deprecated
     @Transactional
     @GetMapping(value = "/api/newdiscs", produces = MEDIA_TYPE)
+    public String findAllDeprecated(@RequestParam(defaultValue = "1") int page,
+                                    @RequestParam(defaultValue = "20") int pageSize) {
+        return findAll(page, pageSize);
+    }
+
+    @Transactional
+    @GetMapping(value = "/api/discComing", produces = MEDIA_TYPE)
     public String findAll(@RequestParam(defaultValue = "1") int page,
-                           @RequestParam(defaultValue = "20") int pageSize) {
+                          @RequestParam(defaultValue = "20") int pageSize) {
         // 校验
         if (pageSize > 20 && noneMatchBasicRole()) {
             return errorMessage("设置pageSize大于20需要更多权限");
@@ -30,19 +38,19 @@ public class NewDiscController extends BaseController {
 
         // dataObj
         @SuppressWarnings("unchecked")
-        List<DiscInfo> discInfos = dao.create(DiscInfo.class)
+        List<DiscShelf> discShelves = dao.create(DiscShelf.class)
                 .addOrder(Order.desc("id"))
                 .setFirstResult((page - 1) * pageSize)
                 .setMaxResults(pageSize)
                 .list();
 
         JSONArray dataObj = new JSONArray();
-        discInfos.forEach(discInfo -> {
-            dataObj.put(discInfo.toJSON());
+        discShelves.forEach(discShelf -> {
+            dataObj.put(discShelf.toJSON());
         });
 
         // pageObj
-        Long totalElements = (Long) dao.create(DiscInfo.class)
+        Long totalElements = (Long) dao.create(DiscShelf.class)
                 .setProjection(Projections.rowCount())
                 .uniqueResult();
 

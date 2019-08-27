@@ -13,7 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Entity
-public class Sakura extends BaseModel implements Comparable<Sakura> {
+public class DiscGroup extends BaseModel implements Comparable<DiscGroup> {
 
     public enum ViewType {
         SakuraList, PublicList, PrivateList
@@ -26,10 +26,10 @@ public class Sakura extends BaseModel implements Comparable<Sakura> {
     private LocalDateTime modifyTime;
     private Set<Disc> discs = new HashSet<>();
 
-    public Sakura() {
+    public DiscGroup() {
     }
 
-    public Sakura(String key, String title, boolean enabled, ViewType viewType) {
+    public DiscGroup(String key, String title, boolean enabled, ViewType viewType) {
         this.key = key;
         this.title = title == null ? titleOfKey(key) : title;
         this.enabled = enabled;
@@ -82,8 +82,8 @@ public class Sakura extends BaseModel implements Comparable<Sakura> {
     }
 
     @ManyToMany
-    @JoinTable(name = "sakura_discs",
-            joinColumns = {@JoinColumn(name = "sakura_id")},
+    @JoinTable(name = "disc_group_discs",
+            joinColumns = {@JoinColumn(name = "disc_group_id")},
             inverseJoinColumns = {@JoinColumn(name = "disc_id")})
     public Set<Disc> getDiscs() {
         return discs;
@@ -94,9 +94,9 @@ public class Sakura extends BaseModel implements Comparable<Sakura> {
     }
 
     @Override
-    public int compareTo(Sakura o) {
+    public int compareTo(DiscGroup o) {
         Objects.requireNonNull(o);
-        return Comparator.comparing(Sakura::getKey).compare(this, o);
+        return Comparator.comparing(DiscGroup::getKey).compare(this, o);
     }
 
     public JSONObject toJSON() {

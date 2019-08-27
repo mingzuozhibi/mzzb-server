@@ -1,7 +1,7 @@
 package mingzuozhibi.action;
 
 import mingzuozhibi.persist.disc.Disc;
-import mingzuozhibi.service.AmazonDiscSpider;
+import mingzuozhibi.service.DiscInfoSpider;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,7 +34,7 @@ public class AdminController extends BaseController {
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
     @Autowired
-    private AmazonDiscSpider amazonDiscSpider;
+    private DiscInfoSpider discInfoSpider;
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
@@ -54,12 +54,13 @@ public class AdminController extends BaseController {
         if (LOGGER.isInfoEnabled()) {
             infoRequest("[申请查询碟片][开始从日亚查询][ASIN={}]", asin);
         }
-        JSONObject result = amazonDiscSpider.searchDisc(asin);
+        JSONObject result = discInfoSpider.searchDisc(asin);
         if (!result.getBoolean("success")) {
             return result.toString();
         }
         Disc disc = createDisc(asin, result.getJSONObject("data"));
         dao.save(disc);
+        discInfoSpider.updateDiscShelfFollowd(disc);
 
         JSONObject data = disc.toJSON();
         if (LOGGER.isInfoEnabled()) {
