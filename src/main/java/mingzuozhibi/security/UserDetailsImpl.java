@@ -1,6 +1,6 @@
 package mingzuozhibi.security;
 
-import mingzuozhibi.persist.core.User;
+import mingzuozhibi.persist.user.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

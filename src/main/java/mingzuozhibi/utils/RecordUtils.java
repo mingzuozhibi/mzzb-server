@@ -1,7 +1,8 @@
 package mingzuozhibi.utils;
 
 import mingzuozhibi.persist.disc.Disc;
-import mingzuozhibi.persist.disc.Record;
+import mingzuozhibi.persist.rank.DateRecord;
+import mingzuozhibi.persist.rank.HourRecord;
 import mingzuozhibi.support.Dao;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
@@ -10,94 +11,69 @@ import org.json.JSONObject;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.OptionalDouble;
-import java.util.stream.IntStream;
+import java.util.Optional;
 
 public abstract class RecordUtils {
 
-    public static Record getOrCreateRecord(Dao dao, Disc disc, LocalDate date) {
-        Record record = (Record) dao.create(Record.class)
+    public static HourRecord getOrCreateRecord(Dao dao, Disc disc, LocalDate date) {
+        HourRecord hourRecord = (HourRecord) dao.create(HourRecord.class)
                 .add(Restrictions.eq("disc", disc))
                 .add(Restrictions.eq("date", date))
                 .uniqueResult();
-        if (record == null) {
-            record = new Record(disc, date);
-            dao.save(record);
+        if (hourRecord == null) {
+            hourRecord = new HourRecord(disc, date);
+            dao.save(hourRecord);
         }
-        return record;
+        return hourRecord;
     }
 
     public static JSONArray buildRecords(Dao dao, Disc disc) {
         JSONArray array = new JSONArray();
 
+        HourRecord hourRecord = (HourRecord) dao.create(HourRecord.class)
+                .add(Restrictions.eq("disc", disc))
+                .add(Restrictions.eq("date", LocalDate.now()))
+                .uniqueResult();
+
+        if (hourRecord != null) {
+            JSONObject object = new JSONObject();
+            object.put("id", hourRecord.getId());
+            object.put("date", hourRecord.getDate());
+            hourRecord.getAverRank().ifPresent(rank -> {
+                object.put("averRank", (int) rank);
+            });
+            Optional.ofNullable(hourRecord.getTodayPt()).ifPresent(addPt -> {
+                object.put("todayPt", addPt.intValue());
+            });
+            Optional.ofNullable(hourRecord.getTotalPt()).ifPresent(sumPt -> {
+                object.put("totalPt", sumPt.intValue());
+            });
+            array.put(object);
+        }
+
         @SuppressWarnings("unchecked")
-        List<Record> records = dao.create(Record.class)
+        List<DateRecord> dateRecords = dao.create(DateRecord.class)
                 .add(Restrictions.eq("disc", disc))
                 .addOrder(Order.desc("date"))
                 .list();
 
-        records.forEach(record -> {
+        dateRecords.forEach(dateRecord -> {
             JSONObject object = new JSONObject();
-            object.put("id", record.getId());
-            object.put("date", record.getDate());
-            object.put("todayPt", record.getTodayPt());
-            object.put("totalPt", record.getTotalPt());
-            getAverRank(record).ifPresent(averRank -> {
-                object.put("averRank", (int) averRank);
+            object.put("id", dateRecord.getId());
+            object.put("date", dateRecord.getDate());
+            Optional.ofNullable(dateRecord.getRank()).ifPresent(rank -> {
+                object.put("averRank", rank.intValue());
+            });
+            Optional.ofNullable(dateRecord.getTodayPt()).ifPresent(addPt -> {
+                object.put("todayPt", addPt.intValue());
+            });
+            Optional.ofNullable(dateRecord.getTotalPt()).ifPresent(sumPt -> {
+                object.put("totalPt", sumPt.intValue());
             });
             array.put(object);
         });
+
         return array;
     }
 
-    private static OptionalDouble getAverRank(Record record) {
-        IntStream.Builder builder = IntStream.builder();
-        for (int i = 0; i < 24; i++) {
-            Integer rank = record.getRank(i);
-            if (rank != null && rank != 0) {
-                builder.add(rank);
-            }
-        }
-        return builder.build().average();
-    }
-
-    public static JSONArray buildRanks(Dao dao, Disc disc) {
-        JSONArray array = new JSONArray();
-        findRanks(dao, disc).forEach(record -> {
-            for (int i = 0; i < 24; i++) {
-                if (array.length() >= 5) {
-                    break;
-                }
-                int hour = 23 - i;
-                Integer rank = record.getRank(hour);
-                if (rank != null && rank != 0) {
-                    JSONObject object = new JSONObject();
-                    object.put("date", record.getDate());
-                    object.put("hour", String.format("%02d", hour));
-                    object.put("rank", rank);
-                    array.put(object);
-                }
-            }
-        });
-        return array;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static List<Record> findRanks(Dao dao, Disc disc) {
-        return dao.create(Record.class)
-                .add(Restrictions.eq("disc", disc))
-                .add(Restrictions.lt("date", disc.getReleaseDate()))
-                .addOrder(Order.desc("date"))
-                .setMaxResults(2)
-                .list();
-    }
-
-    @SuppressWarnings("unchecked")
-    public static List<Record> findRecords(Dao dao, Disc disc) {
-        return dao.create(Record.class)
-                .add(Restrictions.eq("disc", disc))
-                .add(Restrictions.lt("date", disc.getReleaseDate()))
-                .addOrder(Order.asc("date"))
-                .list();
-    }
 }

@@ -1,25 +1,29 @@
-package mingzuozhibi.persist.disc;
+package mingzuozhibi.persist.rank;
 
 import mingzuozhibi.persist.BaseModel;
+import mingzuozhibi.persist.disc.DateRank;
+import mingzuozhibi.persist.disc.Disc;
 
 import javax.persistence.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.LocalDate;
+import java.util.OptionalDouble;
+import java.util.stream.IntStream;
 
 @Entity
-public class Record extends BaseModel {
+public class HourRecord extends BaseModel {
 
     private Disc disc;
     private LocalDate date;
     private DateRank rank;
-    private Integer todayPt;
-    private Integer totalPt;
+    private Double todayPt;
+    private Double totalPt;
 
-    public Record() {
+    public HourRecord() {
     }
 
-    public Record(Disc disc, LocalDate date) {
+    public HourRecord(Disc disc, LocalDate date) {
         this.disc = disc;
         this.date = date;
         this.rank = new DateRank();
@@ -53,20 +57,20 @@ public class Record extends BaseModel {
     }
 
     @Column
-    public Integer getTodayPt() {
+    public Double getTodayPt() {
         return todayPt;
     }
 
-    public void setTodayPt(Integer todayPt) {
+    public void setTodayPt(Double todayPt) {
         this.todayPt = todayPt;
     }
 
     @Column
-    public Integer getTotalPt() {
+    public Double getTotalPt() {
         return totalPt;
     }
 
-    public void setTotalPt(Integer totalPt) {
+    public void setTotalPt(Double totalPt) {
         this.totalPt = totalPt;
     }
 
@@ -106,6 +110,18 @@ public class Record extends BaseModel {
         } catch (IllegalAccessException | InvocationTargetException e) {
             return null;
         }
+    }
+
+    @Transient
+    public OptionalDouble getAverRank() {
+        IntStream.Builder builder = IntStream.builder();
+        for (int i = 0; i < 24; i++) {
+            Integer rank = getRank(i);
+            if (rank != null && rank != 0) {
+                builder.add(rank);
+            }
+        }
+        return builder.build().average();
     }
 
 }

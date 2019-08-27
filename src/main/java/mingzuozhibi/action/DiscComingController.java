@@ -19,14 +19,6 @@ import java.util.List;
 @RestController
 public class DiscComingController extends BaseController {
 
-    @Deprecated
-    @Transactional
-    @GetMapping(value = "/api/newdiscs", produces = MEDIA_TYPE)
-    public String findAllDeprecated(@RequestParam(defaultValue = "1") int page,
-                                    @RequestParam(defaultValue = "20") int pageSize) {
-        return findAll(page, pageSize);
-    }
-
     @Transactional
     @GetMapping(value = "/api/discComing", produces = MEDIA_TYPE)
     public String findAll(@RequestParam(defaultValue = "1") int page,
