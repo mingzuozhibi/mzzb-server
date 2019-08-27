@@ -27,56 +27,6 @@ public class SakuraController extends BaseController {
     }
 
     @Transactional
-    @PreAuthorize("hasRole('BASIC')")
-    @PutMapping(value = "/api/sakuras/{id}", produces = MEDIA_TYPE)
-    public String setOne(
-            @PathVariable("id") Long id,
-            @JsonArg("$.key") String key,
-            @JsonArg("$.title") String title,
-            @JsonArg("$.viewType") ViewType viewType,
-            @JsonArg("$.enabled") boolean enabled) {
-
-        if (key.isEmpty()) {
-            if (LOGGER.isWarnEnabled()) {
-                warnRequest("[编辑列表失败][列表索引不能为空]");
-            }
-            return errorMessage("列表索引不能为空");
-        }
-
-        if (title.isEmpty()) {
-            if (LOGGER.isWarnEnabled()) {
-                warnRequest("[编辑列表失败][列表标题不能为空]");
-            }
-            return errorMessage("列表标题不能为空");
-        }
-
-        Sakura sakura = dao.get(Sakura.class, id);
-
-        if (sakura == null) {
-            if (LOGGER.isWarnEnabled()) {
-                warnRequest("[编辑列表失败][指定的列表Id不存在][id={}]", id);
-            }
-            return errorMessage("指定的列表Id不存在");
-        }
-
-        JSONObject before = sakura.toJSON();
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[编辑列表开始][修改前={}]", before);
-        }
-
-        sakura.setKey(key);
-        sakura.setTitle(title);
-        sakura.setViewType(viewType);
-        sakura.setEnabled(enabled);
-
-        JSONObject result = sakura.toJSON();
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[编辑列表成功][修改后={}]", result);
-        }
-        return objectResult(result);
-    }
-
-    @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(value = "/api/sakuras/{id}", produces = MEDIA_TYPE)
     public String delOne(@PathVariable("id") Long id) {
