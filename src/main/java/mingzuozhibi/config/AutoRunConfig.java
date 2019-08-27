@@ -1,6 +1,6 @@
 package mingzuozhibi.config;
 
-import mingzuozhibi.service.AmazonDiscSpider;
+import mingzuozhibi.service.DiscInfoSpider;
 import mingzuozhibi.service.AmazonNewDiscSpider;
 import mingzuozhibi.service.ScheduleMission;
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ public class AutoRunConfig {
     private ScheduleMission scheduleMission;
 
     @Autowired
-    private AmazonDiscSpider amazonDiscSpider;
+    private DiscInfoSpider discInfoSpider;
 
     @Autowired
     private AmazonNewDiscSpider amazonNewDiscSpider;
@@ -56,7 +56,7 @@ public class AutoRunConfig {
     @Scheduled(cron = "0 4/5 * * * ?")
     public void fetchDiscRanks() {
         new Thread(() -> {
-            amazonDiscSpider.fetchFromBCloud();
+            discInfoSpider.fetchFromBCloud();
         }).start();
     }
 

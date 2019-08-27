@@ -8,17 +8,17 @@ import javax.persistence.Entity;
 import java.time.LocalDateTime;
 
 @Entity
-public class DiscInfo extends BaseModel {
+public class DiscShelf extends BaseModel {
 
     private String asin;
     private String title;
-    private LocalDateTime createTime;
     private boolean followed;
+    private LocalDateTime createTime;
 
-    public DiscInfo() {
+    public DiscShelf() {
     }
 
-    public DiscInfo(String asin, String title) {
+    public DiscShelf(String asin, String title) {
         this.asin = asin;
         this.title = title;
         this.createTime = LocalDateTime.now();
@@ -42,6 +42,14 @@ public class DiscInfo extends BaseModel {
         this.title = title;
     }
 
+    public boolean isFollowed() {
+        return followed;
+    }
+
+    public void setFollowed(boolean followed) {
+        this.followed = followed;
+    }
+
     @Column(nullable = false)
     public LocalDateTime getCreateTime() {
         return createTime;
@@ -49,14 +57,6 @@ public class DiscInfo extends BaseModel {
 
     public void setCreateTime(LocalDateTime createTime) {
         this.createTime = createTime;
-    }
-
-    public boolean isFollowed() {
-        return followed;
-    }
-
-    public void setFollowed(boolean followed) {
-        this.followed = followed;
     }
 
     public JSONObject toJSON() {

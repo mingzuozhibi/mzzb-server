@@ -3,7 +3,7 @@ package mingzuozhibi.service;
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.persist.disc.DiscGroup;
-import mingzuozhibi.persist.disc.DiscInfo;
+import mingzuozhibi.persist.disc.DiscShelf;
 import mingzuozhibi.support.Dao;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -30,9 +30,9 @@ import static java.util.Comparator.*;
 import static mingzuozhibi.utils.DiscUtils.needUpdateAsins;
 
 @Service
-public class AmazonDiscSpider {
+public class DiscInfoSpider {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(AmazonDiscSpider.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(DiscInfoSpider.class);
 
     @Value("${BCLOUD_IP}")
     private String bcloudIp;
@@ -48,9 +48,9 @@ public class AmazonDiscSpider {
 
     @Transactional
     public void updateNewDiscFollowd(Disc disc) {
-        Optional.ofNullable(dao.lookup(DiscInfo.class, "asin", disc.getAsin()))
-                .ifPresent(discInfo -> {
-                    discInfo.setFollowed(true);
+        Optional.ofNullable(dao.lookup(DiscShelf.class, "asin", disc.getAsin()))
+                .ifPresent(discShelf -> {
+                    discShelf.setFollowed(true);
                 });
     }
 

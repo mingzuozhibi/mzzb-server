@@ -1,5 +1,6 @@
 ALTER TABLE sakura_discs RENAME disc_group_discs;
 ALTER TABLE sakura RENAME disc_group;
+ALTER TABLE disc_info RENAME disc_shelf;
 
 ALTER TABLE disc_group_discs
     DROP FOREIGN KEY FKc1blr2smynys592tww1xbrn8h;

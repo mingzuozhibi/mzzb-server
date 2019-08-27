@@ -1,7 +1,7 @@
 package mingzuozhibi.service;
 
 import mingzuozhibi.persist.disc.Disc;
-import mingzuozhibi.persist.disc.DiscInfo;
+import mingzuozhibi.persist.disc.DiscShelf;
 import mingzuozhibi.support.Dao;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -36,8 +36,8 @@ public class AmazonNewDiscSpider {
 
                         JSONArray data = root.getJSONArray("data");
                         for (int i = 0; i < data.length(); i++) {
-                            JSONObject newdisc = data.getJSONObject(i);
-                            tryCreateDiscInfo(newdisc.getString("asin"), newdisc.getString("title"));
+                            JSONObject obj = data.getJSONObject(i);
+                            tryCreateDiscShelf(obj.getString("asin"), obj.getString("title"));
                         }
 
                         break;
@@ -49,22 +49,22 @@ public class AmazonNewDiscSpider {
         }).start();
     }
 
-    private void tryCreateDiscInfo(String asin, String title) {
+    private void tryCreateDiscShelf(String asin, String title) {
         if (asin != null && asin.length() > 0) {
-            DiscInfo discInfo = dao.lookup(DiscInfo.class, "asin", asin);
-            if (discInfo == null) {
-                dao.save(createDiscInfo(asin, title));
+            DiscShelf discShelf = dao.lookup(DiscShelf.class, "asin", asin);
+            if (discShelf == null) {
+                dao.save(createDiscShelf(asin, title));
                 LOGGER.info("[发现新碟片][asin={}][title={}]", asin, title);
             }
         }
     }
 
-    private DiscInfo createDiscInfo(String asin, String title) {
-        DiscInfo discInfo = new DiscInfo(asin, title);
+    private DiscShelf createDiscShelf(String asin, String title) {
+        DiscShelf discShelf = new DiscShelf(asin, title);
         if (dao.lookup(Disc.class, "asin", asin) != null) {
-            discInfo.setFollowed(true);
+            discShelf.setFollowed(true);
         }
-        return discInfo;
+        return discShelf;
     }
 
 }
