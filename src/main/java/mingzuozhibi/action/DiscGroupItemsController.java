@@ -15,15 +15,6 @@ import java.util.stream.Stream;
 @RestController
 public class DiscGroupItemsController extends BaseController {
 
-    @Deprecated
-    @Transactional
-    @GetMapping(value = "/api/sakuras/key/{key}/discs", produces = MEDIA_TYPE)
-    public String findDiscsDeprecated(
-            @PathVariable String key,
-            @RequestParam(required = false) String discColumns) {
-        return findDiscs(key, discColumns);
-    }
-
     @Transactional
     @GetMapping(value = "/api/discGroups/key/{key}/discs", produces = MEDIA_TYPE)
     public String findDiscs(
@@ -63,16 +54,6 @@ public class DiscGroupItemsController extends BaseController {
         return discs;
     }
 
-    @Deprecated
-    @Transactional
-    @PreAuthorize("hasRole('BASIC')")
-    @PostMapping(value = "/api/sakuras/{id}/discs/{discId}", produces = MEDIA_TYPE)
-    public synchronized String pushDiscsDeprecated(
-            @PathVariable Long id,
-            @PathVariable Long discId) {
-        return pushDiscs(id, discId);
-    }
-
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/api/discGroups/{id}/discs/{discId}", produces = MEDIA_TYPE)
@@ -110,16 +91,6 @@ public class DiscGroupItemsController extends BaseController {
             infoRequest("[添加碟片到列表成功][列表={}][碟片={}]", sakura.getTitle(), disc.getLogName());
         }
         return objectResult(disc.toJSON());
-    }
-
-    @Deprecated
-    @Transactional
-    @PreAuthorize("hasRole('BASIC')")
-    @DeleteMapping(value = "/api/sakuras/{id}/discs/{discId}", produces = MEDIA_TYPE)
-    public synchronized String dropDiscsDeprecated(
-            @PathVariable("id") Long id,
-            @PathVariable("discId") Long discId) {
-        return dropDiscs(id, discId);
     }
 
     @Transactional
