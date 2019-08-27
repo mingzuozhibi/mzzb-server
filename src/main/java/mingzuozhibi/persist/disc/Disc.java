@@ -234,6 +234,11 @@ public class Disc extends BaseModel implements Comparable<Disc> {
     }
 
     @Transient
+    public String getLogName() {
+        return String.format("(%s)%s", asin, Optional.ofNullable(titlePc).orElse(title));
+    }
+
+    @Transient
     public long getSurplusDays() {
         return getReleaseDate().toEpochDay() - LocalDate.now().toEpochDay();
     }

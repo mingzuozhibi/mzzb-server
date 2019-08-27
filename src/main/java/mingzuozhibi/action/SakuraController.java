@@ -67,51 +67,6 @@ public class SakuraController extends BaseController {
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
-    @PostMapping(value = "/api/sakuras/{id}/discs/{discId}", produces = MEDIA_TYPE)
-    public synchronized String pushDiscs(
-            @PathVariable("id") Long id,
-            @PathVariable("discId") Long discId,
-            @RequestParam(name = "discColumns", defaultValue = DISC_COLUMNS) String discColumns) {
-
-        Sakura sakura = dao.get(Sakura.class, id);
-
-        if (sakura == null) {
-            if (LOGGER.isWarnEnabled()) {
-                warnRequest("[添加碟片到列表失败][指定的列表Id不存在][Id={}]", id);
-            }
-            return errorMessage("指定的列表Id不存在");
-        }
-
-        Disc disc = dao.get(Disc.class, discId);
-
-        if (disc == null) {
-            if (LOGGER.isWarnEnabled()) {
-                warnRequest("[添加碟片到列表失败][指定的碟片Id不存在][Id={}]", discId);
-            }
-            return errorMessage("指定的碟片Id不存在");
-        }
-
-        if (sakura.getDiscs().stream().anyMatch(d -> d.getId().equals(discId))) {
-            if (LOGGER.isInfoEnabled()) {
-                infoRequest("[添加碟片到列表失败][指定的碟片已存在于列表][ASIN={}][列表={}]",
-                        disc.getAsin(), sakura.getTitle());
-            }
-            return errorMessage("指定的碟片已存在于列表");
-        }
-
-        sakura.getDiscs().add(disc);
-
-        dao.session().flush();
-
-        if (LOGGER.isInfoEnabled()) {
-            infoRequest("[添加碟片到列表成功][ASIN={}][列表={}]", disc.getAsin(), sakura.getTitle());
-        }
-
-        return objectResult(disc.toJSON(getColumns(discColumns)));
-    }
-
-    @Transactional
-    @PreAuthorize("hasRole('BASIC')")
     @DeleteMapping(value = "/api/sakuras/{id}/discs/{discId}", produces = MEDIA_TYPE)
     public synchronized String dropDiscs(
             @PathVariable("id") Long id,
