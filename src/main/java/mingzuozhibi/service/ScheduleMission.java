@@ -2,9 +2,7 @@ package mingzuozhibi.service;
 
 import mingzuozhibi.persist.core.AutoLogin;
 import mingzuozhibi.persist.disc.Disc;
-import mingzuozhibi.persist.disc.Disc.UpdateType;
 import mingzuozhibi.persist.disc.Record;
-import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.support.Dao;
 import mingzuozhibi.utils.DiscUtils;
 import org.hibernate.criterion.Restrictions;
@@ -15,13 +13,11 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.Comparator.*;
-import static mingzuozhibi.utils.SakuraUtils.computeAndUpdateAmazonPt;
 import static mingzuozhibi.utils.RecordUtils.getOrCreateRecord;
+import static mingzuozhibi.utils.SakuraUtils.computeAndUpdateAmazonPt;
 
 @Service
 public class ScheduleMission {
@@ -58,7 +54,7 @@ public class ScheduleMission {
             dao.execute(session -> {
                 Set<Disc> discs = DiscUtils.needRecordDiscs(session);
 
-                LOGGER.info("[定时任务][记录碟片排名][碟片数量为:{}]", discs.size());
+                LOGGER.info("[定时任务][记录碟片排名][共{}个]", discs.size());
 
                 discs.forEach(disc -> {
                     Record record = getOrCreateRecord(dao, disc, date);
@@ -74,7 +70,7 @@ public class ScheduleMission {
                 discs.forEach(disc -> {
                     computeAndUpdateAmazonPt(dao, disc);
                 });
-                LOGGER.info("[定时任务][计算碟片PT完成]", discs.size());
+                LOGGER.info("[定时任务][计算碟片PT完成][共{}个]", discs.size());
             });
         }).start();
     }

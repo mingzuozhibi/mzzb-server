@@ -3,6 +3,7 @@ package mingzuozhibi.action;
 import mingzuozhibi.persist.core.AutoLogin;
 import mingzuozhibi.persist.core.User;
 import mingzuozhibi.support.JsonArg;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,10 +23,6 @@ public class UserController extends BaseController {
         dao.findAll(User.class).forEach(user -> {
             result.put(user.toJSON());
         });
-
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[获取多个用户成功][用户数量={}]", result.length());
-        }
         return objectResult(result);
     }
 
@@ -36,12 +33,11 @@ public class UserController extends BaseController {
             @JsonArg String username,
             @JsonArg String password,
             @JsonArg(defaults = "true") boolean enabled) {
+
         if (dao.lookup(User.class, "username", username) != null) {
-            if (LOGGER.isInfoEnabled()) {
-                infoRequest("[创建用户失败][该同户名称已存在][用户名={}]", username);
-            }
-            return errorMessage("该同户名称已存在");
+            return errorMessage("同户名已存在");
         }
+
         User user = new User(username, password, enabled);
         dao.save(user);
 
@@ -63,12 +59,7 @@ public class UserController extends BaseController {
             }
             return errorMessage("指定的用户Id不存在");
         }
-
-        JSONObject result = user.toJSON();
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[获取用户成功][用户信息={}]", result);
-        }
-        return objectResult(result);
+        return objectResult(user.toJSON());
     }
 
     @Transactional
@@ -81,7 +72,6 @@ public class UserController extends BaseController {
             @JsonArg boolean enabled) {
 
         User user = dao.get(User.class, id);
-
         if (user == null) {
             if (LOGGER.isWarnEnabled()) {
                 warnRequest("[编辑用户失败][指定的用户Id不存在][Id={}]", id);
@@ -89,21 +79,21 @@ public class UserController extends BaseController {
             return errorMessage("指定的用户Id不存在");
         }
 
-        if (LOGGER.isDebugEnabled()) {
+        if (LOGGER.isInfoEnabled()) {
             JSONObject before = user.toJSON();
-            debugRequest("[编辑用户开始][修改前={}]", before);
+            infoRequest("[编辑用户开始][修改前={}]", before);
         }
 
         user.setUsername(username);
         user.setEnabled(enabled);
-        if (password != null && !password.isEmpty()) {
+        if (StringUtils.isNotEmpty(password)) {
             user.setPassword(password);
             cleanAutoLogin(user);
         }
 
         JSONObject result = user.toJSON();
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[编辑用户成功][修改后={}]", result);
+        if (LOGGER.isInfoEnabled()) {
+            infoRequest("[编辑用户成功][修改后={}]", result);
         }
         return objectResult(result);
     }

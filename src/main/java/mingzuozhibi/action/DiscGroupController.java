@@ -20,24 +20,6 @@ import static org.hibernate.criterion.Restrictions.ne;
 @RestController
 public class DiscGroupController extends BaseController {
 
-    @Deprecated
-    @Transactional
-    @GetMapping(value = "/api/sakuras", produces = MEDIA_TYPE)
-    public String findAllDeprecated(@RequestParam(name = "public", defaultValue = "true") boolean isPublic) {
-        Criteria criteria = dao.session().createCriteria(Sakura.class);
-        if (isPublic) {
-            criteria.add(ne("viewType", ViewType.PrivateList));
-        }
-
-        @SuppressWarnings("unchecked")
-        List<Sakura> discGroups = criteria.list();
-
-        JSONArray array = discGroups.stream()
-                .map(this::toJSONDeprecated)
-                .collect(toJSONArray());
-        return objectResult(array);
-    }
-
     @Transactional
     @GetMapping(value = "/api/discGroups", produces = MEDIA_TYPE)
     public String findAll(@RequestParam(defaultValue = "false") boolean hasPrivate) {
@@ -55,11 +37,6 @@ public class DiscGroupController extends BaseController {
         return objectResult(array);
     }
 
-    @Deprecated
-    private JSONObject toJSONDeprecated(Sakura sakura) {
-        return sakura.toJSON().put("discsSize", sakura.getDiscs().size());
-    }
-
     private JSONObject toJSON(Sakura sakura) {
         return sakura.toJSON().put("discCount", sakura.getDiscs().size());
     }
@@ -68,13 +45,6 @@ public class DiscGroupController extends BaseController {
         return Collector.of(JSONArray::new, JSONArray::put, (objects, objects2) -> {
             return objects.put(objects2.toList());
         });
-    }
-
-    @Deprecated
-    @Transactional
-    @GetMapping(value = "/api/sakuras/key/{key}", produces = MEDIA_TYPE)
-    public String findOneDeprecated(@PathVariable String key) {
-        return findOne(key);
     }
 
     @Transactional
@@ -90,18 +60,6 @@ public class DiscGroupController extends BaseController {
         }
 
         return objectResult(sakura.toJSON());
-    }
-
-    @Deprecated
-    @Transactional
-    @PreAuthorize("hasRole('BASIC')")
-    @PostMapping(value = "/api/sakuras", produces = MEDIA_TYPE)
-    public String addOneDeprecated(
-            @JsonArg String key,
-            @JsonArg String title,
-            @JsonArg(defaults = "true") boolean enabled,
-            @JsonArg(defaults = "PublicList") ViewType viewType) {
-        return addOne(key, title, enabled, viewType);
     }
 
     @Transactional
@@ -142,19 +100,6 @@ public class DiscGroupController extends BaseController {
             infoRequest("[创建列表成功][列表信息={}]", result);
         }
         return objectResult(result);
-    }
-
-    @Deprecated
-    @Transactional
-    @PreAuthorize("hasRole('BASIC')")
-    @PutMapping(value = "/api/sakuras/{id}", produces = MEDIA_TYPE)
-    public String setOneDeprecated(
-            @PathVariable("id") Long id,
-            @JsonArg("$.key") String key,
-            @JsonArg("$.title") String title,
-            @JsonArg("$.enabled") boolean enabled,
-            @JsonArg("$.viewType") ViewType viewType) {
-        return setOne(id, key, title, enabled, viewType);
     }
 
     @Transactional
@@ -205,14 +150,6 @@ public class DiscGroupController extends BaseController {
             infoRequest("[编辑列表成功][修改后={}]", result);
         }
         return objectResult(result);
-    }
-
-    @Deprecated
-    @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping(value = "/api/sakuras/{id}", produces = MEDIA_TYPE)
-    public String delOneDeprecated(@PathVariable("id") Long id) {
-        return delOne(id);
     }
 
     @Transactional
