@@ -36,14 +36,8 @@ public class ScheduleMission {
             List<AutoLogin> expired = session.createCriteria(AutoLogin.class)
                     .add(Restrictions.lt("expired", LocalDateTime.now()))
                     .list();
-
-            expired.forEach(autoLogin -> {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("[定时任务][移除过期的AutoLogin数据][id={}, username={}]",
-                            autoLogin.getId(), autoLogin.getUser().getUsername());
-                }
-                dao.delete(autoLogin);
-            });
+            expired.forEach(autoLogin -> dao.delete(autoLogin));
+            LOGGER.info("[定时任务][清理自动登入][共{}个]", expired.size());
         });
     }
 
@@ -67,8 +61,8 @@ public class ScheduleMission {
                 });
                 session.delete(hourRecord);
                 session.save(dateRecord);
-                LOGGER.info("转录Record({},{})", dateRecord.getDisc().getAsin(), dateRecord.getDate());
             });
+            LOGGER.info("[定时任务][转录碟片排名][共{}个]", hourRecords.size());
         });
     }
 
@@ -81,20 +75,17 @@ public class ScheduleMission {
         dao.execute(session -> {
             Set<Disc> discs = DiscUtils.needRecordDiscs(session);
 
-            LOGGER.info("[定时任务][记录碟片排名][共{}个]", discs.size());
-
             discs.forEach(disc -> {
                 HourRecord hourRecord = getOrCreateRecord(dao, disc, date);
                 hourRecord.setRank(hour, disc.getThisRank());
                 hourRecord.setTotalPt(disc.getTotalPt());
             });
-
-            LOGGER.info("[定时任务][计算碟片PT][碟片数量为:{}]", discs.size());
+            LOGGER.info("[定时任务][记录碟片排名][共{}个]", discs.size());
 
             discs.forEach(disc -> {
                 computeAndUpdateAmazonPt(dao, disc);
             });
-            LOGGER.info("[定时任务][计算碟片PT完成][共{}个]", discs.size());
+            LOGGER.info("[定时任务][计算任务完成][共{}个]", discs.size());
         });
     }
 
