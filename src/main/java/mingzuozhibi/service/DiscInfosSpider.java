@@ -30,9 +30,9 @@ import static java.util.Comparator.*;
 import static mingzuozhibi.utils.DiscUtils.needUpdateAsins;
 
 @Service
-public class DiscInfoSpider {
+public class DiscInfosSpider {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(DiscInfoSpider.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(DiscInfosSpider.class);
 
     @Value("${BCLOUD_IP}")
     private String bcloudIp;

@@ -1,7 +1,7 @@
 package mingzuozhibi.config;
 
-import mingzuozhibi.service.DiscInfoSpider;
-import mingzuozhibi.service.AmazonNewDiscSpider;
+import mingzuozhibi.service.DiscInfosSpider;
+import mingzuozhibi.service.DiscShelfSpider;
 import mingzuozhibi.service.ScheduleMission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Service
@@ -22,10 +22,10 @@ public class AutoRunConfig {
     private ScheduleMission scheduleMission;
 
     @Autowired
-    private DiscInfoSpider discInfoSpider;
+    private DiscInfosSpider discInfosSpider;
 
     @Autowired
-    private AmazonNewDiscSpider amazonNewDiscSpider;
+    private DiscShelfSpider discShelfSpider;
 
     @Value("${BCLOUD_IP}")
     private String japanServerIp;
@@ -34,29 +34,39 @@ public class AutoRunConfig {
      * call by MzzbServerApplication
      */
     public void runOnStartupServer() {
-        scheduleMission.removeExpiredAutoLoginData();
-        scheduleMission.recordDiscsRankAndComputePt();
+        new Thread(() -> {
+            LOGGER.info("开机任务开始");
+            scheduleMission.removeExpiredAutoLoginData();
+            scheduleMission.moveHourRecordToDateRecord();
+            scheduleMission.recordDiscsRankAndComputePt();
+            LOGGER.info("开机任务完成");
+        }).start();
     }
 
     @Scheduled(cron = "0 2 * * * ?")
     public void runOnEveryHour() {
-        LOGGER.info("每小时任务开始");
-        scheduleMission.removeExpiredAutoLoginData();
-        scheduleMission.recordDiscsRankAndComputePt();
-        LOGGER.info("每小时任务完成");
+        new Thread(() -> {
+            LOGGER.info("每小时任务开始");
+            scheduleMission.removeExpiredAutoLoginData();
+            scheduleMission.moveHourRecordToDateRecord();
+            scheduleMission.recordDiscsRankAndComputePt();
+            LOGGER.info("每小时任务完成");
+        }).start();
     }
 
-    @GetMapping("/requestNewDiscs")
+    @PostMapping("/fetchDiscShelf")
     @Scheduled(cron = "0 0,20 0/6 * * ?")
-    public void fetchNewDiscs() {
-        amazonNewDiscSpider.fetchFromJapan(japanServerIp);
+    public void fetchDiscShelf() {
+        new Thread(() -> {
+            discShelfSpider.fetchFromJapan(japanServerIp);
+        }).start();
     }
 
-    @GetMapping("/requestDiscRanks")
+    @PostMapping("/fetchDiscRanks")
     @Scheduled(cron = "0 4/5 * * * ?")
     public void fetchDiscRanks() {
         new Thread(() -> {
-            discInfoSpider.fetchFromBCloud();
+            discInfosSpider.fetchFromBCloud();
         }).start();
     }
 
