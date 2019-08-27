@@ -13,8 +13,8 @@ public abstract class DiscUtils {
         Set<Disc> discs = new LinkedHashSet<>();
 
         LocalDate stopRecordDate = LocalDate.now().minusDays(7);
-        SakuraUtils.sakurasOrderByDescKey(session).forEach(sakura -> {
-            for (Disc disc : sakura.getDiscs()) {
+        DiscGroupUtils.findActiveDiscGroups(session).forEach(discGroup -> {
+            for (Disc disc : discGroup.getDiscs()) {
                 if (disc.getReleaseDate().isAfter(stopRecordDate)) {
                     discs.add(disc);
                 }
@@ -26,8 +26,8 @@ public abstract class DiscUtils {
 
     public static Set<String> needUpdateAsins(Session session) {
         Set<String> asins = new LinkedHashSet<>();
-        SakuraUtils.sakurasOrderByDescKey(session).forEach(sakura -> {
-            for (Disc disc : sakura.getDiscs()) {
+        DiscGroupUtils.findActiveDiscGroups(session).forEach(discGroup -> {
+            for (Disc disc : discGroup.getDiscs()) {
                 asins.add(disc.getAsin());
             }
         });

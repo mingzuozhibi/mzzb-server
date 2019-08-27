@@ -2,8 +2,8 @@ package mingzuozhibi.service;
 
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
+import mingzuozhibi.persist.disc.DiscGroup;
 import mingzuozhibi.persist.disc.DiscInfo;
-import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.support.Dao;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -106,7 +106,7 @@ public class AmazonDiscSpider {
 
         if (discInfos.length() > 0) {
             LOGGER.info("成功更新日亚排名：共{}个", discInfos.length());
-            updateSakuraModifyTime();
+            updateDiscGroupModifyTime();
         } else {
             LOGGER.warn("未能更新日亚排名");
         }
@@ -114,11 +114,11 @@ public class AmazonDiscSpider {
         prevTime = updateOn;
     }
 
-    private void updateSakuraModifyTime() {
+    private void updateDiscGroupModifyTime() {
         Comparator<Disc> comparator = comparing(Disc::getUpdateTime, nullsFirst(naturalOrder()));
-        dao.findBy(Sakura.class, "enabled", true).forEach(sakura -> {
-            sakura.getDiscs().stream().max(comparator).ifPresent(disc -> {
-                sakura.setModifyTime(disc.getUpdateTime());
+        dao.findBy(DiscGroup.class, "enabled", true).forEach(discGroup -> {
+            discGroup.getDiscs().stream().max(comparator).ifPresent(disc -> {
+                discGroup.setModifyTime(disc.getUpdateTime());
             });
         });
     }

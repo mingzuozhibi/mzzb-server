@@ -1,7 +1,7 @@
 package mingzuozhibi.action;
 
 import mingzuozhibi.persist.disc.Disc;
-import mingzuozhibi.persist.disc.Sakura;
+import mingzuozhibi.persist.disc.DiscGroup;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,34 +20,34 @@ public class DiscGroupItemsController extends BaseController {
     public String findDiscs(
             @PathVariable String key,
             @RequestParam(required = false) String discColumns) {
-        Sakura sakura = dao.lookup(Sakura.class, "key", key);
-        if (sakura == null) {
+        DiscGroup discGroup = dao.lookup(DiscGroup.class, "key", key);
+        if (discGroup == null) {
             if (LOGGER.isWarnEnabled()) {
                 warnRequest("[获取列表碟片失败][指定的列表索引不存在][Key={}]", key);
             }
             return errorMessage("指定的列表索引不存在");
         }
 
-        JSONObject result = sakura.toJSON();
-        result.put("discs", buildDiscs(sakura, discColumns));
+        JSONObject result = discGroup.toJSON();
+        result.put("discs", buildDiscs(discGroup, discColumns));
 
         if (LOGGER.isDebugEnabled()) {
             debugRequest("[获取列表碟片成功][列表标题={}][碟片数量={}]",
-                    sakura.getTitle(), sakura.getDiscs().size());
+                    discGroup.getTitle(), discGroup.getDiscs().size());
         }
         return objectResult(result);
     }
 
-    private JSONArray buildDiscs(Sakura sakura, String columns) {
+    private JSONArray buildDiscs(DiscGroup discGroup, String columns) {
         JSONArray discs = new JSONArray();
         if (columns == null) {
-            sakura.getDiscs().forEach(disc -> {
+            discGroup.getDiscs().forEach(disc -> {
                 discs.put(disc.toJSON());
             });
         } else {
             Set<String> columnSet = Stream.of(columns.split(","))
                     .collect(Collectors.toSet());
-            sakura.getDiscs().forEach(disc -> {
+            discGroup.getDiscs().forEach(disc -> {
                 discs.put(disc.toJSON(columnSet));
             });
         }
@@ -61,8 +61,8 @@ public class DiscGroupItemsController extends BaseController {
             @PathVariable Long id,
             @PathVariable Long discId) {
 
-        Sakura sakura = dao.get(Sakura.class, id);
-        if (sakura == null) {
+        DiscGroup discGroup = dao.get(DiscGroup.class, id);
+        if (discGroup == null) {
             if (LOGGER.isWarnEnabled()) {
                 warnRequest("[添加碟片到列表失败][指定的列表Id不存在][Id={}]", id);
             }
@@ -77,18 +77,18 @@ public class DiscGroupItemsController extends BaseController {
             return errorMessage("指定的碟片Id不存在");
         }
 
-        if (sakura.getDiscs().stream().anyMatch(d -> d.getId().equals(discId))) {
+        if (discGroup.getDiscs().stream().anyMatch(d -> d.getId().equals(discId))) {
             if (LOGGER.isWarnEnabled()) {
                 warnRequest("[添加碟片到列表失败][指定的碟片已存在于列表][列表={}][碟片={}]",
-                        sakura.getTitle(), disc.getLogName());
+                        discGroup.getTitle(), disc.getLogName());
             }
             return errorMessage("指定的碟片已存在于列表");
         }
 
-        sakura.getDiscs().add(disc);
+        discGroup.getDiscs().add(disc);
 
         if (LOGGER.isInfoEnabled()) {
-            infoRequest("[添加碟片到列表成功][列表={}][碟片={}]", sakura.getTitle(), disc.getLogName());
+            infoRequest("[添加碟片到列表成功][列表={}][碟片={}]", discGroup.getTitle(), disc.getLogName());
         }
         return objectResult(disc.toJSON());
     }
@@ -100,15 +100,15 @@ public class DiscGroupItemsController extends BaseController {
             @PathVariable("id") Long id,
             @PathVariable("discId") Long discId) {
 
-        Sakura sakura = dao.get(Sakura.class, id);
-        if (sakura == null) {
+        DiscGroup discGroup = dao.get(DiscGroup.class, id);
+        if (discGroup == null) {
             if (LOGGER.isWarnEnabled()) {
                 warnRequest("[从列表移除碟片失败][指定的列表Id不存在][Id={}]", id);
             }
             return errorMessage("指定的列表Id不存在");
         }
 
-        Disc disc = sakura.getDiscs().stream()
+        Disc disc = discGroup.getDiscs().stream()
                 .filter(t -> t.getId().equals(discId))
                 .findFirst().orElse(null);
         if (disc == null) {
@@ -118,10 +118,10 @@ public class DiscGroupItemsController extends BaseController {
             return errorMessage("指定的碟片Id不存在于列表");
         }
 
-        sakura.getDiscs().remove(disc);
+        discGroup.getDiscs().remove(disc);
 
         if (LOGGER.isInfoEnabled()) {
-            infoRequest("[从列表移除碟片成功][列表={}][碟片={}]", sakura.getTitle(), disc.getLogName());
+            infoRequest("[从列表移除碟片成功][列表={}][碟片={}]", discGroup.getTitle(), disc.getLogName());
         }
         return objectResult(disc.toJSON());
     }

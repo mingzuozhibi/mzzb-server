@@ -1,8 +1,8 @@
 package mingzuozhibi.action;
 
 import mingzuozhibi.persist.disc.Disc;
-import mingzuozhibi.persist.disc.Sakura;
-import mingzuozhibi.persist.disc.Sakura.ViewType;
+import mingzuozhibi.persist.disc.DiscGroup;
+import mingzuozhibi.persist.disc.DiscGroup.ViewType;
 import mingzuozhibi.support.JsonArg;
 import org.hibernate.Criteria;
 import org.json.JSONArray;
@@ -23,13 +23,13 @@ public class DiscGroupController extends BaseController {
     @Transactional
     @GetMapping(value = "/api/discGroups", produces = MEDIA_TYPE)
     public String findAll(@RequestParam(defaultValue = "false") boolean hasPrivate) {
-        Criteria criteria = dao.session().createCriteria(Sakura.class);
+        Criteria criteria = dao.session().createCriteria(DiscGroup.class);
         if (!hasPrivate) {
             criteria.add(ne("viewType", ViewType.PrivateList));
         }
 
         @SuppressWarnings("unchecked")
-        List<Sakura> discGroups = criteria.list();
+        List<DiscGroup> discGroups = criteria.list();
 
         JSONArray array = discGroups.stream()
                 .map(this::toJSON)
@@ -37,8 +37,8 @@ public class DiscGroupController extends BaseController {
         return objectResult(array);
     }
 
-    private JSONObject toJSON(Sakura sakura) {
-        return sakura.toJSON().put("discCount", sakura.getDiscs().size());
+    private JSONObject toJSON(DiscGroup discGroup) {
+        return discGroup.toJSON().put("discCount", discGroup.getDiscs().size());
     }
 
     private Collector<JSONObject, JSONArray, JSONArray> toJSONArray() {
@@ -50,16 +50,16 @@ public class DiscGroupController extends BaseController {
     @Transactional
     @GetMapping(value = "/api/discGroups/key/{key}", produces = MEDIA_TYPE)
     public String findOne(@PathVariable String key) {
-        Sakura sakura = dao.lookup(Sakura.class, "key", key);
+        DiscGroup discGroup = dao.lookup(DiscGroup.class, "key", key);
 
-        if (sakura == null) {
+        if (discGroup == null) {
             if (LOGGER.isWarnEnabled()) {
                 warnRequest("[获取列表失败][指定的列表索引不存在][Key={}]", key);
             }
             return errorMessage("指定的列表索引不存在");
         }
 
-        return objectResult(sakura.toJSON());
+        return objectResult(discGroup.toJSON());
     }
 
     @Transactional
@@ -85,17 +85,17 @@ public class DiscGroupController extends BaseController {
             return errorMessage("列表标题不能为空");
         }
 
-        if (dao.lookup(Sakura.class, "key", key) != null) {
+        if (dao.lookup(DiscGroup.class, "key", key) != null) {
             if (LOGGER.isInfoEnabled()) {
                 infoRequest("[创建列表失败][该列表索引已存在][Key={}]", key);
             }
             return errorMessage("该列表索引已存在");
         }
 
-        Sakura sakura = new Sakura(key, title, enabled, viewType);
-        dao.save(sakura);
+        DiscGroup discGroup = new DiscGroup(key, title, enabled, viewType);
+        dao.save(discGroup);
 
-        JSONObject result = sakura.toJSON();
+        JSONObject result = discGroup.toJSON();
         if (LOGGER.isInfoEnabled()) {
             infoRequest("[创建列表成功][列表信息={}]", result);
         }
@@ -126,26 +126,26 @@ public class DiscGroupController extends BaseController {
             return errorMessage("列表标题不能为空");
         }
 
-        Sakura sakura = dao.get(Sakura.class, id);
+        DiscGroup discGroup = dao.get(DiscGroup.class, id);
 
-        if (sakura == null) {
+        if (discGroup == null) {
             if (LOGGER.isWarnEnabled()) {
                 warnRequest("[编辑列表失败][指定的列表Id不存在][id={}]", id);
             }
             return errorMessage("指定的列表Id不存在");
         }
 
-        JSONObject before = sakura.toJSON();
+        JSONObject before = discGroup.toJSON();
         if (LOGGER.isInfoEnabled()) {
             infoRequest("[编辑列表开始][修改前={}]", before);
         }
 
-        sakura.setKey(key);
-        sakura.setTitle(title);
-        sakura.setViewType(viewType);
-        sakura.setEnabled(enabled);
+        discGroup.setKey(key);
+        discGroup.setTitle(title);
+        discGroup.setViewType(viewType);
+        discGroup.setEnabled(enabled);
 
-        JSONObject result = sakura.toJSON();
+        JSONObject result = discGroup.toJSON();
         if (LOGGER.isInfoEnabled()) {
             infoRequest("[编辑列表成功][修改后={}]", result);
         }
@@ -157,30 +157,30 @@ public class DiscGroupController extends BaseController {
     @DeleteMapping(value = "/api/discGroups/{id}", produces = MEDIA_TYPE)
     public String delOne(@PathVariable("id") Long id) {
 
-        Sakura sakura = dao.get(Sakura.class, id);
-        if (dao.get(Sakura.class, id) == null) {
+        DiscGroup discGroup = dao.get(DiscGroup.class, id);
+        if (dao.get(DiscGroup.class, id) == null) {
             if (LOGGER.isWarnEnabled()) {
                 warnRequest("[删除列表失败][指定的列表Id不存在][Id={}]", id);
             }
             return errorMessage("指定的列表Id不存在");
         }
 
-        infoRequest("[删除列表开始][列表={}]", sakura.getTitle());
-        Set<Disc> discs = sakura.getDiscs();
+        infoRequest("[删除列表开始][列表={}]", discGroup.getTitle());
+        Set<Disc> discs = discGroup.getDiscs();
         if (LOGGER.isDebugEnabled()) {
             discs.forEach(disc -> {
-                LOGGER.debug("[记录列表中的碟片][列表={}][碟片={}]", sakura.getTitle(), disc.getLogName());
+                LOGGER.debug("[记录列表中的碟片][列表={}][碟片={}]", discGroup.getTitle(), disc.getLogName());
             });
         }
 
         int discCount = discs.size();
         discs.clear();
-        dao.delete(sakura);
+        dao.delete(discGroup);
 
         if (LOGGER.isDebugEnabled()) {
             infoRequest("[删除列表成功][该列表共有碟片{}个]", discCount);
         }
-        return objectResult(sakura.toJSON());
+        return objectResult(discGroup.toJSON());
     }
 
 }

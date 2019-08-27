@@ -1,8 +1,8 @@
 package mingzuozhibi.utils;
 
 import mingzuozhibi.persist.disc.Disc;
+import mingzuozhibi.persist.disc.DiscGroup;
 import mingzuozhibi.persist.disc.Record;
-import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.support.Dao;
 import org.hibernate.Session;
 import org.hibernate.criterion.Order;
@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-public abstract class SakuraUtils {
+public abstract class DiscGroupUtils {
 
     public static void computeAndUpdateAmazonPt(Dao dao, Disc disc) {
         AtomicReference<Integer> lastRank = new AtomicReference<>();
@@ -115,8 +115,8 @@ public abstract class SakuraUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static List<Sakura> sakurasOrderByDescKey(Session session) {
-        return session.createCriteria(Sakura.class)
+    public static List<DiscGroup> findActiveDiscGroups(Session session) {
+        return session.createCriteria(DiscGroup.class)
                 .add(Restrictions.eq("enabled", true))
                 .addOrder(Order.desc("key"))
                 .list();
