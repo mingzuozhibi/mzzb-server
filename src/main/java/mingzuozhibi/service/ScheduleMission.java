@@ -1,6 +1,6 @@
 package mingzuozhibi.service;
 
-import mingzuozhibi.persist.core.AutoLogin;
+import mingzuozhibi.persist.user.AutoLogin;
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Record;
 import mingzuozhibi.support.Dao;

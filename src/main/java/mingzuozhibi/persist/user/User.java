@@ -1,4 +1,4 @@
-package mingzuozhibi.persist.core;
+package mingzuozhibi.persist.user;
 
 import mingzuozhibi.persist.BaseModel;
 import org.json.JSONObject;
