@@ -5,20 +5,15 @@ import mingzuozhibi.persist.disc.Disc.UpdateType;
 import mingzuozhibi.persist.disc.Sakura;
 import mingzuozhibi.persist.disc.Sakura.ViewType;
 import mingzuozhibi.support.JsonArg;
-import org.hibernate.Criteria;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static org.hibernate.criterion.Restrictions.ne;
 
 @RestController
 public class SakuraController extends BaseController {
@@ -29,32 +24,6 @@ public class SakuraController extends BaseController {
 
     private static Set<String> buildSet(String columns) {
         return Stream.of(columns.split(",")).collect(Collectors.toSet());
-    }
-
-    @Transactional
-    @SuppressWarnings("unchecked")
-    @GetMapping(value = "/api/sakuras", produces = MEDIA_TYPE)
-    public String findAll(@RequestParam(name = "public", defaultValue = "true") boolean isPublic) {
-        Criteria criteria = dao.session().createCriteria(Sakura.class);
-        if (isPublic) {
-            criteria.add(ne("viewType", ViewType.PrivateList));
-        }
-        List<Sakura> sakuras = criteria.list();
-
-        JSONArray array = sakuras.stream()
-                .map(this::toJSON)
-                .collect(toJSONArray());
-        return objectResult(array);
-    }
-
-    private JSONObject toJSON(Sakura sakura) {
-        return sakura.toJSON().put("discsSize", sakura.getDiscs().size());
-    }
-
-    private Collector<JSONObject, JSONArray, JSONArray> toJSONArray() {
-        return Collector.of(JSONArray::new, JSONArray::put, (objects, objects2) -> {
-            return objects.put(objects2.toList());
-        });
     }
 
     @Transactional
