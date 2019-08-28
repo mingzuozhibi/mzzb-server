@@ -30,7 +30,6 @@ public class Disc extends BaseModel implements Comparable<Disc> {
     private Integer totalPt;
     private Integer guessPt;
     private DiscType discType;
-    private boolean amazonLimit;
     private LocalDate releaseDate;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
@@ -39,12 +38,10 @@ public class Disc extends BaseModel implements Comparable<Disc> {
     public Disc() {
     }
 
-    public Disc(String asin, String title, DiscType discType,
-                boolean amazonLimit, LocalDate releaseDate) {
+    public Disc(String asin, String title, DiscType discType, LocalDate releaseDate) {
         this.asin = asin;
         this.title = title;
         this.discType = discType;
-        this.amazonLimit = amazonLimit;
         this.releaseDate = releaseDate;
         this.createTime = LocalDateTime.now().withNano(0);
     }
@@ -140,15 +137,6 @@ public class Disc extends BaseModel implements Comparable<Disc> {
     }
 
     @Column(nullable = false)
-    public boolean isAmazonLimit() {
-        return amazonLimit;
-    }
-
-    public void setAmazonLimit(boolean amazonLimit) {
-        this.amazonLimit = amazonLimit;
-    }
-
-    @Column(nullable = false)
     public LocalDate getReleaseDate() {
         return releaseDate;
     }
@@ -233,9 +221,9 @@ public class Disc extends BaseModel implements Comparable<Disc> {
         object.put("todayPt", getTodayPt());
         object.put("totalPt", getTotalPt());
         object.put("guessPt", getGuessPt());
-        object.put("amazonLimit", isAmazonLimit());
         object.put("discType", getDiscType().name());
         object.put("releaseDate", getReleaseDate().toString());
+        object.put("surplusDays", getSurplusDays());
         object.put("createTime", toEpochMilli(getCreateTime()));
         Optional.ofNullable(getUpdateTime()).ifPresent(updateTime -> {
             object.put("updateTime", toEpochMilli(updateTime));
@@ -243,7 +231,6 @@ public class Disc extends BaseModel implements Comparable<Disc> {
         Optional.ofNullable(getModifyTime()).ifPresent(modifyTime -> {
             object.put("modifyTime", toEpochMilli(modifyTime));
         });
-        object.put("surplusDays", getSurplusDays());
         return object;
     }
 

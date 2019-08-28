@@ -1,6 +1,7 @@
 package mingzuozhibi.action;
 
 import mingzuozhibi.persist.disc.Disc;
+import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.service.DiscInfosSpider;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +60,6 @@ public class AdminController extends BaseController {
             return result.toString();
         }
         Disc disc = createDisc(asin, result.getJSONObject("data"));
-        dao.save(disc);
         discInfosSpider.updateDiscShelfFollowd(disc);
 
         JSONObject data = disc.toJSON();
@@ -69,14 +69,14 @@ public class AdminController extends BaseController {
         return objectResult(data);
     }
 
-    private Disc createDisc(String asin, JSONObject discJson) {
-        return new Disc(
+    private Disc createDisc(@PathVariable String asin, JSONObject discJson) {
+        Disc disc = new Disc(
                 asin,
                 discJson.getString("title"),
-                Disc.DiscType.valueOf(discJson.getString("type")),
-                false,
-                LocalDate.parse(discJson.getString("date"), formatter)
-        );
+                DiscType.valueOf(discJson.getString("type")),
+                LocalDate.parse(discJson.getString("date"), formatter));
+        dao.save(disc);
+        return disc;
     }
 
 }

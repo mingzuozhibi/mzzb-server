@@ -1,24 +1,22 @@
 package mingzuozhibi.persist.rank;
 
 import mingzuozhibi.persist.BaseModel;
-import mingzuozhibi.persist.disc.DateRank;
 import mingzuozhibi.persist.disc.Disc;
 
 import javax.persistence.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.util.OptionalDouble;
-import java.util.stream.IntStream;
+import java.util.stream.DoubleStream;
 
 @Entity
 public class HourRecord extends BaseModel {
 
     private Disc disc;
     private LocalDate date;
-    private DateRank rank;
     private Double todayPt;
     private Double totalPt;
+    private Double guessPt;
+    private HourRecordEmbedded rank;
 
     public HourRecord() {
     }
@@ -26,7 +24,6 @@ public class HourRecord extends BaseModel {
     public HourRecord(Disc disc, LocalDate date) {
         this.disc = disc;
         this.date = date;
-        this.rank = new DateRank();
     }
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -47,15 +44,6 @@ public class HourRecord extends BaseModel {
         this.date = date;
     }
 
-    @Embedded
-    public DateRank getRank() {
-        return rank;
-    }
-
-    public void setRank(DateRank rank) {
-        this.rank = rank;
-    }
-
     @Column
     public Double getTodayPt() {
         return todayPt;
@@ -74,30 +62,30 @@ public class HourRecord extends BaseModel {
         this.totalPt = totalPt;
     }
 
-    private static Method[] rankSetters = new Method[24];
-    private static Method[] rankGetters = new Method[24];
+    @Column
+    public Double getGuessPt() {
+        return guessPt;
+    }
 
-    static {
-        for (int i = 0; i < 24; i++) {
-            Class<DateRank> rankClass = DateRank.class;
-            try {
-                rankSetters[i] = rankClass.getMethod(String.format("setRank%02d", i), Integer.class);
-                rankGetters[i] = rankClass.getMethod(String.format("getRank%02d", i));
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            }
-        }
+    public void setGuessPt(Double guessPt) {
+        this.guessPt = guessPt;
+    }
+
+    @Embedded
+    public HourRecordEmbedded getRank() {
+        return rank;
+    }
+
+    public void setRank(HourRecordEmbedded rank) {
+        this.rank = rank;
     }
 
     @Transient
     public void setRank(int hour, Integer rank) {
         if (this.rank == null) {
-            this.rank = new DateRank();
+            this.rank = new HourRecordEmbedded();
         }
-        try {
-            rankSetters[hour].invoke(this.rank, rank);
-        } catch (IllegalAccessException | InvocationTargetException ignore) {
-        }
+        this.rank.setRank(hour, rank);
     }
 
     @Transient
@@ -105,19 +93,18 @@ public class HourRecord extends BaseModel {
         if (this.rank == null) {
             return null;
         }
-        try {
-            return (Integer) rankGetters[hour].invoke(this.rank);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            return null;
-        }
+        return this.rank.getRank(hour);
     }
 
     @Transient
     public OptionalDouble getAverRank() {
-        IntStream.Builder builder = IntStream.builder();
-        for (int i = 0; i < 24; i++) {
-            Integer rank = getRank(i);
-            if (rank != null && rank != 0) {
+        if (this.rank == null) {
+            return OptionalDouble.empty();
+        }
+        DoubleStream.Builder builder = DoubleStream.builder();
+        for (int hour = 0; hour < 24; hour++) {
+            Integer rank = getRank(hour);
+            if (rank != null) {
                 builder.add(rank);
             }
         }

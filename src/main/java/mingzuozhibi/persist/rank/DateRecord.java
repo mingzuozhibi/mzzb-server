@@ -17,6 +17,7 @@ public class DateRecord extends BaseModel {
     private Double rank;
     private Double todayPt;
     private Double totalPt;
+    private Double guessPt;
 
     public DateRecord() {
     }
@@ -71,4 +72,13 @@ public class DateRecord extends BaseModel {
         this.totalPt = totalPt;
     }
 
+    @Column
+    public Double getGuessPt() {
+        return guessPt;
+    }
+
+    public void setGuessPt(Double guessPt) {
+        this.guessPt = guessPt;
+    }
+    
 }
