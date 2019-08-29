@@ -1,13 +1,16 @@
 package mingzuozhibi.action;
 
 import mingzuozhibi.persist.disc.Disc;
+import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.service.DiscInfosSpider;
+import mingzuozhibi.utils.ReCompute;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
@@ -59,7 +62,6 @@ public class AdminController extends BaseController {
             return result.toString();
         }
         Disc disc = createDisc(asin, result.getJSONObject("data"));
-        dao.save(disc);
         discInfosSpider.updateDiscShelfFollowd(disc);
 
         JSONObject data = disc.toJSON();
@@ -69,14 +71,30 @@ public class AdminController extends BaseController {
         return objectResult(data);
     }
 
-    private Disc createDisc(String asin, JSONObject discJson) {
-        return new Disc(
+    private Disc createDisc(@PathVariable String asin, JSONObject discJson) {
+        Disc disc = new Disc(
                 asin,
                 discJson.getString("title"),
-                Disc.DiscType.valueOf(discJson.getString("type")),
-                false,
-                LocalDate.parse(discJson.getString("date"), formatter)
-        );
+                DiscType.valueOf(discJson.getString("type")),
+                LocalDate.parse(discJson.getString("date"), formatter));
+        dao.save(disc);
+        return disc;
+    }
+
+    @Autowired
+    private ReCompute reCompute;
+
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping(value = "/api/admin/reCompute/{date}", produces = MEDIA_TYPE)
+    public String reCompute(@PathVariable String date) {
+        try {
+            LocalDate localDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            reCompute.reComputeDateRecords(localDate);
+            return objectResult("done");
+        } catch (RuntimeException e) {
+            return errorMessage(e.getMessage());
+        }
     }
 
 }
