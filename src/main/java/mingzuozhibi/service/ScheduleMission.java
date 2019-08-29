@@ -82,10 +82,15 @@ public class ScheduleMission {
                     disc.setTotalPt(safeIntValue(hourRecord.getTotalPt()));
                     disc.setGuessPt(safeIntValue(hourRecord.getGuessPt()));
                 } else {
-                    disc.setTodayPt(null);
+                    DateRecord dateRecord = findDateRecord(dao, disc, date.minusDays(1));
+
                     hourRecord.setTodayPt(null);
-                    hourRecord.setTotalPt(Double.valueOf(disc.getTotalPt()));
-                    hourRecord.setGuessPt(Double.valueOf(disc.getTotalPt()));
+                    hourRecord.setTotalPt(dateRecord.getTotalPt());
+                    hourRecord.setGuessPt(dateRecord.getGuessPt());
+
+                    disc.setTodayPt(null);
+                    disc.setTotalPt(safeIntValue(dateRecord.getTotalPt()));
+                    disc.setGuessPt(safeIntValue(dateRecord.getGuessPt()));
                 }
 
             });
@@ -101,7 +106,7 @@ public class ScheduleMission {
         if (dateRecord7 == null) {
             return;
         }
-        if (hourRecord0.getTodayPt() != null && dateRecord7.getTotalPt() != null) {
+        if (hourRecord0.getTotalPt() != null && dateRecord7.getTotalPt() != null) {
             double addPt = (hourRecord0.getTotalPt() - dateRecord7.getTotalPt()) / 7d;
             LocalDate releaseDate = hourRecord0.getDisc().getReleaseDate();
             LocalDate currentDate = hourRecord0.getDate();
@@ -115,12 +120,9 @@ public class ScheduleMission {
     }
 
     private void computeTotalPt(HourRecord hourRecord, DateRecord dateRecord) {
-        if (dateRecord == null) {
-            return;
-        }
-        if (hourRecord.getTodayPt() == null || dateRecord.getTotalPt() == null) {
+        if (dateRecord == null || dateRecord.getTotalPt() == null) {
             hourRecord.setTotalPt(hourRecord.getTodayPt());
-        } else {
+        } else if (hourRecord.getTodayPt() != null) {
             hourRecord.setTotalPt(hourRecord.getTodayPt() + dateRecord.getTotalPt());
         }
     }
