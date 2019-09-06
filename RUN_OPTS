@@ -1,0 +1,7 @@
+##
+# 定义应用启动命令
+##
+
+JAVA_OPTS="-Xms128m -Xmx384m -XX:MaxMetaspaceSize=1024m"
+# JAR_OPTS="--app.name=${APP_NAME} --spring.profiles.active=pro"
+# LOG_FILE="target/webapp.log"
