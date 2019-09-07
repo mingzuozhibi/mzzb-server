@@ -126,7 +126,7 @@ public class DiscInfosSpider {
         JSONArray array = new JSONArray();
         asins.forEach(array::put);
 
-        String url = "http://" + bcloudIp + ":8762/discRanks/active";
+        String url = String.format("http://%s:9091/discRanks/active", bcloudIp);
         Exception lastThrown = null;
         for (int retry = 0; retry < 3; retry++) {
             try {
@@ -148,11 +148,11 @@ public class DiscInfosSpider {
     }
 
     private String discRanksActiveGet() {
-        return getJSON("http://" + bcloudIp + ":8762/discRanks/active");
+        return getJSON(String.format("http://%s:9091/discRanks/active", bcloudIp));
     }
 
     private String discInfosAsinGet(String asin) {
-        return getJSON("http://" + bcloudIp + ":8762/discInfos/" + asin);
+        return getJSON(String.format("http://%s:9091/discInfos/%s", bcloudIp, asin));
     }
 
     private String getJSON(String url) {

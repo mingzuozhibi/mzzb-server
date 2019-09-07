@@ -83,6 +83,9 @@ public class ScheduleMission {
                     disc.setGuessPt(safeIntValue(hourRecord.getGuessPt()));
                 } else {
                     DateRecord dateRecord = findDateRecord(dao, disc, date.minusDays(1));
+                    if (dateRecord == null) {
+                        return;
+                    }
 
                     hourRecord.setTodayPt(null);
                     hourRecord.setTotalPt(dateRecord.getTotalPt());
