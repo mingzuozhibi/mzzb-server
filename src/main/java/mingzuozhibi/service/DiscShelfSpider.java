@@ -9,6 +9,7 @@ import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -18,15 +19,18 @@ public class DiscShelfSpider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DiscShelfSpider.class);
 
+    @Value("${BCLOUD_IP}")
+    private String bcloudIp;
+
     @Autowired
     private Dao dao;
 
-    public void fetchFromJapan(String japanServerIp) {
+    public void fetchFromBCloud() {
         for (int p = 0; p < 20; p++) {
             LOGGER.info("扫描新碟片中({}/{})", p + 1, 20);
             for (int retry = 1; retry <= 3; retry++) {
                 try {
-                    String body = Jsoup.connect(String.format("http://%s:8762/newDiscs?page=%d&sort=id,desc", japanServerIp, p))
+                    String body = Jsoup.connect(String.format("http://%s:9091/newDiscs?page=%d&sort=id,desc", bcloudIp, p))
                             .ignoreContentType(true)
                             .timeout(10000)
                             .execute()

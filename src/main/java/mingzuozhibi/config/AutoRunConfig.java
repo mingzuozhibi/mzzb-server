@@ -6,7 +6,6 @@ import mingzuozhibi.service.ScheduleMission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,9 +25,6 @@ public class AutoRunConfig {
 
     @Autowired
     private DiscShelfSpider discShelfSpider;
-
-    @Value("${BCLOUD_IP}")
-    private String japanServerIp;
 
     /**
      * call by MzzbServerApplication
@@ -58,7 +54,7 @@ public class AutoRunConfig {
     @Scheduled(cron = "0 0,20 0/6 * * ?")
     public void fetchDiscShelf() {
         new Thread(() -> {
-            discShelfSpider.fetchFromJapan(japanServerIp);
+            discShelfSpider.fetchFromBCloud();
         }).start();
     }
 
