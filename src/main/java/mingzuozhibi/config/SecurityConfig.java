@@ -26,7 +26,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private Dao dao;
 
-    @Value("${mzzb.admin.password}")
+    @Value("${mzzb.admin.password:mzzb1234}")
     private String adminPassword;
 
     protected void configure(HttpSecurity http) throws Exception {
