@@ -64,6 +64,7 @@ public abstract class RecordUtils {
         @SuppressWarnings("unchecked")
         List<DateRecord> dateRecords = dao.create(DateRecord.class)
                 .add(Restrictions.eq("disc", disc))
+                .add(Restrictions.lt("date", disc.getReleaseDate().plusDays(7)))
                 .addOrder(Order.desc("date"))
                 .list();
 

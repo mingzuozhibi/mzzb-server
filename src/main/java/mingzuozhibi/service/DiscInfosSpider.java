@@ -77,7 +77,7 @@ public class DiscInfosSpider {
                 String dateString = discInfo.getString("date");
                 if (StringUtils.isNotEmpty(dateString)) {
                     LocalDate date = LocalDate.parse(dateString, formatter);
-                    if (date.compareTo(disc.getReleaseDate()) != 0) {
+                    if (date.isAfter(disc.getReleaseDate())) {
                         LOGGER.info("Update Disc Release Date: {} => {}",
                                 disc.getReleaseDate().format(formatter), date.format(formatter));
                         disc.setReleaseDate(date);

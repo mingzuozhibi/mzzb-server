@@ -103,8 +103,14 @@ public class AdminController extends BaseController {
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(value = "/api/admin/reCompute/{date}", produces = MEDIA_TYPE)
+    @PostMapping(value = "/api/admin/reCompute/date/{date}", produces = MEDIA_TYPE)
     public String reCompute(@PathVariable String date) {
+        return localCompute(date);
+    }
+
+    @Transactional
+    @GetMapping(value = "/admin/reCompute/date/{date}", produces = MEDIA_TYPE)
+    public String localCompute(@PathVariable String date) {
         try {
             LocalDate localDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             reCompute.reComputeDateRecords(localDate);
@@ -113,5 +119,25 @@ public class AdminController extends BaseController {
             return errorMessage(e.getMessage());
         }
     }
+
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping(value = "/api/admin/reCompute/disc/{id}", produces = MEDIA_TYPE)
+    public String reCompute(@PathVariable Long id) {
+        return localCompute(id);
+    }
+
+    @Transactional
+    @GetMapping(value = "/admin/reCompute/disc/{id}", produces = MEDIA_TYPE)
+    public String localCompute(@PathVariable Long id) {
+        try {
+            Disc disc = dao.get(Disc.class, id);
+            reCompute.reComputeDateRecords(disc);
+            return objectResult("done");
+        } catch (RuntimeException e) {
+            return errorMessage(e.getMessage());
+        }
+    }
+
 
 }

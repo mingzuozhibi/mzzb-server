@@ -3,6 +3,7 @@ package mingzuozhibi.utils;
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.rank.DateRecord;
 import mingzuozhibi.support.Dao;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,30 @@ public class ReCompute {
     @Autowired
     private Dao dao;
 
+    public void reComputeDateRecords(Disc disc) {
+        dao.execute(session -> {
+            @SuppressWarnings("unchecked")
+            List<DateRecord> dateRecords = session.createCriteria(DateRecord.class)
+                    .add(Restrictions.eq("disc", disc))
+                    .addOrder(Order.asc("date"))
+                    .list();
+
+            dateRecords.forEach(dateRecord -> {
+                reCompute(disc, dateRecord.getDate(), dateRecord);
+            });
+
+            DateRecord dateRecord = dateRecords.get(dateRecords.size() - 1);
+
+            disc.setTodayPt(safeIntValue(dateRecord.getTodayPt()));
+            disc.setTotalPt(safeIntValue(dateRecord.getTotalPt()));
+            disc.setGuessPt(safeIntValue(dateRecord.getGuessPt()));
+        });
+    }
+
+    public static Integer safeIntValue(Double value) {
+        return Optional.ofNullable(value).map(Double::intValue).orElse(null);
+    }
+
     public void reComputeDateRecords(LocalDate date) {
         dao.execute(session -> {
             @SuppressWarnings("unchecked")
@@ -30,21 +55,24 @@ public class ReCompute {
                     .add(Restrictions.eq("date", date))
                     .list();
 
-            dateRecords.forEach(dateRecord0 -> {
-                Disc disc = dateRecord0.getDisc();
-                if (date.isBefore(disc.getReleaseDate())) {
-                    computeTodayPt(dateRecord0);
-                    computeTotalPt(dateRecord0, findDateRecord(dao, disc, date.minusDays(1)));
-                    computeGuessPt(dateRecord0, findDateRecord(dao, disc, date.minusDays(7)));
-                } else {
-                    DateRecord dateRecord1 = findDateRecord(dao, disc, date.minusDays(1));
-                    dateRecord0.setTodayPt(null);
-                    dateRecord0.setTotalPt(dateRecord1.getTotalPt());
-                    dateRecord0.setGuessPt(dateRecord1.getGuessPt());
-                }
+            dateRecords.forEach(dateRecord -> {
+                reCompute(dateRecord.getDisc(), date, dateRecord);
             });
             LOGGER.info("[手动任务][重新计算{}的数据][共{}个]", date, dateRecords.size());
         });
+    }
+
+    private void reCompute(Disc disc, LocalDate date, DateRecord dateRecord) {
+        if (date.isBefore(disc.getReleaseDate())) {
+            computeTodayPt(dateRecord);
+            computeTotalPt(dateRecord, findDateRecord(dao, disc, date.minusDays(1)));
+            computeGuessPt(dateRecord, findDateRecord(dao, disc, date.minusDays(7)));
+        } else {
+            DateRecord dateRecord1 = findDateRecord(dao, disc, date.minusDays(1));
+            dateRecord.setTodayPt(null);
+            dateRecord.setTotalPt(dateRecord1.getTotalPt());
+            dateRecord.setGuessPt(dateRecord1.getGuessPt());
+        }
     }
 
     private void computeGuessPt(DateRecord dateRecord0, DateRecord dateRecord7) {

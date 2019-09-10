@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static mingzuozhibi.utils.DiscUtils.needRecordDiscs;
+import static mingzuozhibi.utils.ReCompute.safeIntValue;
 import static mingzuozhibi.utils.RecordUtils.findDateRecord;
 import static mingzuozhibi.utils.RecordUtils.findOrCreateHourRecord;
 
@@ -101,9 +102,6 @@ public class ScheduleMission {
         });
     }
 
-    private Integer safeIntValue(Double value) {
-        return Optional.ofNullable(value).map(Double::intValue).orElse(null);
-    }
 
     private void computeGuessPt(HourRecord hourRecord0, DateRecord dateRecord7) {
         if (dateRecord7 == null) {
