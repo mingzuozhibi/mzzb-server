@@ -2,6 +2,7 @@ package mingzuozhibi.action;
 
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
+import mingzuozhibi.persist.disc.DiscShelf;
 import mingzuozhibi.service.DiscInfosSpider;
 import mingzuozhibi.utils.ReCompute;
 import org.json.JSONObject;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 import static mingzuozhibi.utils.DiscUtils.needUpdateAsins;
 
@@ -62,7 +64,7 @@ public class AdminController extends BaseController {
             return result.toString();
         }
         Disc disc = createDisc(asin, result.getJSONObject("data"));
-        discInfosSpider.updateDiscShelfFollowd(disc);
+        updateDiscShelfFollowd(disc);
 
         JSONObject data = disc.toJSON();
         if (LOGGER.isInfoEnabled()) {
@@ -79,6 +81,12 @@ public class AdminController extends BaseController {
                 LocalDate.parse(discJson.getString("date"), formatter));
         dao.save(disc);
         return disc;
+    }
+
+    private void updateDiscShelfFollowd(Disc disc) {
+        Optional.ofNullable(dao.lookup(DiscShelf.class, "asin", disc.getAsin())).ifPresent(discShelf -> {
+            discShelf.setFollowed(true);
+        });
     }
 
     @Autowired
