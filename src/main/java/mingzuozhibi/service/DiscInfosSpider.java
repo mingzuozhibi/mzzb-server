@@ -4,7 +4,6 @@ import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.persist.disc.DiscGroup;
 import mingzuozhibi.support.Dao;
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection.Method;
@@ -74,8 +73,8 @@ public class DiscInfosSpider {
                     disc.setDiscType(DiscType.valueOf(discInfo.getString("type")));
                 }
 
-                String dateString = discInfo.getString("date");
-                if (StringUtils.isNotEmpty(dateString)) {
+                if (discInfo.has("date")) {
+                    String dateString = discInfo.getString("date");
                     LocalDate date = LocalDate.parse(dateString, formatter);
                     if (date.isAfter(disc.getReleaseDate())) {
                         LOGGER.info("Update Disc Release Date: {} => {}",

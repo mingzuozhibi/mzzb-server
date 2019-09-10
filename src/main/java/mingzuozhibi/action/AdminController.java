@@ -5,7 +5,6 @@ import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.persist.disc.DiscShelf;
 import mingzuozhibi.service.DiscInfosSpider;
 import mingzuozhibi.utils.ReCompute;
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -79,13 +78,14 @@ public class AdminController extends BaseController {
                 asin,
                 discJson.getString("title"),
                 DiscType.valueOf(discJson.getString("type")),
-                createDate(discJson.getString("date")));
+                createDate(discJson));
         dao.save(disc);
         return disc;
     }
 
-    private LocalDate createDate(String dateString) {
-        if (StringUtils.isNotEmpty(dateString)) {
+    private LocalDate createDate(JSONObject discJson) {
+        if (discJson.has("date")) {
+            String dateString = discJson.getString("date");
             return LocalDate.parse(dateString, formatter);
         } else {
             return LocalDate.now();
