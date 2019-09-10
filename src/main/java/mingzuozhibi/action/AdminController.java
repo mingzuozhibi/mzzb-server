@@ -5,6 +5,7 @@ import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.persist.disc.DiscShelf;
 import mingzuozhibi.service.DiscInfosSpider;
 import mingzuozhibi.utils.ReCompute;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,8 +36,6 @@ public class AdminController extends BaseController {
     /*
      * begin searchDisc
      */
-
-    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
     @Autowired
     private DiscInfosSpider discInfosSpider;
@@ -73,14 +72,24 @@ public class AdminController extends BaseController {
         return objectResult(data);
     }
 
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+
     private Disc createDisc(@PathVariable String asin, JSONObject discJson) {
         Disc disc = new Disc(
                 asin,
                 discJson.getString("title"),
                 DiscType.valueOf(discJson.getString("type")),
-                LocalDate.parse(discJson.getString("date"), formatter));
+                createDate(discJson.getString("date")));
         dao.save(disc);
         return disc;
+    }
+
+    private LocalDate createDate(String dateString) {
+        if (StringUtils.isNotEmpty(dateString)) {
+            return LocalDate.parse(dateString, formatter);
+        } else {
+            return LocalDate.now();
+        }
     }
 
     private void updateDiscShelfFollowd(Disc disc) {
