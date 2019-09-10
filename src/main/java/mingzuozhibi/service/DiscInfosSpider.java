@@ -64,35 +64,10 @@ public class DiscInfosSpider {
         JSONArray discInfos = root.getJSONArray("data");
         for (int i = 0; i < discInfos.length(); i++) {
             JSONObject discInfo = discInfos.getJSONObject(i);
-            String asin = discInfo.getString("asin");
-            Disc disc = dao.lookup(Disc.class, "asin", asin);
-            if (disc != null) {
-                disc.setTitle(discInfo.getString("title"));
-
-                if (disc.getDiscType() == DiscType.Auto || disc.getDiscType() == DiscType.Other) {
-                    disc.setDiscType(DiscType.valueOf(discInfo.getString("type")));
-                }
-
-                if (discInfo.has("date")) {
-                    String dateString = discInfo.getString("date");
-                    LocalDate date = LocalDate.parse(dateString, formatter);
-                    if (date.isAfter(disc.getReleaseDate())) {
-                        LOGGER.info("Update Disc Release Date: {} => {}",
-                                disc.getReleaseDate().format(formatter), date.format(formatter));
-                        disc.setReleaseDate(date);
-                    }
-                }
-
-                if (discInfo.has("rank")) {
-                    if (disc.getModifyTime() == null || updateOn.isAfter(disc.getModifyTime())) {
-                        disc.setPrevRank(disc.getThisRank());
-                        disc.setThisRank(discInfo.getInt("rank"));
-                        if (!Objects.equals(disc.getThisRank(), disc.getPrevRank())) {
-                            disc.setModifyTime(updateOn);
-                        }
-                        disc.setUpdateTime(updateOn);
-                    }
-                }
+            try {
+                updateDiscInfo(updateOn, formatter, discInfo);
+            } catch (RuntimeException e) {
+                LOGGER.warn("更新碟片时遇到一个错误，数据：" + discInfo.toString(), e);
             }
         }
 
@@ -104,6 +79,57 @@ public class DiscInfosSpider {
         }
 
         prevTime = updateOn;
+    }
+
+    private void updateDiscInfo(LocalDateTime updateOn, DateTimeFormatter formatter, JSONObject discInfo) {
+        String asin = discInfo.getString("asin");
+        Disc disc = dao.lookup(Disc.class, "asin", asin);
+
+        if (disc != null) {
+
+            updateTitle(discInfo, disc);
+
+            updateType(discInfo, disc);
+
+            updateDate(formatter, discInfo, disc);
+
+            updateRank(updateOn, discInfo, disc);
+        }
+    }
+
+    private void updateTitle(JSONObject discInfo, Disc disc) {
+        disc.setTitle(discInfo.getString("title"));
+    }
+
+    private void updateType(JSONObject discInfo, Disc disc) {
+        if (disc.getDiscType() == DiscType.Auto || disc.getDiscType() == DiscType.Other) {
+            disc.setDiscType(DiscType.valueOf(discInfo.getString("type")));
+        }
+    }
+
+    private void updateDate(DateTimeFormatter formatter, JSONObject discInfo, Disc disc) {
+        if (discInfo.has("date")) {
+            String dateString = discInfo.getString("date");
+            LocalDate date = LocalDate.parse(dateString, formatter);
+            if (date.isAfter(disc.getReleaseDate())) {
+                LOGGER.info("Update Disc Release Date: {} => {}",
+                        disc.getReleaseDate().format(formatter), date.format(formatter));
+                disc.setReleaseDate(date);
+            }
+        }
+    }
+
+    private void updateRank(LocalDateTime updateOn, JSONObject discInfo, Disc disc) {
+        if (discInfo.has("rank")) {
+            if (disc.getModifyTime() == null || updateOn.isAfter(disc.getModifyTime())) {
+                disc.setPrevRank(disc.getThisRank());
+                disc.setThisRank(discInfo.getInt("rank"));
+                if (!Objects.equals(disc.getThisRank(), disc.getPrevRank())) {
+                    disc.setModifyTime(updateOn);
+                }
+                disc.setUpdateTime(updateOn);
+            }
+        }
     }
 
     private void updateDiscGroupModifyTime() {
