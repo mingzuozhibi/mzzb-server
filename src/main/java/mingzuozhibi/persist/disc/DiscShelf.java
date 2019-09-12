@@ -18,9 +18,10 @@ public class DiscShelf extends BaseModel {
     public DiscShelf() {
     }
 
-    public DiscShelf(String asin, String title) {
+    public DiscShelf(String asin, String title, boolean followed) {
         this.asin = asin;
         this.title = title;
+        this.followed = followed;
         this.createTime = LocalDateTime.now();
     }
 

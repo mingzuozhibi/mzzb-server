@@ -1,3 +1,4 @@
 # environment configuration
 
 mzzb.admin.password=<your password>
+activemq.password=admin

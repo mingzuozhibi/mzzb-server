@@ -3,16 +3,13 @@ package mingzuozhibi.service;
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.persist.disc.DiscGroup;
-import mingzuozhibi.persist.disc.DiscShelf;
 import mingzuozhibi.support.Dao;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection.Method;
-import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +20,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 import static java.util.Comparator.*;
@@ -34,23 +30,16 @@ public class DiscInfosSpider {
 
     private static Logger LOGGER = LoggerFactory.getLogger(DiscInfosSpider.class);
 
-    @Value("${BCLOUD_IP}")
-    private String bcloudIp;
-
     @Autowired
     private Dao dao;
+
+    @Autowired
+    private SpiderHelper spiderHelper;
 
     @Transactional
     public JSONObject searchDisc(String asin) {
         LOGGER.info("开始更新日亚碟片, ASIN={}", asin);
-        return new JSONObject(discInfosAsinGet(asin));
-    }
-
-    @Transactional
-    public void updateDiscShelfFollowd(Disc disc) {
-        Optional.ofNullable(dao.lookup(DiscShelf.class, "asin", disc.getAsin())).ifPresent(discShelf -> {
-            discShelf.setFollowed(true);
-        });
+        return new JSONObject(fetchDiscInfoByAsin(asin));
     }
 
     private LocalDateTime prevTime = null;
@@ -59,9 +48,8 @@ public class DiscInfosSpider {
     public void fetchFromBCloud() {
         LOGGER.info("开始更新日亚排名");
 
-        discRanksActivePut(needUpdateAsins(dao.session()));
-
-        JSONObject root = new JSONObject(discRanksActiveGet());
+        pushNeedUpdateAsins(needUpdateAsins(dao.session()));
+        JSONObject root = new JSONObject(pullPrevUpdateDiscs());
 
         LocalDateTime updateOn = Instant.ofEpochMilli(root.getLong("updateOn"))
                 .atZone(ZoneId.systemDefault()).toLocalDateTime();
@@ -76,30 +64,10 @@ public class DiscInfosSpider {
         JSONArray discInfos = root.getJSONArray("data");
         for (int i = 0; i < discInfos.length(); i++) {
             JSONObject discInfo = discInfos.getJSONObject(i);
-            String asin = discInfo.getString("asin");
-            Disc disc = dao.lookup(Disc.class, "asin", asin);
-            if (disc != null) {
-                disc.setTitle(discInfo.getString("title"));
-
-                if (disc.getDiscType() == DiscType.Auto || disc.getDiscType() == DiscType.Other) {
-                    disc.setDiscType(DiscType.valueOf(discInfo.getString("type")));
-                }
-
-                LocalDate date = LocalDate.parse(discInfo.getString("date"), formatter);
-                if (date.isAfter(disc.getReleaseDate())) {
-                    disc.setReleaseDate(date);
-                }
-
-                if (discInfo.has("rank")) {
-                    if (disc.getModifyTime() == null || updateOn.isAfter(disc.getModifyTime())) {
-                        disc.setPrevRank(disc.getThisRank());
-                        disc.setThisRank(discInfo.getInt("rank"));
-                        if (!Objects.equals(disc.getThisRank(), disc.getPrevRank())) {
-                            disc.setModifyTime(updateOn);
-                        }
-                        disc.setUpdateTime(updateOn);
-                    }
-                }
+            try {
+                updateDiscInfo(updateOn, formatter, discInfo);
+            } catch (RuntimeException e) {
+                LOGGER.warn("更新碟片时遇到一个错误，数据：" + discInfo.toString(), e);
             }
         }
 
@@ -113,6 +81,57 @@ public class DiscInfosSpider {
         prevTime = updateOn;
     }
 
+    private void updateDiscInfo(LocalDateTime updateOn, DateTimeFormatter formatter, JSONObject discInfo) {
+        String asin = discInfo.getString("asin");
+        Disc disc = dao.lookup(Disc.class, "asin", asin);
+
+        if (disc != null) {
+
+            updateTitle(discInfo, disc);
+
+            updateType(discInfo, disc);
+
+            updateDate(formatter, discInfo, disc);
+
+            updateRank(updateOn, discInfo, disc);
+        }
+    }
+
+    private void updateTitle(JSONObject discInfo, Disc disc) {
+        disc.setTitle(discInfo.getString("title"));
+    }
+
+    private void updateType(JSONObject discInfo, Disc disc) {
+        if (disc.getDiscType() == DiscType.Auto || disc.getDiscType() == DiscType.Other) {
+            disc.setDiscType(DiscType.valueOf(discInfo.getString("type")));
+        }
+    }
+
+    private void updateDate(DateTimeFormatter formatter, JSONObject discInfo, Disc disc) {
+        if (discInfo.has("date")) {
+            String dateString = discInfo.getString("date");
+            LocalDate date = LocalDate.parse(dateString, formatter);
+            if (date.isAfter(disc.getReleaseDate())) {
+                LOGGER.info("Update Disc Release Date: {} => {}",
+                        disc.getReleaseDate().format(formatter), date.format(formatter));
+                disc.setReleaseDate(date);
+            }
+        }
+    }
+
+    private void updateRank(LocalDateTime updateOn, JSONObject discInfo, Disc disc) {
+        if (discInfo.has("rank")) {
+            if (disc.getModifyTime() == null || updateOn.isAfter(disc.getModifyTime())) {
+                disc.setPrevRank(disc.getThisRank());
+                disc.setThisRank(discInfo.getInt("rank"));
+                if (!Objects.equals(disc.getThisRank(), disc.getPrevRank())) {
+                    disc.setModifyTime(updateOn);
+                }
+                disc.setUpdateTime(updateOn);
+            }
+        }
+    }
+
     private void updateDiscGroupModifyTime() {
         Comparator<Disc> comparator = comparing(Disc::getUpdateTime, nullsFirst(naturalOrder()));
         dao.findBy(DiscGroup.class, "enabled", true).forEach(discGroup -> {
@@ -122,56 +141,27 @@ public class DiscInfosSpider {
         });
     }
 
-    private String discRanksActivePut(Set<String> asins) {
+    private String pullPrevUpdateDiscs() {
+        String url = spiderHelper.mzzbSpider("/discRanks/active");
+        return spiderHelper.waitRequest(url);
+    }
+
+    private String pushNeedUpdateAsins(Set<String> asins) {
         JSONArray array = new JSONArray();
         asins.forEach(array::put);
+        String body = array.toString();
 
-        String url = String.format("http://%s:9091/discRanks/active", bcloudIp);
-        Exception lastThrown = null;
-        for (int retry = 0; retry < 3; retry++) {
-            try {
-                return Jsoup.connect(url)
-                        .header("Content-Type", "application/json;charset=utf-8")
-                        .requestBody(array.toString())
-                        .ignoreContentType(true)
-                        .method(Method.PUT)
-                        .timeout(10000)
-                        .execute()
-                        .body();
-            } catch (Exception e) {
-                lastThrown = e;
-            }
-        }
-        String format = "Jsoup: 无法获取网页内容[url=%s][message=%s]";
-        String message = String.format(format, url, lastThrown.getMessage());
-        throw new RuntimeException(message, lastThrown);
+        String url = spiderHelper.mzzbSpider("/discRanks/active");
+        return spiderHelper.waitRequest(url, connection -> {
+            connection.header("Content-Type", "application/json;charset=utf-8");
+            connection.method(Method.PUT);
+            connection.requestBody(body);
+        });
     }
 
-    private String discRanksActiveGet() {
-        return getJSON(String.format("http://%s:9091/discRanks/active", bcloudIp));
-    }
-
-    private String discInfosAsinGet(String asin) {
-        return getJSON(String.format("http://%s:9091/discInfos/%s", bcloudIp, asin));
-    }
-
-    private String getJSON(String url) {
-        Exception lastThrown = null;
-        for (int retry = 0; retry < 3; retry++) {
-            try {
-                return Jsoup.connect(url)
-                        .ignoreContentType(true)
-                        .method(Method.GET)
-                        .timeout(30000)
-                        .execute()
-                        .body();
-            } catch (Exception e) {
-                lastThrown = e;
-            }
-        }
-        String format = "Jsoup: 无法获取网页内容[url=%s][message=%s]";
-        String message = String.format(format, url, lastThrown.getMessage());
-        throw new RuntimeException(message, lastThrown);
+    private String fetchDiscInfoByAsin(String asin) {
+        String url = spiderHelper.mzzbSpider("/discInfos/%s", asin);
+        return spiderHelper.waitRequest(url);
     }
 
 }
