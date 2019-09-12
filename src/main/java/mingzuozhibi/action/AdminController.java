@@ -4,6 +4,7 @@ import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.persist.disc.DiscShelf;
 import mingzuozhibi.service.DiscInfosSpider;
+import mingzuozhibi.utils.JmsHelper;
 import mingzuozhibi.utils.ReCompute;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -35,6 +38,9 @@ public class AdminController extends BaseController {
     /*
      * begin searchDisc
      */
+
+    @Autowired
+    private JmsHelper jmsHelper;
 
     @Autowired
     private DiscInfosSpider discInfosSpider;
@@ -96,6 +102,7 @@ public class AdminController extends BaseController {
         Optional.ofNullable(dao.lookup(DiscShelf.class, "asin", disc.getAsin())).ifPresent(discShelf -> {
             discShelf.setFollowed(true);
         });
+        jmsHelper.sendDiscTrack(disc.getAsin(), disc.getTitle());
     }
 
     @Autowired
@@ -139,5 +146,22 @@ public class AdminController extends BaseController {
         }
     }
 
+    @Transactional
+    @GetMapping(value = "/admin/reSendDiscTrack", produces = MEDIA_TYPE)
+    public String reSendDiscTrack() {
+        try {
+            dao.jdbc(connection -> {
+                Statement stmt = connection.createStatement();
+                ResultSet rs = stmt.executeQuery("select asin, title from disc");
+                while (rs.next()) {
+                    jmsHelper.sendDiscTrack(rs.getString("asin"), rs.getString("title"));
+                }
+                return null;
+            });
+            return objectResult("done");
+        } catch (RuntimeException e) {
+            return errorMessage(e.getMessage());
+        }
+    }
 
 }

@@ -6,9 +6,9 @@ spring:
   application:
     name: "@pom.artifactId@"
   datasource:
-    testWhileIdle: true
-    validationQuery: SELECT 1
-    timeBetweenEvictionRunsMillis: 3600000
+    tomcat:
+      test-while-idle: true
+      validation-query: SELECT 1
   jpa:
     hibernate:
       ddl-auto: update
@@ -22,6 +22,11 @@ spring:
 ---
 spring:
   profiles: dev
+  activemq:
+#    broker-url: tcp://localhost:61616
+    broker-url: tcp://mingzuozhibi.com:61616
+    password: ${activemq.password}
+    user: admin
   datasource:
     url: jdbc:mysql://localhost:3306/mzzb_dev?useUnicode=true&characterEncoding=utf-8&useSSL=false
     username: mzzb_dev
@@ -35,6 +40,8 @@ spring:
 ---
 spring:
   profiles: pro
+  activemq:
+    broker-url: tcp://mingzuozhibi.com:61616
   datasource:
     url: jdbc:mysql://localhost:3306/mzzb_pro?useUnicode=true&characterEncoding=utf-8&useSSL=false
     username: mzzb_pro
