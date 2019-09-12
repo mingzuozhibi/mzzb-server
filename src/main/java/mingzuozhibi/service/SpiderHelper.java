@@ -13,8 +13,8 @@ public class SpiderHelper {
     @Value("${BCLOUD_IP}")
     private String bcloudIp;
 
-    public String mzzbSpider(String uri, Object... args) {
-        return "http://" + bcloudIp + ":9091" + String.format(uri, args);
+    public String discSpider(String uri, Object... args) {
+        return "http://" + bcloudIp + ":9001" + String.format(uri, args);
     }
 
     public String waitRequest(String url) {

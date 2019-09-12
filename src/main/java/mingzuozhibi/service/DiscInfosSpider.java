@@ -6,24 +6,19 @@ import mingzuozhibi.persist.disc.DiscGroup;
 import mingzuozhibi.support.Dao;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.jsoup.Connection.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.Objects;
-import java.util.Set;
 
 import static java.util.Comparator.*;
-import static mingzuozhibi.utils.DiscUtils.needUpdateAsins;
 
 @Service
 public class DiscInfosSpider {
@@ -37,31 +32,19 @@ public class DiscInfosSpider {
     private SpiderHelper spiderHelper;
 
     @Transactional
-    public JSONObject searchDisc(String asin) {
+    public JSONObject fetchDiscFromBCloud(String asin) {
         LOGGER.info("开始更新日亚碟片, ASIN={}", asin);
-        return new JSONObject(fetchDiscInfoByAsin(asin));
+        String url = spiderHelper.discSpider("/fetchDisc/%s", asin);
+        return new JSONObject(spiderHelper.waitRequest(url));
     }
 
-    private LocalDateTime prevTime = null;
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Transactional
-    public void fetchFromBCloud() {
+    public void updateDiscInfos(JSONArray discInfos) {
         LOGGER.info("开始更新日亚排名");
+        LocalDateTime updateOn = LocalDateTime.now();
 
-        pushNeedUpdateAsins(needUpdateAsins(dao.session()));
-        JSONObject root = new JSONObject(pullPrevUpdateDiscs());
-
-        LocalDateTime updateOn = Instant.ofEpochMilli(root.getLong("updateOn"))
-                .atZone(ZoneId.systemDefault()).toLocalDateTime();
-
-        if (prevTime != null && prevTime.isEqual(updateOn)) {
-            LOGGER.info("日亚排名没有变化");
-            return;
-        }
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-
-        JSONArray discInfos = root.getJSONArray("data");
         for (int i = 0; i < discInfos.length(); i++) {
             JSONObject discInfo = discInfos.getJSONObject(i);
             try {
@@ -77,8 +60,6 @@ public class DiscInfosSpider {
         } else {
             LOGGER.warn("未能更新日亚排名");
         }
-
-        prevTime = updateOn;
     }
 
     private void updateDiscInfo(LocalDateTime updateOn, DateTimeFormatter formatter, JSONObject discInfo) {
@@ -139,29 +120,6 @@ public class DiscInfosSpider {
                 discGroup.setModifyTime(disc.getUpdateTime());
             });
         });
-    }
-
-    private String pullPrevUpdateDiscs() {
-        String url = spiderHelper.mzzbSpider("/discRanks/active");
-        return spiderHelper.waitRequest(url);
-    }
-
-    private String pushNeedUpdateAsins(Set<String> asins) {
-        JSONArray array = new JSONArray();
-        asins.forEach(array::put);
-        String body = array.toString();
-
-        String url = spiderHelper.mzzbSpider("/discRanks/active");
-        return spiderHelper.waitRequest(url, connection -> {
-            connection.header("Content-Type", "application/json;charset=utf-8");
-            connection.method(Method.PUT);
-            connection.requestBody(body);
-        });
-    }
-
-    private String fetchDiscInfoByAsin(String asin) {
-        String url = spiderHelper.mzzbSpider("/discInfos/%s", asin);
-        return spiderHelper.waitRequest(url);
     }
 
 }
