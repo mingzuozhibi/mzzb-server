@@ -1,7 +1,6 @@
 package mingzuozhibi.config;
 
 import mingzuozhibi.service.DiscInfosSpider;
-import mingzuozhibi.service.DiscShelfSpider;
 import mingzuozhibi.service.ScheduleMission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +21,6 @@ public class AutoRunConfig {
 
     @Autowired
     private DiscInfosSpider discInfosSpider;
-
-    @Autowired
-    private DiscShelfSpider discShelfSpider;
 
     /**
      * call by MzzbServerApplication
@@ -47,14 +43,6 @@ public class AutoRunConfig {
             scheduleMission.moveHourRecordToDateRecord();
             scheduleMission.recordDiscsRankAndComputePt();
             LOGGER.info("每小时任务完成");
-        }).start();
-    }
-
-    @PostMapping("/fetchDiscShelf")
-    @Scheduled(cron = "0 0,20 0/6 * * ?")
-    public void fetchDiscShelf() {
-        new Thread(() -> {
-            discShelfSpider.fetchFromBCloud();
         }).start();
     }
 

@@ -2,7 +2,6 @@ package mingzuozhibi.action;
 
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
-import mingzuozhibi.persist.disc.DiscShelf;
 import mingzuozhibi.service.DiscInfosSpider;
 import mingzuozhibi.utils.JmsHelper;
 import mingzuozhibi.utils.ReCompute;
@@ -19,7 +18,6 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
 import static mingzuozhibi.utils.DiscUtils.needUpdateAsins;
 
@@ -68,7 +66,7 @@ public class AdminController extends BaseController {
             return result.toString();
         }
         Disc disc = createDisc(asin, result.getJSONObject("data"));
-        updateDiscShelfFollowd(disc);
+        jmsHelper.sendDiscTrack(disc.getAsin(), disc.getTitle());
 
         JSONObject data = disc.toJSON();
         if (LOGGER.isInfoEnabled()) {
@@ -96,13 +94,6 @@ public class AdminController extends BaseController {
         } else {
             return LocalDate.now();
         }
-    }
-
-    private void updateDiscShelfFollowd(Disc disc) {
-        Optional.ofNullable(dao.lookup(DiscShelf.class, "asin", disc.getAsin())).ifPresent(discShelf -> {
-            discShelf.setFollowed(true);
-        });
-        jmsHelper.sendDiscTrack(disc.getAsin(), disc.getTitle());
     }
 
     @Autowired
