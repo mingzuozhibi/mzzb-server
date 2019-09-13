@@ -32,10 +32,12 @@ public class DiscInfosSpider {
     private SpiderHelper spiderHelper;
 
     @Transactional
-    public JSONObject fetchDiscFromBCloud(String asin) {
+    public JSONObject fetchDisc(String asin) {
         LOGGER.info("开始更新日亚碟片, ASIN={}", asin);
-        String url = spiderHelper.discSpider("/fetchDisc/%s", asin);
-        return new JSONObject(spiderHelper.waitRequest(url));
+        String url = spiderHelper.gateway("/fetchDisc/%s", asin);
+        return new JSONObject(spiderHelper.waitRequest(url, connection -> {
+            connection.timeout(60 * 1000);
+        }));
     }
 
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");

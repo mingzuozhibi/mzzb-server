@@ -77,7 +77,7 @@ public class DiscSpiderController extends BaseController {
         if (LOGGER.isInfoEnabled()) {
             infoRequest("[申请查询碟片][开始从日亚查询][ASIN={}]", asin);
         }
-        JSONObject result = discInfosSpider.fetchDiscFromBCloud(asin);
+        JSONObject result = discInfosSpider.fetchDisc(asin);
         if (!result.getBoolean("success")) {
             return result.toString();
         }
