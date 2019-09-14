@@ -23,8 +23,7 @@ spring:
 spring:
   profiles: dev
   activemq:
-#    broker-url: tcp://localhost:61616
-    broker-url: tcp://mingzuozhibi.com:61616
+    broker-url: tcp://localhost:61616
     password: ${activemq.password}
     user: admin
   datasource:

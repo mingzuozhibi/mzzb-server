@@ -2,7 +2,6 @@ package mingzuozhibi.service;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.function.Consumer;
@@ -10,15 +9,8 @@ import java.util.function.Consumer;
 @Service
 public class SpiderHelper {
 
-    @Value("${BCLOUD_IP}")
-    private String bcloudIp;
-
-    public String discShelfs(String uri, Object... args) {
-        return "http://" + bcloudIp + ":9000" + String.format(uri, args);
-    }
-
-    public String mzzbSpider(String uri, Object... args) {
-        return "http://" + bcloudIp + ":9091" + String.format(uri, args);
+    public String gateway(String uri, Object... args) {
+        return "http://localhost:9999" + String.format(uri, args);
     }
 
     public String waitRequest(String url) {
