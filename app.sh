@@ -1,178 +1,238 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 ##
-# 定位应用所在目录
+# 环境准备
 ##
 
-APP_HOME=$(cd `dirname $0`; pwd)
-APP_NAME=${APP_HOME##*/}
+AppHome=$(cd `dirname $0`; pwd)
+AppName=${AppHome##*/}
 
-cd ${APP_HOME}
+StdFile="target/std.log"
+LogFile="target/log.log"
+
+JvmParams="-Xms64m -Xmx128m -XX:MaxMetaspaceSize=1024m"
+JarParams="--app.name=${AppName} --spring.profiles.active=pro"
+
+cd ${AppHome}
 
 ##
-# 定义应用启动命令
+# 外部命令
 ##
 
-JAVA_OPTS="-Xms64m -Xmx128m -XX:MaxMetaspaceSize=1024m"
-JAR_OPTS="--app.name=${APP_NAME} --spring.profiles.active=pro"
-LOG_FILE="target/webapp.log"
-
-if [ -f ./RUN_OPTS ]; then
-  source ./RUN_OPTS
-fi
-
-start_app() {
-  if [ -z "$(jar_file)" ]; then
-    build_app
-  fi
-  if [ -z "$(jar_file)" ]; then
-    echo "启动应用失败：未找到JAR文件"
-  else
-    echo "正在启动应用"
-    echo "java ${JAVA_OPTS} -jar $(jar_file) ${JAR_OPTS} >${LOG_FILE} 2>&1"
-    nohup java ${JAVA_OPTS} -jar $(jar_file) ${JAR_OPTS} >${LOG_FILE} 2>&1 & exit 0
-  fi
+echo_cmd() {
+  echo "$*"
+  $@
 }
 
-kill_app() {
-  echo "正在停止应用: kill $(app_pid)"
-  kill $(app_pid)
+do_fetch() {
+  git add . >/dev/null
+  git stash >/dev/null
+  git fetch
+  git checkout $1 >/dev/null 2>&1
+  git reset --hard origin/$1
 }
 
-kill_app_focus() {
-  echo "正在停止应用: kill -9 $(app_pid)"
-  kill -9 $(app_pid)
-}
-
-build_app() {
+do_build() {
   echo "正在构建应用"
-  mvn clean package >/dev/null
+  mvn clean package >build.log 2>&1
+}
+
+do_kill() {
+  echo "正在停止应用"
+  echo_cmd "kill $(app_pid)"
+}
+
+do_kill_force() {
+  echo "正在停止应用"
+  echo_cmd "kill -9 $(app_pid)"
+}
+
+app_jar() {
+  echo $(ls target/*.jar 2>/dev/null | xargs -n 1 | tail -1)
 }
 
 app_pid() {
-  echo $(ps -x | grep "app.name=${APP_NAME}" | grep -v grep | awk '{print $1}')
+  echo $(ps -x | grep "app.name=${AppName}" | grep -v grep | awk '{print $1}')
 }
 
-jar_file() {
-  echo $(ls target/*.jar | xargs -n 1 | tail -1) 2>/dev/null
+try_build() {
+  if [[ -z $(app_jar) ]]; then
+    do_build
+  fi
+}
+
+try_start() {
+  if [[ -z $(app_jar) ]]; then
+    echo "启动应用失败: 未找到JAR文件"
+  else
+    echo "正在启动应用"
+    echo "java ${JvmParams} -jar $(app_jar) ${JarParams} >${StdFile} 2>&1"
+    nohup java ${JvmParams} -jar $(app_jar) ${JarParams} >${StdFile} 2>&1 & exit
+  fi
+}
+
+##
+# 脚本分支
+##
+
+cmd_help() {
+  echo "usage: bash app.sh [<command>] [<args>]"
+  echo ""
+  echo "support commands:"
+  echo ""
+  echo "   st                启动应用"
+  echo "   st -f             启动应用（强制重新构建）"
+  echo "   st -fm            启动应用（拉取主线分支）"
+  echo "   st -fd            启动应用（拉取开发分支）"
+  echo "   qt                停止应用"
+  echo "   qt -f             停止应用（强制停止）"
+  echo "   vt                运行状态"
+  echo ""
+  echo "   fe -d             更新主线分支"
+  echo "   fe -d             更新开发分支"
+  echo ""
+  echo "   std               tail -f ${StdFile}"
+  echo "   std -a            less ${StdFile}"
+  echo "   std <params>      grep <params> ${StdFile}"
+  echo "   log               tail -f ${LogFile}"
+  echo "   log -a            less ${LogFile}"
+  echo "   log <params>      grep <params> ${LogFile}"
+  echo ""
+  echo "   help              显示本帮助"
+  echo ""
+  exit
+}
+
+cmd_st() {
+  if [[ $# = 1 ]]; then
+    try_build
+    try_start
+    exit
+  elif [[ $# = 2 ]]; then
+    case $2 in
+      -f)
+        do_build
+        try_start
+        exit
+      ;;
+      -fm)
+        do_fetch master
+        do_build
+        try_start
+        exit
+      ;;
+      -fd)
+        do_fetch develop
+        do_build
+        try_start
+        exit
+      ;;
+    esac
+  fi
+}
+
+cmd_qt() {
+  if [[ -z $(app_pid) ]]; then
+    echo "应用未运行"
+    exit
+  fi
+  if [[ $# = 1 ]]; then
+    do_kill
+    exit
+  fi
+  if [[ $# = 2 && $2 = -f ]]; then
+    do_kill_force
+    exit
+  fi
+}
+
+cmd_vt() {
+  if [[ -z $(app_pid) ]]; then
+    echo "应用未运行"
+    exit
+  else
+    echo "应用运行中, PID=$(app_pid)"
+    exit
+  fi
+}
+
+cmd_fe() {
+  if [[ $# = 2 ]]; then
+    case $2 in
+      -d)
+        do_fetch develop
+        exit
+      ;;
+      -m)
+        do_fetch master
+        exit
+      ;;
+    esac
+  fi
+}
+
+cmd_log() {
+  file=$1
+  shift
+
+  if [[ $# = 1 ]]; then
+    echo_cmd "tail -f ${StdFile}"
+    exit
+  fi
+  if [[ $# = 2 && $2 = -a ]]; then
+    echo_cmd "less ${StdFile}"
+    exit
+  fi
+  if [[ $# > 1 ]]; then
+    shift
+    echo_cmd "grep $@ ${StdFile}"
+    exit
+  fi
 }
 
 unsupport() {
-  echo "不支持 '$@' 命令，请使用 help 命令查看帮助"
+  echo "不支持 'bash app.sh $@' 命令，是否要查看帮助"
+  read -p "请输入(y/n): " input
+  case ${input} in
+    y|Y)
+      cmd_help
+      exit
+    ;;
+  esac
 }
 
 ##
-# 执行指定脚本命令
+# 派发分支
 ##
 
-if [ $# = 1 ]; then
-  case $1 in
-    help)
-      echo "usage: run.sh [<command>] [<args>]"
-      echo ""
-      echo "support commands:"
-      echo ""
-      echo "   st                启动应用"
-      echo "   st -f             启动应用（重新构建，并重新启动）"
-      echo "   qt                停止应用"
-      echo "   qt -f             停止应用（强制停止）"
-      echo "   vt                运行状态"
-      echo ""
-      echo "   sl                tail -f <Log>"
-      echo "   sl <pattern>      grep <pattern> Log"
-      echo "   sl -a             less <Log>"
-      echo "   sl -v             vim Log"
-      echo ""
-      echo "   fe -m             git fetch && git reset --hard origin/master"
-      echo "   fe -d             git fetch && git reset --hard origin/develop"
-      echo "   fe <branch>       git fetch && git reset --hard origin/<branch>"
-      echo ""
-      echo "   jm -h             jmap -heap <pid>"
-      echo "   help              显示本帮助"
-      echo ""
-      exit 0
-    ;;
-    st)
-      if [ -n "$(app_pid)" ]; then
-        echo "应用已经启动"
-        exit 1
-      else
-        start_app
-        exit 0
-      fi
-    ;;
-    qt)
-      if [ -z "$(app_pid)" ]; then
-        echo "应用并未运行"
-        exit 1
-      else
-        kill_app
-        exit 0
-      fi
-    ;;
-    vt)
-      if [ -n "$(app_pid)" ]; then
-        echo "应用运行中, PID=$(app_pid)"
-        exit 0
-      else
-        echo "应用未运行"
-        exit 0
-      fi
-    ;;
-    sl)
-      echo "正在打开日志: tail -f ${LOG_FILE}"
-      tail -f ${LOG_FILE}
-      exit 0
-    ;;
-  esac
-elif [ $# = 2 ]; then
-  case $1 in
-    st)
-      if [ $2 = "-f" ]; then
-        build_app
-
-        if [ -n "$(app_pid)" ]; then
-          kill_app_focus
-        fi
-
-        start_app
-        exit 0
-      fi
-    ;;
-    qt)
-      if [ $2 = "-f" ]; then
-        if [ -z "$(app_pid)" ]; then
-          echo "应用并未运行"
-          exit 1
-        else
-          kill_app_focus
-          exit 0
-        fi
-      fi
-    ;;
-    sl)
-      case $2 in
-        -a) less ${LOG_FILE}; exit 0;;
-        -v) vim ${LOG_FILE}; exit 0;;
-        *) grep $2 ${LOG_FILE}; exit 0;;
-      esac
-    ;;
-    fe)
-      case $2 in
-        -m) git fetch && git reset --hard origin/master; exit 0;;
-        -d) git fetch && git reset --hard origin/develop; exit 0;;
-        *) git fetch && git reset --hard origin/$2; exit 0;;
-      esac
-    ;;
-    jm)
-      pid=$(app_pid)
-      if [ -z "${pid}" ]; then echo "应用并未运行"; exit 1; fi
-      case $2 in
-        -h) jmap -heap ${pid}; exit 0;;
-      esac
-    ;;
-  esac
+if [[ $# = 0 ]]; then
+  cmd_help
+  exit
 fi
+
+case $1 in
+  help)
+    cmd_help
+  ;;
+  st)
+    cmd_st $*
+  ;;
+  qt)
+    cmd_qt $*
+  ;;
+  vt)
+    cmd_vt
+  ;;
+  fe)
+    cmd_fe $*
+  ;;
+  std)
+    cmd_log ${StdFile} $*
+  ;;
+  log)
+    cmd_log ${LogFile} $*
+  ;;
+esac
 
 unsupport $@
 exit 1
