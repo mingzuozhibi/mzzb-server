@@ -34,7 +34,7 @@ do_fetch() {
 
 do_build() {
   echo "正在构建应用"
-  mvn clean package >build.log 2>&1
+  echo_cmd "mvn clean package"
 }
 
 do_kill() {
@@ -112,12 +112,14 @@ cmd_st() {
     case $2 in
       -f)
         do_build
+        do_kill_force
         try_start
         exit
       ;;
       -fm)
         do_fetch master
         do_build
+        do_kill_force
         try_start
         exit
       ;;
