@@ -24,7 +24,38 @@ echo_cmd() {
   $@
 }
 
+app_jar() {
+  echo $(ls target/*.jar 2>/dev/null | xargs -n 1 | tail -1)
+}
+
+app_pid() {
+  echo $(ps -x | grep "app.name=${AppName}" | grep -v grep | awk '{print $1}')
+}
+
+do_kill() {
+  echo "正在停止应用"
+  echo_cmd "kill $(app_pid)"
+}
+
+try_kill_quiet() {
+  if [[ -n $(app_pid) ]]; then
+    do_kill
+  fi
+}
+
+do_kill_force() {
+  echo "正在停止应用"
+  echo_cmd "kill -9 $(app_pid)"
+}
+
+try_kill_force_quiet() {
+  if [[ -n $(app_pid) ]]; then
+    do_kill_force
+  fi
+}
+
 do_fetch() {
+  echo "正在拉取分支：$1"
   git add . >/dev/null
   git stash >/dev/null
   git fetch
@@ -37,38 +68,28 @@ do_build() {
   echo_cmd "mvn clean package"
 }
 
-do_kill() {
-  echo "正在停止应用"
-  echo_cmd "kill $(app_pid)"
-}
-
-do_kill_force() {
-  echo "正在停止应用"
-  echo_cmd "kill -9 $(app_pid)"
-}
-
-app_jar() {
-  echo $(ls target/*.jar 2>/dev/null | xargs -n 1 | tail -1)
-}
-
-app_pid() {
-  echo $(ps -x | grep "app.name=${AppName}" | grep -v grep | awk '{print $1}')
-}
-
 try_build() {
   if [[ -z $(app_jar) ]]; then
     do_build
   fi
 }
 
+do_start() {
+  echo "正在启动应用"
+  echo "java ${JvmParams} -jar $(app_jar) ${JarParams} >${StdFile} 2>&1"
+  nohup java ${JvmParams} -jar $(app_jar) ${JarParams} >${StdFile} 2>&1 & exit
+}
+
 try_start() {
+  if [[ -n $(app_pid) ]]; then
+    echo "应用已经启动, PID=$(app_pid)"
+    exit
+  fi
   if [[ -z $(app_jar) ]]; then
     echo "启动应用失败: 未找到JAR文件"
-  else
-    echo "正在启动应用"
-    echo "java ${JvmParams} -jar $(app_jar) ${JarParams} >${StdFile} 2>&1"
-    nohup java ${JvmParams} -jar $(app_jar) ${JarParams} >${StdFile} 2>&1 & exit
+    exit
   fi
+  do_start
 }
 
 ##
@@ -112,22 +133,22 @@ cmd_st() {
     case $2 in
       -f)
         do_build
-        do_kill_force
-        try_start
+        try_kill_force_quiet
+        do_start
         exit
       ;;
       -fm)
         do_fetch master
         do_build
-        do_kill_force
-        try_start
+        try_kill_force_quiet
+        do_start
         exit
       ;;
       -fd)
         do_fetch develop
         do_build
-        do_kill_force
-        try_start
+        try_kill_force_quiet
+        do_start
         exit
       ;;
     esac
