@@ -30,7 +30,7 @@ public class AutoRunConfig {
         }).start();
     }
 
-    @Scheduled(cron = "0 2 * * * ?")
+    @Scheduled(cron = "0 0 * * * ?")
     public void runOnEveryHour() {
         new Thread(() -> {
             LOGGER.info("每小时任务开始");

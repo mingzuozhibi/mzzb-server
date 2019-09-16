@@ -33,7 +33,7 @@ public class DiscSpiderController extends BaseController {
     @Autowired
     private DiscInfosSpider discInfosSpider;
 
-    @Scheduled(cron = "0 55 * * * ?")
+    @Scheduled(cron = "0 59 * * * ?")
     @GetMapping("/admin/sendNeedUpdateAsins")
     public void sendNeedUpdateAsins() {
         dao.execute(session -> {
