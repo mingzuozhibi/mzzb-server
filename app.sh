@@ -126,6 +126,7 @@ cmd_st() {
       -fd)
         do_fetch develop
         do_build
+        do_kill_force
         try_start
         exit
       ;;
