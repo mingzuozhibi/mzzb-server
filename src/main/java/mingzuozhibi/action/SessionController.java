@@ -34,7 +34,7 @@ import java.util.stream.Stream;
 public class SessionController extends BaseController {
 
     public static final Set<GrantedAuthority> GUEST_AUTHORITIES = Stream.of("NONE")
-            .map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
+        .map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
 
     private AutoLoginHelper autoLoginHeaper = new AutoLoginHelper();
 
@@ -56,8 +56,8 @@ public class SessionController extends BaseController {
 
     @PostMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionLogin(
-            @JsonArg("$.username") String username,
-            @JsonArg("$.password") String password) {
+        @JsonArg("$.username") String username,
+        @JsonArg("$.password") String password) {
 
         User user = dao.lookup(User.class, "username", username);
         if (user == null) {
@@ -98,7 +98,7 @@ public class SessionController extends BaseController {
         Authentication authentication = context.getAuthentication();
 
         context.setAuthentication(new AnonymousAuthenticationToken(
-                UUID.randomUUID().toString(), "Guest", GUEST_AUTHORITIES)
+            UUID.randomUUID().toString(), "Guest", GUEST_AUTHORITIES)
         );
 
         autoLoginHeaper.cleanAutoLoginToken();
@@ -113,7 +113,7 @@ public class SessionController extends BaseController {
 
     private void doLoginSuccess(UserDetails userDetails) {
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                userDetails, userDetails.getPassword(), userDetails.getAuthorities());
+            userDetails, userDetails.getPassword(), userDetails.getAuthorities());
         token.setDetails(new WebAuthenticationDetails(getAttributes().getRequest()));
 
         SecurityContext context = SecurityContextHolder.getContext();
@@ -167,15 +167,15 @@ public class SessionController extends BaseController {
 
     private static boolean isLogged(Authentication authentication) {
         return authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .anyMatch(Predicate.isEqual("ROLE_BASIC"));
+            .map(GrantedAuthority::getAuthority)
+            .anyMatch(Predicate.isEqual("ROLE_BASIC"));
     }
 
     public static JSONArray getUserRoles(Authentication authentication) {
         JSONArray userRoles = new JSONArray();
         authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .forEach(userRoles::put);
+            .map(GrantedAuthority::getAuthority)
+            .forEach(userRoles::put);
         return userRoles;
     }
 
@@ -209,7 +209,7 @@ public class SessionController extends BaseController {
             if (autoLogin.getExpired().isBefore(LocalDateTime.now())) {
                 if (LOGGER.isDebugEnabled()) {
                     debugRequest("[自动登入: TOKEN已过期][username={}][expired={}]",
-                            username, autoLogin.getExpired());
+                        username, autoLogin.getExpired());
                 }
                 return false;
             }
@@ -230,7 +230,7 @@ public class SessionController extends BaseController {
 
             if (LOGGER.isInfoEnabled()) {
                 infoRequest("[自动登入: 已成功自动登入][username={}][autoLoginId={}]",
-                        username, autoLogin.getId());
+                    username, autoLogin.getId());
             }
 
             return true;

@@ -237,8 +237,8 @@ public class Disc extends BaseModel implements Comparable<Disc> {
     public JSONObject toJSON(Set<String> columns) {
         JSONObject object = toJSON();
         new HashSet<>(object.keySet()).stream()
-                .filter(key -> !columns.contains(key))
-                .forEach(object::remove);
+            .filter(key -> !columns.contains(key))
+            .forEach(object::remove);
         return object;
     }
 

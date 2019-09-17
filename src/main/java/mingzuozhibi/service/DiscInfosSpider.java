@@ -96,7 +96,7 @@ public class DiscInfosSpider {
             LocalDate date = LocalDate.parse(dateString, formatter);
             if (date.isAfter(disc.getReleaseDate())) {
                 LOGGER.info("Update Disc Release Date: {} => {}",
-                        disc.getReleaseDate().format(formatter), date.format(formatter));
+                    disc.getReleaseDate().format(formatter), date.format(formatter));
                 disc.setReleaseDate(date);
             }
         }

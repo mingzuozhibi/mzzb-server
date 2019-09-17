@@ -30,9 +30,9 @@ public class UserController extends BaseController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/api/users", produces = MEDIA_TYPE)
     public String addOne(
-            @JsonArg String username,
-            @JsonArg String password,
-            @JsonArg(defaults = "true") boolean enabled) {
+        @JsonArg String username,
+        @JsonArg String password,
+        @JsonArg(defaults = "true") boolean enabled) {
 
         if (dao.lookup(User.class, "username", username) != null) {
             return errorMessage("同户名已存在");
@@ -66,10 +66,10 @@ public class UserController extends BaseController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/api/users/{id}", produces = MEDIA_TYPE)
     public String setOne(
-            @PathVariable Long id,
-            @JsonArg String username,
-            @JsonArg String password,
-            @JsonArg boolean enabled) {
+        @PathVariable Long id,
+        @JsonArg String username,
+        @JsonArg String password,
+        @JsonArg boolean enabled) {
 
         User user = dao.get(User.class, id);
         if (user == null) {

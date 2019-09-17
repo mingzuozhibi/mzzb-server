@@ -35,8 +35,8 @@ public class ScheduleMission {
         dao.execute(session -> {
             @SuppressWarnings("unchecked")
             List<AutoLogin> expired = session.createCriteria(AutoLogin.class)
-                    .add(Restrictions.lt("expired", LocalDateTime.now()))
-                    .list();
+                .add(Restrictions.lt("expired", LocalDateTime.now()))
+                .list();
             expired.forEach(autoLogin -> dao.delete(autoLogin));
             LOGGER.info("[定时任务][清理自动登入][共{}个]", expired.size());
         });
@@ -46,9 +46,9 @@ public class ScheduleMission {
         dao.execute(session -> {
             @SuppressWarnings("unchecked")
             List<HourRecord> hourRecords = session.createCriteria(HourRecord.class)
-                    .add(Restrictions.lt("date", LocalDate.now()))
-                    .addOrder(Order.asc("date"))
-                    .list();
+                .add(Restrictions.lt("date", LocalDate.now()))
+                .addOrder(Order.asc("date"))
+                .list();
             hourRecords.forEach(hourRecord -> {
                 DateRecord dateRecord = new DateRecord(hourRecord.getDisc(), hourRecord.getDate());
                 hourRecord.getAverRank().ifPresent(dateRecord::setRank);

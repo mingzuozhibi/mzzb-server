@@ -32,8 +32,8 @@ public class DiscGroupController extends BaseController {
         List<DiscGroup> discGroups = criteria.list();
 
         JSONArray array = discGroups.stream()
-                .map(this::toJSON)
-                .collect(toJSONArray());
+            .map(this::toJSON)
+            .collect(toJSONArray());
         return objectResult(array);
     }
 
@@ -66,10 +66,10 @@ public class DiscGroupController extends BaseController {
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/api/discGroups", produces = MEDIA_TYPE)
     public String addOne(
-            @JsonArg String key,
-            @JsonArg String title,
-            @JsonArg(defaults = "true") boolean enabled,
-            @JsonArg(defaults = "PublicList") ViewType viewType) {
+        @JsonArg String key,
+        @JsonArg String title,
+        @JsonArg(defaults = "true") boolean enabled,
+        @JsonArg(defaults = "PublicList") ViewType viewType) {
 
         if (key.isEmpty()) {
             if (LOGGER.isWarnEnabled()) {
@@ -106,11 +106,11 @@ public class DiscGroupController extends BaseController {
     @PreAuthorize("hasRole('BASIC')")
     @PutMapping(value = "/api/discGroups/{id}", produces = MEDIA_TYPE)
     public String setOne(
-            @PathVariable("id") Long id,
-            @JsonArg("$.key") String key,
-            @JsonArg("$.title") String title,
-            @JsonArg("$.enabled") boolean enabled,
-            @JsonArg("$.viewType") ViewType viewType) {
+        @PathVariable("id") Long id,
+        @JsonArg("$.key") String key,
+        @JsonArg("$.title") String title,
+        @JsonArg("$.enabled") boolean enabled,
+        @JsonArg("$.viewType") ViewType viewType) {
 
         if (key.isEmpty()) {
             if (LOGGER.isWarnEnabled()) {

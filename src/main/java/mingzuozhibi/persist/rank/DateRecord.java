@@ -80,5 +80,5 @@ public class DateRecord extends BaseModel {
     public void setGuessPt(Double guessPt) {
         this.guessPt = guessPt;
     }
-    
+
 }

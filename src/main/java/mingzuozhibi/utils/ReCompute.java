@@ -28,9 +28,9 @@ public class ReCompute {
         dao.execute(session -> {
             @SuppressWarnings("unchecked")
             List<DateRecord> dateRecords = session.createCriteria(DateRecord.class)
-                    .add(Restrictions.eq("disc", disc))
-                    .addOrder(Order.asc("date"))
-                    .list();
+                .add(Restrictions.eq("disc", disc))
+                .addOrder(Order.asc("date"))
+                .list();
 
             dateRecords.forEach(dateRecord -> {
                 reCompute(disc, dateRecord.getDate(), dateRecord);
@@ -52,8 +52,8 @@ public class ReCompute {
         dao.execute(session -> {
             @SuppressWarnings("unchecked")
             List<DateRecord> dateRecords = session.createCriteria(DateRecord.class)
-                    .add(Restrictions.eq("date", date))
-                    .list();
+                .add(Restrictions.eq("date", date))
+                .list();
 
             dateRecords.forEach(dateRecord -> {
                 reCompute(dateRecord.getDisc(), date, dateRecord);
