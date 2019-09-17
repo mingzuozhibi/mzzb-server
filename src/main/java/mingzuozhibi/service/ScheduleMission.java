@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static mingzuozhibi.utils.DiscUtils.needRecordDiscs;
+import static mingzuozhibi.utils.ReCompute.computeHourPt;
 import static mingzuozhibi.utils.ReCompute.safeIntValue;
 import static mingzuozhibi.utils.RecordUtils.findDateRecord;
 import static mingzuozhibi.utils.RecordUtils.findOrCreateHourRecord;
@@ -130,42 +131,8 @@ public class ScheduleMission {
 
     private void computeTodayPt(HourRecord hourRecord) {
         hourRecord.getAverRank().ifPresent(rank -> {
-            hourRecord.setTodayPt(24 * computeHourPt(hourRecord.getDisc(), (int) rank));
+            hourRecord.setTodayPt(24 * computeHourPt(hourRecord.getDisc(), rank));
         });
-    }
-
-    private double computeHourPt(Disc disc, int rank) {
-        switch (disc.getDiscType()) {
-            case Cd:
-                return computeHourPt(150, 5.25, rank);
-            case Auto:
-            case Bluray:
-                return computePtOfBD(rank);
-            case Dvd:
-                return computeHourPt(100, 4.2, rank);
-            default:
-                return 0d;
-        }
-    }
-
-    private double computePtOfBD(int rank) {
-        if (rank <= 10) {
-            return computeHourPt(100, 3.2, rank);
-        } else if (rank <= 20) {
-            return computeHourPt(100, 3.3, rank);
-        } else if (rank <= 50) {
-            return computeHourPt(100, 3.4, rank);
-        } else if (rank <= 100) {
-            return computeHourPt(100, 3.6, rank);
-        } else if (rank <= 300) {
-            return computeHourPt(100, 3.8, rank);
-        } else {
-            return computeHourPt(100, 3.9, rank);
-        }
-    }
-
-    private double computeHourPt(int div, double base, int rank) {
-        return div / Math.exp(Math.log(rank) / Math.log(base));
     }
 
 }
