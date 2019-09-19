@@ -41,9 +41,9 @@ public abstract class DiscUtils {
     @SuppressWarnings("unchecked")
     private static List<DiscGroup> findActiveDiscGroups(Session session) {
         return session.createCriteria(DiscGroup.class)
-                .add(Restrictions.eq("enabled", true))
-                .addOrder(Order.desc("key"))
-                .list();
+            .add(Restrictions.eq("enabled", true))
+            .addOrder(Order.desc("key"))
+            .list();
     }
 
 }

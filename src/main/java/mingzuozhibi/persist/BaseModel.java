@@ -33,8 +33,8 @@ public abstract class BaseModel implements Serializable {
 
     protected Long toEpochMilli(LocalDateTime dateTime) {
         return Optional.ofNullable(dateTime)
-                .map(date -> date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
-                .orElse(0L);
+            .map(date -> date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
+            .orElse(0L);
     }
 
 }

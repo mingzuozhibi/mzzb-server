@@ -22,8 +22,8 @@ public class SpiderHelper {
         for (int retry = 0; retry < 3; retry++) {
             try {
                 Connection connection = Jsoup.connect(url)
-                        .ignoreContentType(true)
-                        .timeout(10000);
+                    .ignoreContentType(true)
+                    .timeout(10000);
                 if (consumer != null) {
                     consumer.accept(connection);
                 }

@@ -84,12 +84,12 @@ public class BaseController {
         try {
             HttpServletRequest request = getAttributes().getRequest();
             String common = String.format("[%s][%s][%s][%s][%s][%s]",
-                    getRemoteAddr(), getUserName(), request.getMethod(),
-                    request.getRequestURI(), bodyString(request), paramString(request));
+                getRemoteAddr(), getUserName(), request.getMethod(),
+                request.getRequestURI(), bodyString(request), paramString(request));
             return common.replace("{}", "{empty}");
         } catch (Exception e) {
             return String.format("[获取请求数据失败][error=%s]", e.getMessage())
-                    .replace("{}", "{empty}");
+                .replace("{}", "{empty}");
         }
     }
 

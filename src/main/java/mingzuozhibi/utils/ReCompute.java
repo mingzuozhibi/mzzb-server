@@ -28,9 +28,9 @@ public class ReCompute {
         dao.execute(session -> {
             @SuppressWarnings("unchecked")
             List<DateRecord> dateRecords = session.createCriteria(DateRecord.class)
-                    .add(Restrictions.eq("disc", disc))
-                    .addOrder(Order.asc("date"))
-                    .list();
+                .add(Restrictions.eq("disc", disc))
+                .addOrder(Order.asc("date"))
+                .list();
 
             dateRecords.forEach(dateRecord -> {
                 reCompute(disc, dateRecord.getDate(), dateRecord);
@@ -52,8 +52,8 @@ public class ReCompute {
         dao.execute(session -> {
             @SuppressWarnings("unchecked")
             List<DateRecord> dateRecords = session.createCriteria(DateRecord.class)
-                    .add(Restrictions.eq("date", date))
-                    .list();
+                .add(Restrictions.eq("date", date))
+                .list();
 
             dateRecords.forEach(dateRecord -> {
                 reCompute(dateRecord.getDisc(), date, dateRecord);
@@ -102,11 +102,11 @@ public class ReCompute {
 
     private void computeTodayPt(DateRecord dateRecord) {
         Optional.ofNullable(dateRecord.getRank()).ifPresent(rank -> {
-            dateRecord.setTodayPt(24 * computeHourPt(dateRecord.getDisc(), rank.intValue()));
+            dateRecord.setTodayPt(24 * computeHourPt(dateRecord.getDisc(), rank));
         });
     }
 
-    private double computeHourPt(Disc disc, int rank) {
+    public static double computeHourPt(Disc disc, double rank) {
         switch (disc.getDiscType()) {
             case Cd:
                 return computeHourPt(150, 5.25, rank);
@@ -120,7 +120,7 @@ public class ReCompute {
         }
     }
 
-    private double computePtOfBD(int rank) {
+    private static double computePtOfBD(double rank) {
         if (rank <= 10) {
             return computeHourPt(100, 3.2, rank);
         } else if (rank <= 20) {
@@ -136,7 +136,7 @@ public class ReCompute {
         }
     }
 
-    private double computeHourPt(int div, double base, int rank) {
+    private static double computeHourPt(int div, double base, double rank) {
         return div / Math.exp(Math.log(rank) / Math.log(base));
     }
 

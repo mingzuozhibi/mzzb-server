@@ -83,8 +83,8 @@ public class DiscGroup extends BaseModel implements Comparable<DiscGroup> {
 
     @ManyToMany
     @JoinTable(name = "disc_group_discs",
-            joinColumns = {@JoinColumn(name = "disc_group_id")},
-            inverseJoinColumns = {@JoinColumn(name = "disc_id")})
+        joinColumns = {@JoinColumn(name = "disc_group_id")},
+        inverseJoinColumns = {@JoinColumn(name = "disc_id")})
     public Set<Disc> getDiscs() {
         return discs;
     }

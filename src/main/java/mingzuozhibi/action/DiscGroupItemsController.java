@@ -18,8 +18,8 @@ public class DiscGroupItemsController extends BaseController {
     @Transactional
     @GetMapping(value = "/api/discGroups/key/{key}/discs", produces = MEDIA_TYPE)
     public String findDiscs(
-            @PathVariable String key,
-            @RequestParam(required = false) String discColumns) {
+        @PathVariable String key,
+        @RequestParam(required = false) String discColumns) {
         DiscGroup discGroup = dao.lookup(DiscGroup.class, "key", key);
         if (discGroup == null) {
             if (LOGGER.isWarnEnabled()) {
@@ -33,7 +33,7 @@ public class DiscGroupItemsController extends BaseController {
 
         if (LOGGER.isDebugEnabled()) {
             debugRequest("[获取列表碟片成功][列表标题={}][碟片数量={}]",
-                    discGroup.getTitle(), discGroup.getDiscs().size());
+                discGroup.getTitle(), discGroup.getDiscs().size());
         }
         return objectResult(result);
     }
@@ -46,7 +46,7 @@ public class DiscGroupItemsController extends BaseController {
             });
         } else {
             Set<String> columnSet = Stream.of(columns.split(","))
-                    .collect(Collectors.toSet());
+                .collect(Collectors.toSet());
             discGroup.getDiscs().forEach(disc -> {
                 discs.put(disc.toJSON(columnSet));
             });
@@ -58,8 +58,8 @@ public class DiscGroupItemsController extends BaseController {
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/api/discGroups/{id}/discs/{discId}", produces = MEDIA_TYPE)
     public synchronized String pushDiscs(
-            @PathVariable Long id,
-            @PathVariable Long discId) {
+        @PathVariable Long id,
+        @PathVariable Long discId) {
 
         DiscGroup discGroup = dao.get(DiscGroup.class, id);
         if (discGroup == null) {
@@ -80,7 +80,7 @@ public class DiscGroupItemsController extends BaseController {
         if (discGroup.getDiscs().stream().anyMatch(d -> d.getId().equals(discId))) {
             if (LOGGER.isWarnEnabled()) {
                 warnRequest("[添加碟片到列表失败][指定的碟片已存在于列表][列表={}][碟片={}]",
-                        discGroup.getTitle(), disc.getLogName());
+                    discGroup.getTitle(), disc.getLogName());
             }
             return errorMessage("指定的碟片已存在于列表");
         }
@@ -97,8 +97,8 @@ public class DiscGroupItemsController extends BaseController {
     @PreAuthorize("hasRole('BASIC')")
     @DeleteMapping(value = "/api/discGroups/{id}/discs/{discId}", produces = MEDIA_TYPE)
     public synchronized String dropDiscs(
-            @PathVariable("id") Long id,
-            @PathVariable("discId") Long discId) {
+        @PathVariable("id") Long id,
+        @PathVariable("discId") Long discId) {
 
         DiscGroup discGroup = dao.get(DiscGroup.class, id);
         if (discGroup == null) {
@@ -109,8 +109,8 @@ public class DiscGroupItemsController extends BaseController {
         }
 
         Disc disc = discGroup.getDiscs().stream()
-                .filter(t -> t.getId().equals(discId))
-                .findFirst().orElse(null);
+            .filter(t -> t.getId().equals(discId))
+            .findFirst().orElse(null);
         if (disc == null) {
             if (LOGGER.isWarnEnabled()) {
                 warnRequest("[从列表移除碟片失败][指定的碟片Id不存在于列表][Id={}]", discId);

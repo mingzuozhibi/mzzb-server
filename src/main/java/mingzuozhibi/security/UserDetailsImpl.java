@@ -30,8 +30,8 @@ public class UserDetailsImpl implements UserDetails {
 
     public Set<GrantedAuthority> getAuthorities() {
         return user.getRoles().stream()
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toSet());
+            .map(SimpleGrantedAuthority::new)
+            .collect(Collectors.toSet());
     }
 
     public boolean isAccountNonLocked() {

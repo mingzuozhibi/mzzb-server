@@ -94,10 +94,10 @@ public class DiscSpiderController extends BaseController {
 
     private Disc createDisc(@PathVariable String asin, JSONObject discJson) {
         Disc disc = new Disc(
-                asin,
-                createTitle(discJson),
-                createType(discJson),
-                createDate(discJson));
+            asin,
+            createTitle(discJson),
+            createType(discJson),
+            createDate(discJson));
         dao.save(disc);
         return disc;
     }
