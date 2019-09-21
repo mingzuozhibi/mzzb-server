@@ -1,39 +1,42 @@
 package mingzuozhibi.service;
 
+import lombok.extern.slf4j.Slf4j;
+import mingzuozhibi.jms.JmsMessage;
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.persist.disc.DiscGroup;
 import mingzuozhibi.support.Dao;
-import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 
 import static java.util.Comparator.*;
 
-@Service
+@Slf4j
+@Component
 public class DiscInfosSpider {
-
-    private static Logger LOGGER = LoggerFactory.getLogger(DiscInfosSpider.class);
 
     @Autowired
     private Dao dao;
+
+    @Autowired
+    private JmsMessage jmsMessage;
 
     @Autowired
     private SpiderHelper spiderHelper;
 
     @Transactional
     public JSONObject fetchDisc(String asin) {
-        LOGGER.info("开始更新日亚碟片, ASIN={}", asin);
+        log.info("开始更新日亚碟片, ASIN={}", asin);
         String url = spiderHelper.gateway("/fetchDisc/%s", asin);
         return new JSONObject(spiderHelper.waitRequest(url, connection -> {
             connection.timeout(60 * 1000);
@@ -43,70 +46,82 @@ public class DiscInfosSpider {
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Transactional
-    public void updateDiscInfos(JSONArray discInfos) {
-        LOGGER.info("开始更新日亚排名");
+    public void updateDiscInfos(List<DiscInfo> discInfos) {
+        jmsMessage.notify("开始更新日亚排名");
         LocalDateTime updateOn = LocalDateTime.now();
-
-        for (int i = 0; i < discInfos.length(); i++) {
-            JSONObject discInfo = discInfos.getJSONObject(i);
-            try {
-                updateDiscInfo(updateOn, formatter, discInfo);
-            } catch (RuntimeException e) {
-                LOGGER.warn("更新碟片时遇到一个错误，数据：" + discInfo.toString(), e);
+        for (DiscInfo info : discInfos) {
+            for (int i = 0; i < 3; i++) {
+                try {
+                    updateDiscInfo(info, updateOn);
+                    break;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
 
-        if (discInfos.length() > 0) {
-            LOGGER.info("成功更新日亚排名：共{}个", discInfos.length());
+        if (discInfos.size() > 0) {
+            jmsMessage.notify("成功更新日亚排名：共%d个", discInfos.size());
             updateDiscGroupModifyTime();
         } else {
-            LOGGER.warn("未能更新日亚排名");
+            jmsMessage.warning("未能更新日亚排名");
         }
     }
 
-    private void updateDiscInfo(LocalDateTime updateOn, DateTimeFormatter formatter, JSONObject discInfo) {
-        String asin = discInfo.getString("asin");
+    private void updateDiscInfo(DiscInfo discInfo, LocalDateTime updateOn) {
+        String asin = discInfo.getAsin();
         Disc disc = dao.lookup(Disc.class, "asin", asin);
 
         if (disc != null) {
 
-            updateTitle(discInfo, disc);
+            updateTitle(disc, discInfo);
 
-            updateType(discInfo, disc);
+            updateType(disc, discInfo);
 
-            updateDate(formatter, discInfo, disc);
+            updateDate(disc, discInfo);
 
-            updateRank(updateOn, discInfo, disc);
+            updateRank(disc, discInfo, updateOn);
         }
     }
 
-    private void updateTitle(JSONObject discInfo, Disc disc) {
-        disc.setTitle(discInfo.getString("title"));
+    private void updateTitle(Disc disc, DiscInfo discInfo) {
+        String title = discInfo.getTitle();
+        if (!Objects.equals(title, disc.getTitle())) {
+            jmsMessage.info("[碟片标题更新][%s => %s][%s]", disc.getTitle(), title, disc.getAsin());
+            disc.setTitle(title);
+        }
     }
 
-    private void updateType(JSONObject discInfo, Disc disc) {
+    private void updateType(Disc disc, DiscInfo discInfo) {
+        DiscType type = DiscType.valueOf(discInfo.getType());
         if (disc.getDiscType() == DiscType.Auto || disc.getDiscType() == DiscType.Other) {
-            disc.setDiscType(DiscType.valueOf(discInfo.getString("type")));
+            disc.setDiscType(type);
+        }
+        if (!Objects.equals(type, disc.getDiscType())) {
+            jmsMessage.warning("[碟片类型不符][%s => %s][%s]", disc.getDiscType(), type, disc.getAsin());
         }
     }
 
-    private void updateDate(DateTimeFormatter formatter, JSONObject discInfo, Disc disc) {
-        if (discInfo.has("date")) {
-            String dateString = discInfo.getString("date");
-            LocalDate date = LocalDate.parse(dateString, formatter);
+    private void updateDate(Disc disc, DiscInfo discInfo) {
+        if (StringUtils.hasLength(discInfo.getDate())) {
+            LocalDate date = LocalDate.parse(discInfo.getDate(), formatter);
             if (date.isAfter(disc.getReleaseDate())) {
-                LOGGER.info("Update Disc Release Date: {} => {}",
-                    disc.getReleaseDate().format(formatter), date.format(formatter));
+                jmsMessage.warning("[发售时间更新][%s => %s][%s]", disc.getReleaseDate(), date, disc.getAsin());
                 disc.setReleaseDate(date);
             }
+            if (!Objects.equals(date, disc.getReleaseDate())) {
+                jmsMessage.warning("[发售时间不符][%s => %s][%s]", disc.getReleaseDate(), date, disc.getAsin());
+            }
+        } else {
+            jmsMessage.warning("[发售时间为空][当前设置为%s][%s]", disc.getReleaseDate(), disc.getAsin());
         }
     }
 
-    private void updateRank(LocalDateTime updateOn, JSONObject discInfo, Disc disc) {
-        if (discInfo.has("rank")) {
+    private void updateRank(Disc disc, DiscInfo discInfo, LocalDateTime updateOn) {
+        if (!Objects.isNull(discInfo.getRank())) {
             if (disc.getModifyTime() == null || updateOn.isAfter(disc.getModifyTime())) {
                 disc.setPrevRank(disc.getThisRank());
-                disc.setThisRank(discInfo.getInt("rank"));
+                disc.setThisRank(discInfo.getRank());
                 if (!Objects.equals(disc.getThisRank(), disc.getPrevRank())) {
                     disc.setModifyTime(updateOn);
                 }
