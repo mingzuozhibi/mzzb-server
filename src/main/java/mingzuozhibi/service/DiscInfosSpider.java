@@ -110,7 +110,8 @@ public class DiscInfosSpider {
                 disc.setReleaseDate(date);
             }
             if (!Objects.equals(date, disc.getReleaseDate())) {
-                jmsMessage.warning("[发售时间不符][%s => %s][%s]", disc.getReleaseDate(), date, disc.getAsin());
+                jmsMessage.warning("[发售时间不符][%s => %s][%s][套装=%s]",
+                    disc.getReleaseDate(), date, disc.getAsin(), discInfo.isBuyset());
             }
         } else {
             jmsMessage.warning("[发售时间为空][当前设置为%s][%s]", disc.getReleaseDate(), disc.getAsin());
