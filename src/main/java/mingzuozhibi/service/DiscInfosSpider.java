@@ -105,7 +105,7 @@ public class DiscInfosSpider {
     private void updateDate(Disc disc, DiscInfo discInfo) {
         if (StringUtils.hasLength(discInfo.getDate())) {
             LocalDate date = LocalDate.parse(discInfo.getDate(), formatter);
-            if (date.isAfter(disc.getReleaseDate())) {
+            if (date.isAfter(disc.getReleaseDate()) && !discInfo.isBuyset()) {
                 jmsMessage.warning("[发售时间更新][%s => %s][%s]", disc.getReleaseDate(), date, disc.getAsin());
                 disc.setReleaseDate(date);
             }
