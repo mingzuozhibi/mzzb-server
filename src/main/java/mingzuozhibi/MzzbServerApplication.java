@@ -9,12 +9,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession;
 
 import javax.persistence.EntityManagerFactory;
 
 @EnableScheduling
-@EnableJdbcHttpSession
 @SpringBootApplication
 public class MzzbServerApplication {
 

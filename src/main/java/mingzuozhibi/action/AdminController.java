@@ -26,7 +26,7 @@ public class AdminController extends BaseController {
     private JmsHelper jmsHelper;
 
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('Root_Admin')")
     @PostMapping(value = "/api/admin/reCompute/date/{date}", produces = MEDIA_TYPE)
     public String reCompute(@PathVariable String date) {
         return localCompute(date);
@@ -45,7 +45,7 @@ public class AdminController extends BaseController {
     }
 
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('Root_Admin')")
     @PostMapping(value = "/api/admin/reCompute/disc/{id}", produces = MEDIA_TYPE)
     public String reCompute(@PathVariable Long id) {
         return localCompute(id);

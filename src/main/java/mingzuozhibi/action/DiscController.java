@@ -52,7 +52,7 @@ public class DiscController extends BaseController {
     }
 
     @Transactional
-    @PreAuthorize("hasRole('BASIC')")
+    @PreAuthorize("hasRole('Disc_Admin')")
     @PutMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
     public String setOne(@PathVariable Long id,
                          @JsonArg String titlePc,

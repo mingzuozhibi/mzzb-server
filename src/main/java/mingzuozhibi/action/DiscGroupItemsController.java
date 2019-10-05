@@ -55,7 +55,7 @@ public class DiscGroupItemsController extends BaseController {
     }
 
     @Transactional
-    @PreAuthorize("hasRole('BASIC')")
+    @PreAuthorize("hasRole('Disc_Admin')")
     @PostMapping(value = "/api/discGroups/{id}/discs/{discId}", produces = MEDIA_TYPE)
     public synchronized String pushDiscs(
         @PathVariable Long id,
@@ -94,7 +94,7 @@ public class DiscGroupItemsController extends BaseController {
     }
 
     @Transactional
-    @PreAuthorize("hasRole('BASIC')")
+    @PreAuthorize("hasRole('Disc_Admin')")
     @DeleteMapping(value = "/api/discGroups/{id}/discs/{discId}", produces = MEDIA_TYPE)
     public synchronized String dropDiscs(
         @PathVariable("id") Long id,
