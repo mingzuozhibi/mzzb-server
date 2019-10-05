@@ -1,7 +1,7 @@
 package mingzuozhibi.service;
 
 import lombok.extern.slf4j.Slf4j;
-import mingzuozhibi.jms.JmsMessage;
+import mingzuozhibi.common.jms.JmsMessage;
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.persist.disc.DiscGroup;

@@ -3,7 +3,6 @@ package mingzuozhibi.service;
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.rank.DateRecord;
 import mingzuozhibi.persist.rank.HourRecord;
-import mingzuozhibi.persist.user.AutoLogin;
 import mingzuozhibi.support.Dao;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
@@ -31,17 +30,6 @@ public class ScheduleMission {
 
     @Autowired
     private Dao dao;
-
-    public void removeExpiredAutoLoginData() {
-        dao.execute(session -> {
-            @SuppressWarnings("unchecked")
-            List<AutoLogin> expired = session.createCriteria(AutoLogin.class)
-                .add(Restrictions.lt("expired", LocalDateTime.now()))
-                .list();
-            expired.forEach(autoLogin -> dao.delete(autoLogin));
-            LOGGER.info("[定时任务][清理自动登入][共{}个]", expired.size());
-        });
-    }
 
     public void moveHourRecordToDateRecord() {
         dao.execute(session -> {

@@ -60,7 +60,7 @@ public class DiscSpiderController extends BaseController {
     }
 
     @Transactional
-    @PreAuthorize("hasRole('BASIC')")
+    @PreAuthorize("hasRole('Disc_Admin')")
     @GetMapping(value = "/api/admin/fetchCount")
     public String fetchCount() {
         int fetchCount = needUpdateAsins(dao.session()).size();
@@ -69,7 +69,7 @@ public class DiscSpiderController extends BaseController {
     }
 
     @Transactional
-    @PreAuthorize("hasRole('BASIC')")
+    @PreAuthorize("hasRole('Disc_Admin')")
     @GetMapping(value = "/api/admin/searchDisc/{asin}", produces = MEDIA_TYPE)
     public String searchDisc(@PathVariable String asin) {
         Disc disc = dao.lookup(Disc.class, "asin", asin);

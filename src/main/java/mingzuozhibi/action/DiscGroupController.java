@@ -63,7 +63,7 @@ public class DiscGroupController extends BaseController {
     }
 
     @Transactional
-    @PreAuthorize("hasRole('BASIC')")
+    @PreAuthorize("hasRole('Disc_Admin')")
     @PostMapping(value = "/api/discGroups", produces = MEDIA_TYPE)
     public String addOne(
         @JsonArg String key,
@@ -103,7 +103,7 @@ public class DiscGroupController extends BaseController {
     }
 
     @Transactional
-    @PreAuthorize("hasRole('BASIC')")
+    @PreAuthorize("hasRole('Disc_Admin')")
     @PutMapping(value = "/api/discGroups/{id}", produces = MEDIA_TYPE)
     public String setOne(
         @PathVariable("id") Long id,
@@ -153,7 +153,7 @@ public class DiscGroupController extends BaseController {
     }
 
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('Root_Admin')")
     @DeleteMapping(value = "/api/discGroups/{id}", produces = MEDIA_TYPE)
     public String delOne(@PathVariable("id") Long id) {
 

@@ -23,7 +23,6 @@ public class AutoRunConfig {
     public void runOnStartupServer() {
         new Thread(() -> {
             LOGGER.info("开机任务开始");
-            scheduleMission.removeExpiredAutoLoginData();
             scheduleMission.moveHourRecordToDateRecord();
             scheduleMission.recordDiscsRankAndComputePt();
             LOGGER.info("开机任务完成");
@@ -34,7 +33,6 @@ public class AutoRunConfig {
     public void runOnEveryHour() {
         new Thread(() -> {
             LOGGER.info("每小时任务开始");
-            scheduleMission.removeExpiredAutoLoginData();
             scheduleMission.moveHourRecordToDateRecord();
             scheduleMission.recordDiscsRankAndComputePt();
             LOGGER.info("每小时任务完成");
