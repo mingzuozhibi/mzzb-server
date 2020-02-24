@@ -59,6 +59,14 @@ public class DiscSpiderController extends BaseController {
         discInfosSpider.updateDiscInfos(discInfos);
     }
 
+    @JmsListener(destination = "done.update.discs")
+    public void discSpiderUpdate2(String json) {
+        Type type = new TypeToken<ArrayList<DiscInfo>>() {}.getType();
+        List<DiscInfo> discInfos = gson.fromJson(json, type);
+        LOGGER.info("JMS <- done.update.discs size=" + discInfos.size());
+        discInfosSpider.updateDiscInfos(discInfos);
+    }
+
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping(value = "/api/admin/fetchCount")
