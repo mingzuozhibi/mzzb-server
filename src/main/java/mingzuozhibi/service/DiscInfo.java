@@ -15,5 +15,6 @@ public class DiscInfo {
     private Integer price;
     private boolean buyset;
     private boolean outOfStock;
+    private boolean offTheShelf;
 
 }

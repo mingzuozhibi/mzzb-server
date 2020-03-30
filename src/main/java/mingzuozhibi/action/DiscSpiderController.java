@@ -99,7 +99,12 @@ public class DiscSpiderController extends BaseController {
             return result.toString();
         }
 
-        Disc disc = createDisc(asin, result.getJSONObject("data"));
+        JSONObject discJson =  result.getJSONObject("data");
+        if (discJson.getBoolean("offTheShelf")) {
+            return errorMessage("可能该碟片已下架");
+        }
+
+        Disc disc = createDisc(asin, discJson);
         jmsHelper.sendDiscTrack(disc.getAsin(), disc.getTitle());
 
         JSONObject data = disc.toJSON();

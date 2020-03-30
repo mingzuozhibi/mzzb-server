@@ -74,11 +74,15 @@ public class DiscInfosSpider {
 
         if (disc != null) {
 
-            updateTitle(disc, discInfo);
+            if (!discInfo.isOffTheShelf()) {
 
-            updateType(disc, discInfo);
+                updateTitle(disc, discInfo);
 
-            updateDate(disc, discInfo);
+                updateType(disc, discInfo);
+
+                updateDate(disc, discInfo);
+
+            }
 
             updateRank(disc, discInfo, updateOn);
         }
@@ -110,8 +114,8 @@ public class DiscInfosSpider {
                 disc.setReleaseDate(date);
             }
             if (!Objects.equals(date, disc.getReleaseDate())) {
-                jmsMessage.warning("[发售时间不符][%s => %s][%s][套装=%s]",
-                    disc.getReleaseDate(), date, disc.getAsin(), discInfo.isBuyset());
+                jmsMessage.warning("[发售时间不符][%s => %s][%s][套装=%s]", disc.getReleaseDate(), date, disc.getAsin(),
+                        discInfo.isBuyset());
             }
         } else {
             jmsMessage.warning("[发售时间为空][当前设置为%s][%s]", disc.getReleaseDate(), disc.getAsin());
@@ -119,15 +123,13 @@ public class DiscInfosSpider {
     }
 
     private void updateRank(Disc disc, DiscInfo discInfo, LocalDateTime updateOn) {
-        if (!Objects.isNull(discInfo.getRank())) {
-            if (disc.getModifyTime() == null || updateOn.isAfter(disc.getModifyTime())) {
-                disc.setPrevRank(disc.getThisRank());
-                disc.setThisRank(discInfo.getRank());
-                if (!Objects.equals(disc.getThisRank(), disc.getPrevRank())) {
-                    disc.setModifyTime(updateOn);
-                }
-                disc.setUpdateTime(updateOn);
+        if (disc.getModifyTime() == null || updateOn.isAfter(disc.getModifyTime())) {
+            disc.setPrevRank(disc.getThisRank());
+            disc.setThisRank(discInfo.getRank());
+            if (!Objects.equals(disc.getThisRank(), disc.getPrevRank())) {
+                disc.setModifyTime(updateOn);
             }
+            disc.setUpdateTime(updateOn);
         }
     }
 
