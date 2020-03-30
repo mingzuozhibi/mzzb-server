@@ -82,6 +82,10 @@ public class DiscInfosSpider {
 
                 updateDate(disc, discInfo);
 
+            } else {
+
+                jmsMessage.warning("[碟片可能已下架][%s]", asin);
+
             }
 
             updateRank(disc, discInfo, updateOn);
