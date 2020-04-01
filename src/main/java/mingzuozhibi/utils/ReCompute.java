@@ -97,6 +97,8 @@ public class ReCompute {
             dateRecord0.setTotalPt(dateRecord0.getTodayPt());
         } else if (dateRecord0.getTodayPt() != null) {
             dateRecord0.setTotalPt(dateRecord0.getTodayPt() + dateRecord1.getTotalPt());
+        } else {
+            dateRecord0.setTotalPt(dateRecord1.getTotalPt());
         }
     }
 
