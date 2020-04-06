@@ -183,6 +183,7 @@ public class DiscGroupController extends BaseController {
         if (LOGGER.isDebugEnabled()) {
             infoRequest("[删除列表成功][该列表共有碟片{}个]", discCount);
         }
+        jmsMessage.danger("[删除列表成功][用户=%s][列表=%s]", getUserName(), discGroup.getTitle());
         return objectResult(discGroup.toJSON());
     }
 
