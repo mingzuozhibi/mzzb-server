@@ -1,10 +1,12 @@
 package mingzuozhibi.action;
 
+import mingzuozhibi.jms.JmsMessage;
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.support.JsonArg;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +22,9 @@ import static mingzuozhibi.utils.RecordUtils.buildRecords;
 
 @RestController
 public class DiscController extends BaseController {
+
+    @Autowired
+    private JmsMessage jmsMessage;
 
     @Transactional
     @GetMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
@@ -54,10 +59,8 @@ public class DiscController extends BaseController {
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PutMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
-    public String setOne(@PathVariable Long id,
-                         @JsonArg String titlePc,
-                         @JsonArg DiscType discType,
-                         @JsonArg String releaseDate) {
+    public String setOne(@PathVariable Long id, @JsonArg String titlePc, @JsonArg DiscType discType,
+            @JsonArg String releaseDate) {
         // 校验
         ReleaseDateChecker dateChecker = new ReleaseDateChecker(releaseDate);
         if (dateChecker.hasError()) {
@@ -80,10 +83,22 @@ public class DiscController extends BaseController {
             infoRequest("[编辑碟片开始][修改前={}]", before);
         }
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         // 修改中
-        disc.setTitlePc(titlePc);
-        disc.setDiscType(discType);
-        disc.setReleaseDate(localDate);
+        if (!disc.getTitlePc().equals(titlePc)) {
+            jmsMessage.notify("[修改碟片标题][%s][用户=%s][%s=>%s]", disc.getAsin(), getUserName(), disc.getTitlePc(), titlePc);
+            disc.setTitlePc(titlePc);
+        }
+        if (!disc.getDiscType().equals(discType)) {
+            jmsMessage.notify("[修改碟片类型][%s][用户=%s][%s=>%s]", disc.getAsin(), getUserName(), disc.getDiscType().name(),
+                    discType.name());
+            disc.setDiscType(discType);
+        }
+        if (!disc.getReleaseDate().equals(localDate)) {
+            jmsMessage.notify("[修改碟片发售日期][%s][用户=%s][%s=>%s]", disc.getAsin(), getUserName(),
+                    disc.getReleaseDate().format(formatter), localDate.format(formatter));
+            disc.setReleaseDate(localDate);
+        }
 
         // 修改后
         JSONObject result = disc.toJSON();
