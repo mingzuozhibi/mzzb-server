@@ -91,7 +91,7 @@ public class DiscGroupItemsController extends BaseController {
         }
 
         discGroup.getDiscs().add(disc);
-        jmsMessage.notify("[添加碟片到列表成功][列表=%s][碟片=%s][用户=%s]", discGroup.getTitle(), disc.getLogName(), getUserName());
+        jmsMessage.notify("[用户=%s][添加碟片成功][列表=%s][碟片=%s]", getUserName(), discGroup.getTitle(), disc.getLogName());
         return objectResult(disc.toJSON());
     }
 
@@ -121,7 +121,7 @@ public class DiscGroupItemsController extends BaseController {
         }
 
         discGroup.getDiscs().remove(disc);
-        jmsMessage.notify("[从列表移除碟片成功][列表=%s][碟片=%s][用户=%s]", discGroup.getTitle(), disc.getLogName(), getUserName());
+        jmsMessage.notify("[用户=%s][移除碟片成功][列表=%s][碟片=%s]", getUserName(), discGroup.getTitle(), disc.getLogName());
         return objectResult(disc.toJSON());
     }
 

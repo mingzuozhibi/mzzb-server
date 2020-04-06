@@ -101,7 +101,7 @@ public class DiscGroupController extends BaseController {
         dao.save(discGroup);
 
         JSONObject result = discGroup.toJSON();
-        jmsMessage.success("[创建列表成功][用户=%s][列表=%s]", getUserName(), result.toString());
+        jmsMessage.success("[用户=%s][创建列表成功][列表=%s]", getUserName(), result.toString());
         return objectResult(result);
     }
 
@@ -183,7 +183,7 @@ public class DiscGroupController extends BaseController {
         if (LOGGER.isDebugEnabled()) {
             infoRequest("[删除列表成功][该列表共有碟片{}个]", discCount);
         }
-        jmsMessage.danger("[删除列表成功][用户=%s][列表=%s]", getUserName(), discGroup.getTitle());
+        jmsMessage.danger("[用户=%s][删除列表成功][列表=%s]", getUserName(), discGroup.getTitle());
         return objectResult(discGroup.toJSON());
     }
 

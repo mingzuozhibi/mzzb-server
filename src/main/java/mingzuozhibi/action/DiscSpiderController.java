@@ -111,6 +111,7 @@ public class DiscSpiderController extends BaseController {
 
         Disc disc = createDisc(asin, discJson);
         jmsHelper.sendDiscTrack(disc.getAsin(), disc.getTitle());
+        jmsMessage.notify("[用户=%s][查询碟片成功][标题=%s][%s]", getUserName(), disc.getTitle(), asin);
 
         JSONObject data = disc.toJSON();
         if (LOGGER.isInfoEnabled()) {
@@ -126,7 +127,6 @@ public class DiscSpiderController extends BaseController {
             createType(discJson),
             createDate(discJson));
         dao.save(disc);
-        jmsMessage.notify("[成功从日亚添加碟片][%s][%s]", getUserName() ,asin);
         return disc;
     }
 
