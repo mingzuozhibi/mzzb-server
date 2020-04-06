@@ -144,19 +144,19 @@ public class DiscGroupController extends BaseController {
         }
 
         if (!discGroup.getKey().equals(key)) {
-            jmsMessage.notify("[用户=%s][修改列表索引][%s=>%s]", getUserName(), discGroup.getKey(), key);
+            jmsMessage.info("[用户=%s][修改列表索引][%s=>%s]", getUserName(), discGroup.getKey(), key);
             discGroup.setKey(key);
         }
         if (!discGroup.getTitle().equals(title)) {
-            jmsMessage.notify("[用户=%s][修改列表标题][%s=>%s]", getUserName(), discGroup.getTitle(), title);
+            jmsMessage.info("[用户=%s][修改列表标题][%s=>%s]", getUserName(), discGroup.getTitle(), title);
             discGroup.setTitle(title);
         }
         if (!discGroup.getViewType().equals(viewType)) {
-            jmsMessage.notify("[用户=%s][修改列表显示类型][%s=>%s]", getUserName(), discGroup.getViewType().name(), viewType.name());
+            jmsMessage.info("[用户=%s][修改列表显示类型][%s=>%s]", getUserName(), discGroup.getViewType().name(), viewType.name());
             discGroup.setViewType(viewType);
         }
         if (discGroup.isEnabled() != enabled) {
-            jmsMessage.notify("[用户=%s][修改列表启用状态][%b=>%b]", getUserName(), discGroup.isEnabled(), enabled);
+            jmsMessage.info("[用户=%s][修改列表启用状态][%b=>%b]", getUserName(), discGroup.isEnabled(), enabled);
             discGroup.setEnabled(enabled);
         }
 

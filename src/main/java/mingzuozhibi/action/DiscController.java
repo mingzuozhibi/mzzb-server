@@ -86,16 +86,16 @@ public class DiscController extends BaseController {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         // 修改中
         if (!disc.getTitlePc().equals(titlePc)) {
-            jmsMessage.notify("[用户=%s][修改碟片标题][%s][%s=>%s]", getUserName(), disc.getAsin(), disc.getTitlePc(), titlePc);
+            jmsMessage.info("[用户=%s][修改碟片标题][%s][%s=>%s]", getUserName(), disc.getAsin(), disc.getTitlePc(), titlePc);
             disc.setTitlePc(titlePc);
         }
         if (!disc.getDiscType().equals(discType)) {
-            jmsMessage.notify("[用户=%s][修改碟片类型][%s][%s=>%s]", getUserName(), disc.getAsin(), disc.getDiscType().name(),
+            jmsMessage.info("[用户=%s][修改碟片类型][%s][%s=>%s]", getUserName(), disc.getAsin(), disc.getDiscType().name(),
                     discType.name());
             disc.setDiscType(discType);
         }
         if (!disc.getReleaseDate().equals(localDate)) {
-            jmsMessage.notify("[用户=%s][修改碟片发售日期][%s][%s=>%s]", getUserName(), disc.getAsin(),
+            jmsMessage.info("[用户=%s][修改碟片发售日期][%s][%s=>%s]", getUserName(), disc.getAsin(),
                     disc.getReleaseDate().format(formatter), localDate.format(formatter));
             disc.setReleaseDate(localDate);
         }
