@@ -2,6 +2,8 @@ package mingzuozhibi.action;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
+import mingzuozhibi.jms.JmsMessage;
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.service.DiscInfo;
@@ -35,6 +37,9 @@ public class DiscSpiderController extends BaseController {
 
     @Autowired
     private JmsTemplate jmsTemplate;
+
+    @Autowired
+    private JmsMessage jmsMessage;
 
     @Autowired
     private DiscInfosSpider discInfosSpider;
@@ -121,6 +126,7 @@ public class DiscSpiderController extends BaseController {
             createType(discJson),
             createDate(discJson));
         dao.save(disc);
+        jmsMessage.notify("[成功从日亚添加碟片][%s][%s]", getUserName() ,asin);
         return disc;
     }
 
