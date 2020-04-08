@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collector;
 
@@ -36,9 +37,7 @@ public class DiscGroupController extends BaseController {
         @SuppressWarnings("unchecked")
         List<DiscGroup> discGroups = criteria.list();
 
-        JSONArray array = discGroups.stream()
-            .map(this::toJSON)
-            .collect(toJSONArray());
+        JSONArray array = discGroups.stream().map(this::toJSON).collect(toJSONArray());
         return objectResult(array);
     }
 
@@ -70,11 +69,8 @@ public class DiscGroupController extends BaseController {
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/api/discGroups", produces = MEDIA_TYPE)
-    public String addOne(
-        @JsonArg String key,
-        @JsonArg String title,
-        @JsonArg(defaults = "true") boolean enabled,
-        @JsonArg(defaults = "PublicList") ViewType viewType) {
+    public String addOne(@JsonArg String key, @JsonArg String title, @JsonArg(defaults = "true") boolean enabled,
+            @JsonArg(defaults = "PublicList") ViewType viewType) {
 
         if (key.isEmpty()) {
             if (LOGGER.isWarnEnabled()) {
@@ -108,12 +104,8 @@ public class DiscGroupController extends BaseController {
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PutMapping(value = "/api/discGroups/{id}", produces = MEDIA_TYPE)
-    public String setOne(
-        @PathVariable("id") Long id,
-        @JsonArg("$.key") String key,
-        @JsonArg("$.title") String title,
-        @JsonArg("$.enabled") boolean enabled,
-        @JsonArg("$.viewType") ViewType viewType) {
+    public String setOne(@PathVariable("id") Long id, @JsonArg("$.key") String key, @JsonArg("$.title") String title,
+            @JsonArg("$.enabled") boolean enabled, @JsonArg("$.viewType") ViewType viewType) {
 
         if (key.isEmpty()) {
             if (LOGGER.isWarnEnabled()) {
@@ -143,16 +135,17 @@ public class DiscGroupController extends BaseController {
             infoRequest("[编辑列表开始][修改前={}]", before);
         }
 
-        if (!discGroup.getKey().equals(key)) {
+        if (!Objects.equals(discGroup.getKey(), key)) {
             jmsMessage.info("[用户=%s][修改列表索引][%s=>%s]", getUserName(), discGroup.getKey(), key);
             discGroup.setKey(key);
         }
-        if (!discGroup.getTitle().equals(title)) {
+        if (!Objects.equals(discGroup.getTitle(), title)) {
             jmsMessage.info("[用户=%s][修改列表标题][%s=>%s]", getUserName(), discGroup.getTitle(), title);
             discGroup.setTitle(title);
         }
-        if (!discGroup.getViewType().equals(viewType)) {
-            jmsMessage.info("[用户=%s][修改列表显示类型][%s=>%s]", getUserName(), discGroup.getViewType().name(), viewType.name());
+        if (!Objects.equals(discGroup.getViewType(), viewType)) {
+            jmsMessage.info("[用户=%s][修改列表显示类型][%s=>%s]", getUserName(), discGroup.getViewType().name(),
+                    viewType.name());
             discGroup.setViewType(viewType);
         }
         if (discGroup.isEnabled() != enabled) {

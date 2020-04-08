@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Objects;
 
 import static mingzuozhibi.utils.RecordUtils.buildRecords;
 
@@ -85,16 +86,16 @@ public class DiscController extends BaseController {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         // 修改中
-        if (!disc.getTitlePc().equals(titlePc)) {
+        if (!Objects.equals(disc.getTitlePc(), titlePc)) {
             jmsMessage.info("[用户=%s][修改碟片标题][%s][%s=>%s]", getUserName(), disc.getAsin(), disc.getTitlePc(), titlePc);
             disc.setTitlePc(titlePc);
         }
-        if (!disc.getDiscType().equals(discType)) {
+        if (!Objects.equals(disc.getDiscType(), discType)) {
             jmsMessage.info("[用户=%s][修改碟片类型][%s][%s=>%s]", getUserName(), disc.getAsin(), disc.getDiscType().name(),
                     discType.name());
             disc.setDiscType(discType);
         }
-        if (!disc.getReleaseDate().equals(localDate)) {
+        if (!Objects.equals(disc.getReleaseDate(), localDate)) {
             jmsMessage.info("[用户=%s][修改碟片发售日期][%s][%s=>%s]", getUserName(), disc.getAsin(),
                     disc.getReleaseDate().format(formatter), localDate.format(formatter));
             disc.setReleaseDate(localDate);
