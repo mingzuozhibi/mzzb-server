@@ -39,7 +39,7 @@ public class DiscInfosSpider {
         log.info("开始更新日亚碟片, ASIN={}", asin);
         String url = spiderHelper.gateway("/fetchDisc/%s", asin);
         return new JSONObject(spiderHelper.waitRequest(url, connection -> {
-            connection.timeout(60 * 1000);
+            connection.timeout(180 * 1000);
         }));
     }
 
