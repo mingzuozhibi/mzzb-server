@@ -1,5 +1,6 @@
 package mingzuozhibi.action;
 
+import mingzuozhibi.jms.JmsMessage;
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.DiscGroup;
 import mingzuozhibi.persist.disc.DiscGroup.ViewType;
@@ -7,11 +8,13 @@ import mingzuozhibi.support.JsonArg;
 import org.hibernate.Criteria;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collector;
 
@@ -19,6 +22,9 @@ import static org.hibernate.criterion.Restrictions.ne;
 
 @RestController
 public class DiscGroupController extends BaseController {
+
+    @Autowired
+    private JmsMessage jmsMessage;
 
     @Transactional
     @GetMapping(value = "/api/discGroups", produces = MEDIA_TYPE)
@@ -31,9 +37,7 @@ public class DiscGroupController extends BaseController {
         @SuppressWarnings("unchecked")
         List<DiscGroup> discGroups = criteria.list();
 
-        JSONArray array = discGroups.stream()
-            .map(this::toJSON)
-            .collect(toJSONArray());
+        JSONArray array = discGroups.stream().map(this::toJSON).collect(toJSONArray());
         return objectResult(array);
     }
 
@@ -65,11 +69,8 @@ public class DiscGroupController extends BaseController {
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/api/discGroups", produces = MEDIA_TYPE)
-    public String addOne(
-        @JsonArg String key,
-        @JsonArg String title,
-        @JsonArg(defaults = "true") boolean enabled,
-        @JsonArg(defaults = "PublicList") ViewType viewType) {
+    public String addOne(@JsonArg String key, @JsonArg String title, @JsonArg(defaults = "true") boolean enabled,
+            @JsonArg(defaults = "PublicList") ViewType viewType) {
 
         if (key.isEmpty()) {
             if (LOGGER.isWarnEnabled()) {
@@ -96,21 +97,15 @@ public class DiscGroupController extends BaseController {
         dao.save(discGroup);
 
         JSONObject result = discGroup.toJSON();
-        if (LOGGER.isInfoEnabled()) {
-            infoRequest("[创建列表成功][列表信息={}]", result);
-        }
+        jmsMessage.success("[用户=%s][创建列表成功][列表=%s]", getUserName(), result.toString());
         return objectResult(result);
     }
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PutMapping(value = "/api/discGroups/{id}", produces = MEDIA_TYPE)
-    public String setOne(
-        @PathVariable("id") Long id,
-        @JsonArg("$.key") String key,
-        @JsonArg("$.title") String title,
-        @JsonArg("$.enabled") boolean enabled,
-        @JsonArg("$.viewType") ViewType viewType) {
+    public String setOne(@PathVariable("id") Long id, @JsonArg("$.key") String key, @JsonArg("$.title") String title,
+            @JsonArg("$.enabled") boolean enabled, @JsonArg("$.viewType") ViewType viewType) {
 
         if (key.isEmpty()) {
             if (LOGGER.isWarnEnabled()) {
@@ -140,10 +135,23 @@ public class DiscGroupController extends BaseController {
             infoRequest("[编辑列表开始][修改前={}]", before);
         }
 
-        discGroup.setKey(key);
-        discGroup.setTitle(title);
-        discGroup.setViewType(viewType);
-        discGroup.setEnabled(enabled);
+        if (!Objects.equals(discGroup.getKey(), key)) {
+            jmsMessage.info("[用户=%s][修改列表索引][%s=>%s]", getUserName(), discGroup.getKey(), key);
+            discGroup.setKey(key);
+        }
+        if (!Objects.equals(discGroup.getTitle(), title)) {
+            jmsMessage.info("[用户=%s][修改列表标题][%s=>%s]", getUserName(), discGroup.getTitle(), title);
+            discGroup.setTitle(title);
+        }
+        if (!Objects.equals(discGroup.getViewType(), viewType)) {
+            jmsMessage.info("[用户=%s][修改列表显示类型][%s=>%s]", getUserName(), discGroup.getViewType().name(),
+                    viewType.name());
+            discGroup.setViewType(viewType);
+        }
+        if (discGroup.isEnabled() != enabled) {
+            jmsMessage.info("[用户=%s][修改列表启用状态][%b=>%b]", getUserName(), discGroup.isEnabled(), enabled);
+            discGroup.setEnabled(enabled);
+        }
 
         JSONObject result = discGroup.toJSON();
         if (LOGGER.isInfoEnabled()) {
@@ -180,6 +188,7 @@ public class DiscGroupController extends BaseController {
         if (LOGGER.isDebugEnabled()) {
             infoRequest("[删除列表成功][该列表共有碟片{}个]", discCount);
         }
+        jmsMessage.danger("[用户=%s][删除列表成功][列表=%s]", getUserName(), discGroup.getTitle());
         return objectResult(discGroup.toJSON());
     }
 

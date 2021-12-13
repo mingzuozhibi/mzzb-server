@@ -126,6 +126,8 @@ public class ScheduleMission {
             hourRecord.setTotalPt(hourRecord.getTodayPt());
         } else if (hourRecord.getTodayPt() != null) {
             hourRecord.setTotalPt(hourRecord.getTodayPt() + dateRecord.getTotalPt());
+        } else {
+            hourRecord.setTotalPt(dateRecord.getTotalPt());
         }
     }
 

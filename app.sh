@@ -200,16 +200,16 @@ cmd_log() {
   shift
 
   if [[ $# = 1 ]]; then
-    echo_cmd "tail -f ${StdFile}"
+    echo_cmd "tail -f ${file}"
     exit
   fi
   if [[ $# = 2 && $2 = -a ]]; then
-    echo_cmd "less ${StdFile}"
+    echo_cmd "less ${file}"
     exit
   fi
   if [[ $# > 1 ]]; then
     shift
-    echo_cmd "grep $@ ${StdFile}"
+    echo_cmd "grep $@ ${file}"
     exit
   fi
 }

@@ -1,7 +1,12 @@
 package mingzuozhibi.action;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import mingzuozhibi.jms.JmsMessage;
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
+import mingzuozhibi.service.DiscInfo;
 import mingzuozhibi.service.DiscInfosSpider;
 import mingzuozhibi.utils.JmsHelper;
 import org.json.JSONArray;
@@ -16,8 +21,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 import static mingzuozhibi.utils.DiscUtils.needUpdateAsins;
 
@@ -31,7 +39,12 @@ public class DiscSpiderController extends BaseController {
     private JmsTemplate jmsTemplate;
 
     @Autowired
+    private JmsMessage jmsMessage;
+
+    @Autowired
     private DiscInfosSpider discInfosSpider;
+
+    private Gson gson = new Gson();
 
     @Scheduled(cron = "0 59 * * * ?")
     @GetMapping("/admin/sendNeedUpdateAsins")
@@ -45,8 +58,17 @@ public class DiscSpiderController extends BaseController {
 
     @JmsListener(destination = "prev.update.discs")
     public void discSpiderUpdate(String json) {
-        JSONArray discInfos = new JSONArray(json);
-        LOGGER.info("JMS <- prev.update.discs size=" + discInfos.length());
+        Type type = new TypeToken<ArrayList<DiscInfo>>() {}.getType();
+        List<DiscInfo> discInfos = gson.fromJson(json, type);
+        LOGGER.info("JMS <- prev.update.discs size=" + discInfos.size());
+        discInfosSpider.updateDiscInfos(discInfos);
+    }
+
+    @JmsListener(destination = "done.update.discs")
+    public void discSpiderUpdate2(String json) {
+        Type type = new TypeToken<ArrayList<DiscInfo>>() {}.getType();
+        List<DiscInfo> discInfos = gson.fromJson(json, type);
+        LOGGER.info("JMS <- done.update.discs size=" + discInfos.size());
         discInfosSpider.updateDiscInfos(discInfos);
     }
 
@@ -82,8 +104,14 @@ public class DiscSpiderController extends BaseController {
             return result.toString();
         }
 
-        Disc disc = createDisc(asin, result.getJSONObject("data"));
+        JSONObject discJson =  result.getJSONObject("data");
+        if (discJson.getBoolean("offTheShelf")) {
+            return errorMessage("可能该碟片已下架");
+        }
+
+        Disc disc = createDisc(asin, discJson);
         jmsHelper.sendDiscTrack(disc.getAsin(), disc.getTitle());
+        jmsMessage.success("[用户=%s][查询碟片成功][标题=%s][%s]", getUserName(), disc.getTitle(), asin);
 
         JSONObject data = disc.toJSON();
         if (LOGGER.isInfoEnabled()) {
