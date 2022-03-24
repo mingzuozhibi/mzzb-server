@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
@@ -34,6 +35,9 @@ public class DiscController extends BaseController {
         }
         disc.setPrevRank(disc.getPrevRank());
         disc.setThisRank(rank);
+        LocalDateTime now = LocalDateTime.now();
+        disc.setModifyTime(now);
+        disc.setUpdateTime(now);
         jmsMessage.info("%s更新了%s的排名: %d->%d, 标题: %s",
             getUserName(), asin, disc.getPrevRank(), disc.getThisRank(), disc.getTitle());
         return objectResult(disc.toJSON());
