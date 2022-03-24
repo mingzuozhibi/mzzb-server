@@ -33,7 +33,7 @@ public class DiscController extends BaseController {
         if (disc == null) {
             return errorMessage("指定的碟片Asin不存在");
         }
-        disc.setPrevRank(disc.getPrevRank());
+        disc.setPrevRank(disc.getThisRank());
         disc.setThisRank(rank);
         LocalDateTime now = LocalDateTime.now();
         disc.setModifyTime(now);
