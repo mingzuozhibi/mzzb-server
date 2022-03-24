@@ -9,10 +9,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -26,6 +23,21 @@ public class DiscController extends BaseController {
 
     @Autowired
     private JmsMessage jmsMessage;
+
+    @Transactional
+    @PostMapping(value = "/api/updateRank/{asin}/{rank}", produces = MEDIA_TYPE)
+    public String updateRank(@PathVariable("asin") String asin,
+                             @PathVariable("rank") Integer rank) {
+        Disc disc = dao.lookup(Disc.class, "asin", asin);
+        if (disc == null) {
+            return errorMessage("指定的碟片Asin不存在");
+        }
+        disc.setPrevRank(disc.getPrevRank());
+        disc.setThisRank(rank);
+        jmsMessage.info("%s更新了%s的排名: %d->%d, 标题: %s",
+            getUserName(), asin, disc.getPrevRank(), disc.getThisRank(), disc.getTitle());
+        return objectResult(disc.toJSON());
+    }
 
     @Transactional
     @GetMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
@@ -61,7 +73,7 @@ public class DiscController extends BaseController {
     @PreAuthorize("hasRole('BASIC')")
     @PutMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
     public String setOne(@PathVariable Long id, @JsonArg String titlePc, @JsonArg DiscType discType,
-            @JsonArg String releaseDate) {
+                         @JsonArg String releaseDate) {
         // 校验
         ReleaseDateChecker dateChecker = new ReleaseDateChecker(releaseDate);
         if (dateChecker.hasError()) {
@@ -92,12 +104,12 @@ public class DiscController extends BaseController {
         }
         if (!Objects.equals(disc.getDiscType(), discType)) {
             jmsMessage.info("[用户=%s][修改碟片类型][%s][%s=>%s]", getUserName(), disc.getAsin(), disc.getDiscType().name(),
-                    discType.name());
+                discType.name());
             disc.setDiscType(discType);
         }
         if (!Objects.equals(disc.getReleaseDate(), localDate)) {
             jmsMessage.info("[用户=%s][修改碟片发售日期][%s][%s=>%s]", getUserName(), disc.getAsin(),
-                    disc.getReleaseDate().format(formatter), localDate.format(formatter));
+                disc.getReleaseDate().format(formatter), localDate.format(formatter));
             disc.setReleaseDate(localDate);
         }
 
