@@ -38,7 +38,7 @@ public class DiscController extends BaseController {
         LocalDateTime now = LocalDateTime.now();
         disc.setModifyTime(now);
         disc.setUpdateTime(now);
-        jmsMessage.info("%s更新了%s的排名: %d->%d, 标题: %s",
+        jmsMessage.info("%s 更新了[%s]的排名: %d->%d, 标题: %s",
             getUserName(), asin, disc.getPrevRank(), disc.getThisRank(), disc.getTitle());
         return objectResult(disc.toJSON());
     }
