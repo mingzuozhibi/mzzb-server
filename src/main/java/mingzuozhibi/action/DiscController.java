@@ -83,7 +83,7 @@ public class DiscController extends BaseController {
     public String addOne(@JsonArg String asin, @JsonArg String title, @JsonArg DiscType discType,
                          @JsonArg String releaseDate) {
         // 校验
-        ReleaseDateChecker dateChecker = new ReleaseDateChecker(releaseDate);
+        ReleaseDateChecker dateChecker = new ReleaseDateChecker(releaseDate, "yyyy/M/d");
         if (dateChecker.hasError()) {
             return errorMessage(dateChecker.error);
         }
@@ -106,7 +106,7 @@ public class DiscController extends BaseController {
     public String setOne(@PathVariable Long id, @JsonArg String titlePc, @JsonArg DiscType discType,
                          @JsonArg String releaseDate) {
         // 校验
-        ReleaseDateChecker dateChecker = new ReleaseDateChecker(releaseDate);
+        ReleaseDateChecker dateChecker = new ReleaseDateChecker(releaseDate, "yyyy-MM-dd");
         if (dateChecker.hasError()) {
             return errorMessage(dateChecker.error);
         }
@@ -170,13 +170,14 @@ public class DiscController extends BaseController {
     }
 
     public class ReleaseDateChecker {
-        private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        private DateTimeFormatter formatter;
         private final String input;
         private LocalDate data;
         private String error;
 
-        public ReleaseDateChecker(String input) {
+        public ReleaseDateChecker(String input, String pattern) {
             this.input = input;
+            this.formatter = DateTimeFormatter.ofPattern(pattern);
         }
 
         public boolean hasError() {
