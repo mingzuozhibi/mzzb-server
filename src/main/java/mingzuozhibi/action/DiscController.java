@@ -75,6 +75,27 @@ public class DiscController extends BaseController {
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
+    @PostMapping(value = "/api/discs", produces = MEDIA_TYPE)
+    public String addOne(@JsonArg String asin, @JsonArg String title, @JsonArg DiscType discType,
+                         @JsonArg String releaseDate) {
+        // 校验
+        ReleaseDateChecker dateChecker = new ReleaseDateChecker(releaseDate);
+        if (dateChecker.hasError()) {
+            return errorMessage(dateChecker.error);
+        }
+        LocalDate localDate = dateChecker.getData();
+
+        // 创建
+        Disc disc = new Disc(asin, title, discType, localDate);
+        dao.save(disc);
+        String discJson = disc.toJSON().toString();
+        jmsMessage.info("%s 创建碟片[%s], disc=%s", getUserName(), asin, discJson);
+        return discJson;
+    }
+
+
+    @Transactional
+    @PreAuthorize("hasRole('BASIC')")
     @PutMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
     public String setOne(@PathVariable Long id, @JsonArg String titlePc, @JsonArg DiscType discType,
                          @JsonArg String releaseDate) {
