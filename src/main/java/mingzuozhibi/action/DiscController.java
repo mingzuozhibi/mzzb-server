@@ -88,9 +88,10 @@ public class DiscController extends BaseController {
         // 创建
         Disc disc = new Disc(asin, title, discType, localDate);
         dao.save(disc);
-        String discJson = disc.toJSON().toString();
-        jmsMessage.info("%s 创建碟片[%s], disc=%s", getUserName(), asin, discJson);
-        return discJson;
+
+        JSONObject result = disc.toJSON();
+        jmsMessage.info("%s 创建碟片[%s], disc=%s", getUserName(), asin, result.toString());
+        return objectResult(result);
     }
 
 
