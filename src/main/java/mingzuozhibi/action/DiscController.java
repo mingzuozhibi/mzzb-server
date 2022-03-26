@@ -4,6 +4,7 @@ import mingzuozhibi.jms.JmsMessage;
 import mingzuozhibi.persist.disc.Disc;
 import mingzuozhibi.persist.disc.Disc.DiscType;
 import mingzuozhibi.support.JsonArg;
+import mingzuozhibi.utils.JmsHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,9 @@ public class DiscController extends BaseController {
 
     @Autowired
     private JmsMessage jmsMessage;
+
+    @Autowired
+    private JmsHelper jmsHelper;
 
     @Transactional
     @PostMapping(value = "/api/updateRank/{asin}/{rank}", produces = MEDIA_TYPE)
@@ -90,6 +94,7 @@ public class DiscController extends BaseController {
         dao.save(disc);
 
         JSONObject result = disc.toJSON();
+        jmsHelper.sendDiscTrack(disc.getAsin(), disc.getTitle());
         jmsMessage.info("%s 创建碟片[%s], disc=%s", getUserName(), asin, result.toString());
         return objectResult(result);
     }
