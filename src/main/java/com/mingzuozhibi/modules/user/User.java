@@ -1,4 +1,4 @@
-package com.mingzuozhibi.persist.user;
+package com.mingzuozhibi.modules.user;
 
 import com.mingzuozhibi.commons.BaseModel;
 import org.json.JSONObject;

@@ -1,7 +1,8 @@
-package com.mingzuozhibi.action;
+package com.mingzuozhibi.modules.user;
 
-import com.mingzuozhibi.persist.user.AutoLogin;
-import com.mingzuozhibi.persist.user.User;
+import com.mingzuozhibi.action.BaseController;
+import com.mingzuozhibi.modules.user.Session;
+import com.mingzuozhibi.modules.user.User;
 import com.mingzuozhibi.security.UserDetailsImpl;
 import com.mingzuozhibi.support.JsonArg;
 import org.json.JSONArray;
@@ -197,24 +198,24 @@ public class SessionController extends BaseController {
                 return false;
             }
 
-            AutoLogin autoLogin = dao.lookup(AutoLogin.class, "token", header);
-            if (autoLogin == null) {
+            Session session = dao.lookup(Session.class, "token", header);
+            if (session == null) {
                 if (LOGGER.isDebugEnabled()) {
                     debugRequest("[自动登入: 服务器未找到相应数据][token={}]", header);
                 }
                 return false;
             }
 
-            String username = autoLogin.getUser().getUsername();
-            if (autoLogin.getExpired().isBefore(LocalDateTime.now())) {
+            String username = session.getUser().getUsername();
+            if (session.getExpired().isBefore(LocalDateTime.now())) {
                 if (LOGGER.isDebugEnabled()) {
                     debugRequest("[自动登入: TOKEN已过期][username={}][expired={}]",
-                        username, autoLogin.getExpired());
+                        username, session.getExpired());
                 }
                 return false;
             }
 
-            if (!autoLogin.getUser().isEnabled()) {
+            if (!session.getUser().isEnabled()) {
                 if (LOGGER.isInfoEnabled()) {
                     infoRequest("[自动登入: 用户已被停用][username={}]", username);
                 }
@@ -222,15 +223,15 @@ public class SessionController extends BaseController {
             }
 
             HttpSession httpSession = getAttributes().getRequest().getSession();
-            httpSession.setAttribute("autoLoginId", autoLogin.getId());
+            httpSession.setAttribute("autoLoginId", session.getId());
 
-            UserDetails userDetails = new UserDetailsImpl(autoLogin.getUser());
+            UserDetails userDetails = new UserDetailsImpl(session.getUser());
             doLoginSuccess(userDetails);
             onLoginSuccess(username, false);
 
             if (LOGGER.isInfoEnabled()) {
                 infoRequest("[自动登入: 已成功自动登入][username={}][autoLoginId={}]",
-                    username, autoLogin.getId());
+                    username, session.getId());
             }
 
             return true;
@@ -241,15 +242,15 @@ public class SessionController extends BaseController {
             getAttributes().getResponse().addHeader("X-AUTO-LOGIN", header);
 
             LocalDateTime expired = LocalDateTime.now().withNano(0).plusDays(14);
-            AutoLogin autoLogin = new AutoLogin(user, header, expired);
+            Session session = new Session(user, header, expired);
 
-            dao.save(autoLogin);
+            dao.save(session);
 
             HttpSession httpSession = getAttributes().getRequest().getSession();
-            httpSession.setAttribute("autoLoginId", autoLogin.getId());
+            httpSession.setAttribute("autoLoginId", session.getId());
 
             if (LOGGER.isDebugEnabled()) {
-                debugRequest("[已设置自动登入][autoLoginId={}]", autoLogin.getId());
+                debugRequest("[已设置自动登入][autoLoginId={}]", session.getId());
             }
         }
 
@@ -259,7 +260,7 @@ public class SessionController extends BaseController {
 
             if (autoLoginId != null) {
                 dao.execute(session -> {
-                    AutoLogin autoLogin = dao.get(AutoLogin.class, autoLoginId);
+                    Session autoLogin = dao.get(Session.class, autoLoginId);
                     if (LOGGER.isDebugEnabled()) {
                         debugRequest("[清理自动登入数据][autoLoginId={}]", autoLogin.getId());
                     }

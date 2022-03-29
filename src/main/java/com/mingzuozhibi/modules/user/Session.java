@@ -1,4 +1,4 @@
-package com.mingzuozhibi.persist.user;
+package com.mingzuozhibi.modules.user;
 
 import com.mingzuozhibi.commons.BaseModel;
 
@@ -9,16 +9,16 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
-public class AutoLogin extends BaseModel implements Serializable {
+public class Session extends BaseModel implements Serializable {
 
     private User user;
     private String token;
     private LocalDateTime expired;
 
-    public AutoLogin() {
+    public Session() {
     }
 
-    public AutoLogin(User user, String token, LocalDateTime expired) {
+    public Session(User user, String token, LocalDateTime expired) {
         this.user = user;
         this.token = token;
         this.expired = expired;
