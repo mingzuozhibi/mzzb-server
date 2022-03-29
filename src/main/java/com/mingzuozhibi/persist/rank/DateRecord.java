@@ -1,6 +1,6 @@
 package com.mingzuozhibi.persist.rank;
 
-import com.mingzuozhibi.persist.BaseModel;
+import com.mingzuozhibi.commons.BaseModel;
 import com.mingzuozhibi.persist.disc.Disc;
 
 import javax.persistence.Column;

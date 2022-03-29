@@ -3,7 +3,7 @@ package com.mingzuozhibi.action;
 import com.mingzuozhibi.persist.disc.Disc;
 import com.mingzuozhibi.support.JsonArg;
 import com.mingzuozhibi.utils.RecordUtils;
-import com.mingzuozhibi.jms.JmsMessage;
+import com.mingzuozhibi.commons.mylog.JmsMessage;
 import com.mingzuozhibi.utils.JmsHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;

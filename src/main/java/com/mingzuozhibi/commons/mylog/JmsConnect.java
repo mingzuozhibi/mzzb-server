@@ -1,4 +1,4 @@
-package com.mingzuozhibi.jms;
+package com.mingzuozhibi.commons.mylog;
 
 import com.google.gson.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ public class JmsConnect {
         root.addProperty("name", moduleName);
         root.addProperty("addr", moduleAddr);
         String json = root.toString();
-        jmsService.sendJson("module.connect", json, json);
+        jmsService.sendJson("module.connect", json);
     }
 
 }

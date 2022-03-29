@@ -1,6 +1,6 @@
 package com.mingzuozhibi.persist.user;
 
-import com.mingzuozhibi.persist.BaseModel;
+import com.mingzuozhibi.commons.BaseModel;
 import org.json.JSONObject;
 
 import javax.persistence.*;

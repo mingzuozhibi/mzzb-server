@@ -5,7 +5,7 @@ import com.google.gson.reflect.TypeToken;
 
 import com.mingzuozhibi.persist.disc.Disc;
 import com.mingzuozhibi.service.DiscInfosSpider;
-import com.mingzuozhibi.jms.JmsMessage;
+import com.mingzuozhibi.commons.mylog.JmsMessage;
 import com.mingzuozhibi.service.DiscInfo;
 import com.mingzuozhibi.utils.JmsHelper;
 import org.json.JSONArray;

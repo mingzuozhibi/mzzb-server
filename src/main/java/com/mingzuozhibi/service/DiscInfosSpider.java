@@ -2,7 +2,7 @@ package com.mingzuozhibi.service;
 
 import com.mingzuozhibi.support.Dao;
 import lombok.extern.slf4j.Slf4j;
-import com.mingzuozhibi.jms.JmsMessage;
+import com.mingzuozhibi.commons.mylog.JmsMessage;
 import com.mingzuozhibi.persist.disc.Disc;
 import com.mingzuozhibi.persist.disc.Disc.DiscType;
 import com.mingzuozhibi.persist.disc.DiscGroup;
