@@ -2,12 +2,12 @@ package mingzuozhibi.support;
 
 import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.jdbc.ReturningWork;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate5.HibernateCallback;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Resource;
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.function.Consumer;
@@ -17,12 +17,8 @@ import static org.hibernate.criterion.Restrictions.eq;
 @Repository
 public class DaoImpl implements Dao {
 
-    private SessionFactory sessionFactory;
-
-    @Resource
-    public void setSessionFactory(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
-    }
+    @Autowired
+    private EntityManager entityManager;
 
     @Transactional
     public Long save(Object object) {
@@ -87,7 +83,7 @@ public class DaoImpl implements Dao {
     }
 
     public Session session() {
-        return sessionFactory.getCurrentSession();
+        return entityManager.unwrap(Session.class);
     }
 
 }
