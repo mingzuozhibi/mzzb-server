@@ -4,6 +4,7 @@ import com.mingzuozhibi.commons.BaseController;
 import com.mingzuozhibi.commons.check.CheckResult;
 import com.mingzuozhibi.commons.check.CheckUtils;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
+import com.mingzuozhibi.support.JsonArg;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,50 +48,43 @@ public class UserController extends BaseController {
             .orElseGet(() -> paramNoExists("用户ID"));
     }
 
-    private static class CreateForm {
-        public String username;
-        public String password;
-        public boolean enabled = true;
-    }
-
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/api/users", produces = MEDIA_TYPE)
-    public String createUser(@RequestBody CreateForm form) {
+    public String createUser(@JsonArg("$.username") String username,
+                             @JsonArg("$.password") String password,
+                             @JsonArg(value = "$.enabled", defaults = "true") Boolean enabled) {
         CheckResult checks = runAllCheck(
-            checkNotEmpty(form.username, "用户名称"),
-            checkIdentifier(form.username, "用户名称", 4, 20),
-            checkNotEmpty(form.password, "用户密码"),
-            checkIdentifier(form.username, "用户密码", 4, 20)
+            checkNotEmpty(username, "用户名称"),
+            checkIdentifier(username, "用户名称", 4, 20),
+            checkNotEmpty(password, "用户密码"),
+            checkIdentifier(username, "用户密码", 4, 20)
         );
         if (checks.hasError()) {
             return errorMessage(checks.getError());
         }
-        if (!userRepository.existsByUsername(form.username)) {
+        if (!userRepository.existsByUsername(username)) {
             return CheckUtils.paramBeExists("用户名称");
         }
-        User user = new User(form.username, form.password, form.enabled);
+        User user = new User(username, password, enabled);
         userRepository.save(user);
         JSONObject result = UserUtils.buildUser(user);
         jmsMessage.info(CheckUtils.doCreate("创建用户", user.getUsername(), result));
         return objectResult(result);
     }
 
-    private static class UpdateForm {
-        public String username;
-        public String password;
-        public Boolean enabled;
-    }
-
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/api/users/{id}", produces = MEDIA_TYPE)
-    public String updateUser(@PathVariable Long id, @RequestBody UpdateForm form) {
+    public String updateUser(@PathVariable Long id,
+                             @JsonArg("$.username") String username,
+                             @JsonArg("$.password") String password,
+                             @JsonArg(value = "$.enabled") Boolean enabled) {
         CheckResult checks = runAllCheck(
-            checkNotEmpty(form.username, "用户名称"),
-            checkIdentifier(form.username, "用户名称", 4, 20),
-            checkIdentifierOrEmpty(form.username, "用户密码", 4, 20),
-            checkSelected(form.enabled, "用户启用状态")
+            checkNotEmpty(username, "用户名称"),
+            checkIdentifier(username, "用户名称", 4, 20),
+            checkIdentifierOrEmpty(username, "用户密码", 4, 20),
+            checkSelected(enabled, "用户启用状态")
         );
         if (checks.hasError()) {
             return errorMessage(checks.getError());
@@ -100,19 +94,19 @@ public class UserController extends BaseController {
             return paramNoExists("用户ID");
         }
         User user = byId.get();
-        if (!user.getUsername().equals(form.username)) {
-            user.setUsername(form.username);
-            jmsMessage.info(doUpdate("用户名称", user.getUsername(), form.username));
+        if (!user.getUsername().equals(username)) {
+            user.setUsername(username);
+            jmsMessage.info(doUpdate("用户名称", user.getUsername(), username));
         }
-        if (StringUtils.isNotEmpty(form.password))
-            if (!user.getPassword().equals(form.password)) {
-                user.setPassword(form.password);
+        if (StringUtils.isNotEmpty(password))
+            if (!user.getPassword().equals(password)) {
+                user.setPassword(password);
                 onChangePassword(user);
                 jmsMessage.info(doUpdate("用户密码", "******", "******"));
             }
-        if (user.isEnabled() != form.enabled) {
-            user.setEnabled(form.enabled);
-            jmsMessage.info(doUpdate("用户启用状态", user.isEnabled(), form.enabled));
+        if (user.isEnabled() != enabled) {
+            user.setEnabled(enabled);
+            jmsMessage.info(doUpdate("用户启用状态", user.isEnabled(), enabled));
         }
         return objectResult(UserUtils.buildUser(user));
     }

@@ -1,9 +1,13 @@
 package com.mingzuozhibi.modules.user;
 
 import com.mingzuozhibi.commons.BaseController;
+import com.mingzuozhibi.support.JsonArg;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -38,20 +42,16 @@ public class SessionController extends BaseController {
         return object;
     }
 
-    private static class LoginForm {
-        String username;
-        String password;
-
-    }
-
     @PostMapping(value = "/api/session", produces = MEDIA_TYPE)
-    public String sessionLogin(@RequestBody LoginForm form) {
-        Optional<User> byUsername = userRepository.findByUsername(form.username);
+    public String sessionLogin(@JsonArg("$.username") String username,
+                               @JsonArg("$.password") String password) {
+        LOGGER.info("session-login: username={}", username);
+        Optional<User> byUsername = userRepository.findByUsername(username);
         if (!byUsername.isPresent()) {
             return errorMessage("用户名称不存在");
         }
         User user = byUsername.get();
-        if (!user.getPassword().equals(form.password)) {
+        if (!user.getPassword().equals(password)) {
             return errorMessage("用户密码错误");
         }
         if (!user.isEnabled()) {
