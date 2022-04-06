@@ -8,7 +8,7 @@ import javax.persistence.ManyToOne;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-@Entity
+@Entity(name = "auto_login")
 public class Session extends BaseModel implements Serializable {
 
     private User user;
