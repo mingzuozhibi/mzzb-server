@@ -1,6 +1,7 @@
 package com.mingzuozhibi.modules.user;
 
 import com.mingzuozhibi.commons.BaseController;
+import com.mingzuozhibi.commons.check.CheckResult;
 import com.mingzuozhibi.support.JsonArg;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+
+import static com.mingzuozhibi.commons.check.CheckHelper.*;
+import static com.mingzuozhibi.commons.check.CheckUtils.paramNoExists;
 
 @RestController
 public class SessionController extends BaseController {
@@ -25,11 +29,12 @@ public class SessionController extends BaseController {
     public String sessionQuery() {
         getAuthentication().ifPresent(authentication -> {
             if (!SessionUtils.isLogged(authentication)) {
-                Optional<Session> sessionOpt = sessionService.vaildSession();
+                String token = SessionUtils.getTokenFromHeader();
+                Optional<Session> sessionOpt = sessionService.vaildSession(token);
                 if (sessionOpt.isPresent()) {
                     onSessionLogin(sessionOpt.get().getUser(), false);
                 } else {
-                    sessionService.cleanSession();
+                    onSessionLogout();
                 }
             }
         });
@@ -45,10 +50,18 @@ public class SessionController extends BaseController {
     @PostMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionLogin(@JsonArg("$.username") String username,
                                @JsonArg("$.password") String password) {
-        LOGGER.info("session-login: username={}", username);
+        CheckResult checks = runAllCheck(
+            checkNotEmpty(username, "用户名称"),
+            checkIdentifier(username, "用户名称", 4, 20),
+            checkNotEmpty(password, "用户密码"),
+            checkMd5Encode(password, "用户密码", 32)
+        );
+        if (checks.hasError()) {
+            return errorMessage(checks.getError());
+        }
         Optional<User> byUsername = userRepository.findByUsername(username);
         if (!byUsername.isPresent()) {
-            return errorMessage("用户名称不存在");
+            return paramNoExists("用户名称");
         }
         User user = byUsername.get();
         if (!user.getPassword().equals(password)) {
@@ -68,20 +81,21 @@ public class SessionController extends BaseController {
     }
 
     private void onSessionLogin(User user, boolean buildNew) {
-        setAuthentication(buildUserAuthentication(user));
-        user.setLastLoggedIn(LocalDateTime.now().withNano(0));
         if (buildNew) {
             Session session = sessionService.buildSession(user);
+            SessionUtils.setSessionId(session.getId());
             SessionUtils.setTokenToHeader(session.getToken());
-            SessionUtils.setSessionIdToHttpSession(session);
-            getHttpRequest().changeSessionId();
         }
+        setAuthentication(buildUserAuthentication(user));
+        user.setLastLoggedIn(LocalDateTime.now().withNano(0));
     }
 
     private void onSessionLogout() {
-        setAuthentication(buildGuestAuthentication());
-        sessionService.cleanSession();
+        Long sessionId = SessionUtils.getSessionId();
+        sessionService.cleanSession(sessionId);
+        SessionUtils.setTokenToHeader("");
         getHttpSession().invalidate();
+        setAuthentication(buildGuestAuthentication());
     }
 
 }

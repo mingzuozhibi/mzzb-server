@@ -83,7 +83,7 @@ public class UserController extends BaseController {
         CheckResult checks = runAllCheck(
             checkNotEmpty(username, "用户名称"),
             checkIdentifier(username, "用户名称", 4, 20),
-            checkIdentifierOrEmpty(username, "用户密码", 4, 20),
+            checkMd5Encode(username, "用户密码", 32),
             checkSelected(enabled, "用户启用状态")
         );
         if (checks.hasError()) {

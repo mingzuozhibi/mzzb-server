@@ -18,8 +18,7 @@ public class SessionService {
     @Autowired
     private SessionRepository2 sessionRepository2;
 
-    public Optional<Session> vaildSession() {
-        String token = SessionUtils.getTokenFromHeader();
+    public Optional<Session> vaildSession(String token) {
         if (token == null || token.length() != 36) {
             return Optional.empty();
         }
@@ -45,12 +44,10 @@ public class SessionService {
         return session;
     }
 
-    public void cleanSession() {
-        Long sessionId = SessionUtils.getSessionIdFromHttpSession();
+    public void cleanSession(Long sessionId) {
         if (sessionId != null) {
             sessionRepository2.deleteById(sessionId);
         }
-        SessionUtils.setTokenToHeader("");
     }
 
     public Integer countSession() {

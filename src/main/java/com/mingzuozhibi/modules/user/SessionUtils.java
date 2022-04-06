@@ -20,12 +20,12 @@ public abstract class SessionUtils extends BaseServlet {
         getHttpResponse().addHeader("session-token", token);
     }
 
-    public static Long getSessionIdFromHttpSession() {
+    public static Long getSessionId() {
         return (Long) getHttpSession().getAttribute("session-id");
     }
 
-    public static void setSessionIdToHttpSession(Session session) {
-        getHttpSession().setAttribute("session-id", session.getId());
+    public static void setSessionId(Long sessionId) {
+        getHttpSession().setAttribute("session-id", sessionId);
     }
 
     public static JSONObject buildSession() {
