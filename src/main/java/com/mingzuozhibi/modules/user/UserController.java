@@ -1,6 +1,6 @@
 package com.mingzuozhibi.modules.user;
 
-import com.mingzuozhibi.action.BaseController;
+import com.mingzuozhibi.commons.BaseController;
 import com.mingzuozhibi.commons.check.CheckResult;
 import com.mingzuozhibi.commons.check.CheckUtils;
 import com.mingzuozhibi.commons.mylog.JmsMessage;

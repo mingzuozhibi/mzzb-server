@@ -1,274 +1,87 @@
 package com.mingzuozhibi.modules.user;
 
-import com.mingzuozhibi.action.BaseController;
-import com.mingzuozhibi.security.UserDetailsImpl;
-import com.mingzuozhibi.support.JsonArg;
-import org.json.JSONArray;
+import com.mingzuozhibi.commons.BaseController;
 import org.json.JSONObject;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.WebAuthenticationDetails;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpSession;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.time.LocalDateTime;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Optional;
 
 @RestController
 public class SessionController extends BaseController {
 
-    public static final Set<GrantedAuthority> GUEST_AUTHORITIES = Stream.of("NONE")
-        .map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
+    @Autowired
+    private SessionService sessionService;
 
-    private AutoLoginHelper autoLoginHeaper = new AutoLoginHelper();
+    @Autowired
+    private UserRepository userRepository;
 
     @GetMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionQuery() {
-        SecurityContext context = SecurityContextHolder.getContext();
-        Authentication authentication = context.getAuthentication();
+        getAuthentication().ifPresent(authentication -> {
+            if (!SessionUtils.isLogged(authentication)) {
+                Optional<Session> sessionOpt = sessionService.vaildSession();
+                if (sessionOpt.isPresent()) {
+                    onSessionLogin(sessionOpt.get().getUser(), false);
+                } else {
+                    sessionService.cleanSession();
+                }
+            }
+        });
+        return objectResult(buildSession());
+    }
 
-        if (!isLogged(authentication) && !autoLoginHeaper.checkAutoLogin()) {
-            autoLoginHeaper.cleanAutoLoginToken();
-        }
+    public JSONObject buildSession() {
+        JSONObject object = SessionUtils.buildSession();
+        object.put("onlineUserCount", sessionService.countSession());
+        return object;
+    }
 
-        JSONObject session = buildSession();
-        if (LOGGER.isDebugEnabled()) {
-            debugRequest("[获取当前登入状态: session={}]", session);
-        }
-        return objectResult(session);
+    private static class LoginForm {
+        String username;
+        String password;
+
     }
 
     @PostMapping(value = "/api/session", produces = MEDIA_TYPE)
-    public String sessionLogin(
-        @JsonArg("$.username") String username,
-        @JsonArg("$.password") String password) {
-
-        User user = dao.lookup(User.class, "username", username);
-        if (user == null) {
-            if (LOGGER.isInfoEnabled()) {
-                infoRequest("[用户名称不存在: username={}]", username);
-            }
+    public String sessionLogin(@RequestBody LoginForm form) {
+        Optional<User> byUsername = userRepository.findByUsername(form.username);
+        if (!byUsername.isPresent()) {
             return errorMessage("用户名称不存在");
         }
-
-        UserDetails userDetails = new UserDetailsImpl(user);
-        if (!userDetails.getPassword().equals(password)) {
-            if (LOGGER.isInfoEnabled()) {
-                infoRequest("[用户密码错误: username={}]", username);
-            }
+        User user = byUsername.get();
+        if (!user.getPassword().equals(form.password)) {
             return errorMessage("用户密码错误");
         }
-
-        if (!userDetails.isEnabled()) {
-            if (LOGGER.isWarnEnabled()) {
-                warnRequest("[用户已被停用: username={}]", username);
-            }
+        if (!user.isEnabled()) {
             return errorMessage("用户已被停用");
         }
-
-        doLoginSuccess(userDetails);
-        onLoginSuccess(username, true);
-
-        JSONObject session = buildSession();
-        if (LOGGER.isInfoEnabled()) {
-            infoRequest("[用户成功登入: session={}]", session);
-        }
-        return objectResult(session);
+        onSessionLogin(user, true);
+        return objectResult(buildSession());
     }
 
     @DeleteMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionLogout() {
-        SecurityContext context = SecurityContextHolder.getContext();
-        Authentication authentication = context.getAuthentication();
-
-        context.setAuthentication(new AnonymousAuthenticationToken(
-            UUID.randomUUID().toString(), "Guest", GUEST_AUTHORITIES)
-        );
-
-        autoLoginHeaper.cleanAutoLoginToken();
-
-        getAttributes().getRequest().getSession().invalidate();
-
-        if (LOGGER.isInfoEnabled()) {
-            infoRequest("[用户成功登出: username={}]", authentication.getName());
-        }
+        onSessionLogout();
         return objectResult(buildSession());
     }
 
-    private void doLoginSuccess(UserDetails userDetails) {
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-            userDetails, userDetails.getPassword(), userDetails.getAuthorities());
-        token.setDetails(new WebAuthenticationDetails(getAttributes().getRequest()));
-
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(token);
-
-        getAttributes().getRequest().changeSessionId();
-    }
-
-    private void onLoginSuccess(String username, boolean putNewToken) {
-        dao.execute(session -> {
-            User user = dao.lookup(User.class, "username", username);
-            user.setLastLoggedIn(LocalDateTime.now().withNano(0));
-
-            if (putNewToken) {
-                autoLoginHeaper.buildAutoLoginToken(user);
-            }
-        });
-    }
-
-    public JSONObject buildSession() {
-        SecurityContext context = SecurityContextHolder.getContext();
-        Authentication authentication = context.getAuthentication();
-
-        JSONObject object = new JSONObject();
-
-        object.put("userName", authentication.getName());
-        object.put("isLogged", isLogged(authentication));
-        object.put("userRoles", getUserRoles(authentication));
-        object.put("onlineUserCount", getJdbcSessionCount());
-
-        return object;
-    }
-
-    private Integer getJdbcSessionCount() {
-        try {
-            return dao.jdbc(connection -> {
-                String sql = "SELECT COUNT(*) FROM SPRING_SESSION";
-                PreparedStatement stmt = connection.prepareStatement(sql);
-                ResultSet resultSet = stmt.executeQuery();
-                if (resultSet.next()) {
-                    return resultSet.getInt(1);
-                } else {
-                    return 0;
-                }
-            });
-        } catch (Exception e) {
-            LOGGER.warn("获取JdbcSessionCount失败", e.getMessage());
-            return 0;
+    private void onSessionLogin(User user, boolean buildNew) {
+        setAuthentication(buildUserAuthentication(user));
+        user.setLastLoggedIn(LocalDateTime.now().withNano(0));
+        if (buildNew) {
+            Session session = sessionService.buildSession(user);
+            SessionUtils.setTokenToHeader(session.getToken());
+            SessionUtils.setSessionIdToHttpSession(session);
+            getHttpRequest().changeSessionId();
         }
     }
 
-    private static boolean isLogged(Authentication authentication) {
-        return authentication.getAuthorities().stream()
-            .map(GrantedAuthority::getAuthority)
-            .anyMatch(Predicate.isEqual("ROLE_BASIC"));
-    }
-
-    public static JSONArray getUserRoles(Authentication authentication) {
-        JSONArray userRoles = new JSONArray();
-        authentication.getAuthorities().stream()
-            .map(GrantedAuthority::getAuthority)
-            .forEach(userRoles::put);
-        return userRoles;
-    }
-
-    private class AutoLoginHelper {
-
-        public boolean checkAutoLogin() {
-            String header = getAttributes().getRequest().getHeader("X-AUTO-LOGIN");
-            if (header == null || header.isEmpty()) {
-                if (LOGGER.isDebugEnabled()) {
-                    debugRequest("[自动登入: 未发现有效的X-AUTO-LOGIN]");
-                }
-                return false;
-            }
-
-            if (header.length() != 36) {
-                if (LOGGER.isWarnEnabled()) {
-                    warnRequest("[自动登入: 异常的X-AUTO-LOGIN][token={}]", header);
-                }
-                return false;
-            }
-
-            Session session = dao.lookup(Session.class, "token", header);
-            if (session == null) {
-                if (LOGGER.isDebugEnabled()) {
-                    debugRequest("[自动登入: 服务器未找到相应数据][token={}]", header);
-                }
-                return false;
-            }
-
-            String username = session.getUser().getUsername();
-            if (session.getExpired().isBefore(LocalDateTime.now())) {
-                if (LOGGER.isDebugEnabled()) {
-                    debugRequest("[自动登入: TOKEN已过期][username={}][expired={}]",
-                        username, session.getExpired());
-                }
-                return false;
-            }
-
-            if (!session.getUser().isEnabled()) {
-                if (LOGGER.isInfoEnabled()) {
-                    infoRequest("[自动登入: 用户已被停用][username={}]", username);
-                }
-                return false;
-            }
-
-            HttpSession httpSession = getAttributes().getRequest().getSession();
-            httpSession.setAttribute("autoLoginId", session.getId());
-
-            UserDetails userDetails = new UserDetailsImpl(session.getUser());
-            doLoginSuccess(userDetails);
-            onLoginSuccess(username, false);
-
-            if (LOGGER.isInfoEnabled()) {
-                infoRequest("[自动登入: 已成功自动登入][username={}][autoLoginId={}]",
-                    username, session.getId());
-            }
-
-            return true;
-        }
-
-        public void buildAutoLoginToken(User user) {
-            String header = UUID.randomUUID().toString();
-            getAttributes().getResponse().addHeader("X-AUTO-LOGIN", header);
-
-            LocalDateTime expired = LocalDateTime.now().withNano(0).plusDays(14);
-            Session session = new Session(user, header, expired);
-
-            dao.save(session);
-
-            HttpSession httpSession = getAttributes().getRequest().getSession();
-            httpSession.setAttribute("autoLoginId", session.getId());
-
-            if (LOGGER.isDebugEnabled()) {
-                debugRequest("[已设置自动登入][autoLoginId={}]", session.getId());
-            }
-        }
-
-        public void cleanAutoLoginToken() {
-            HttpSession httpSession = getAttributes().getRequest().getSession(true);
-            Long autoLoginId = (Long) httpSession.getAttribute("autoLoginId");
-
-            if (autoLoginId != null) {
-                dao.execute(session -> {
-                    Session autoLogin = dao.get(Session.class, autoLoginId);
-                    if (LOGGER.isDebugEnabled()) {
-                        debugRequest("[清理自动登入数据][autoLoginId={}]", autoLogin.getId());
-                    }
-                    dao.delete(autoLogin);
-                });
-            }
-
-            getAttributes().getResponse().addHeader("X-AUTO-LOGIN", "");
-        }
-
+    private void onSessionLogout() {
+        setAuthentication(buildGuestAuthentication());
+        sessionService.cleanSession();
+        getHttpSession().invalidate();
     }
 
 }

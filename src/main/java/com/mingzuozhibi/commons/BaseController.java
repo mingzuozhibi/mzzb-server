@@ -1,27 +1,16 @@
-package com.mingzuozhibi.action;
+package com.mingzuozhibi.commons;
 
 import com.mingzuozhibi.support.Dao;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Optional;
 
-public class BaseController {
+public class BaseController extends BaseServlet {
 
-    protected static final String MEDIA_TYPE = MediaType.APPLICATION_JSON_UTF8_VALUE;
     protected Logger LOGGER;
 
     @Autowired
@@ -53,27 +42,6 @@ public class BaseController {
         return root.toString();
     }
 
-    protected void responseText(HttpServletResponse response, String content) throws IOException {
-        response.setContentType(MEDIA_TYPE);
-        byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
-        response.setContentLength(bytes.length);
-        response.getOutputStream().write(bytes);
-        response.flushBuffer();
-    }
-
-    protected Optional<Authentication> getAuthentication() {
-        return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication());
-    }
-
-    protected String getUserName() {
-        return getAuthentication().map(Authentication::getName).orElse("null");
-    }
-
-    protected ServletRequestAttributes getAttributes() {
-        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
-        return ((ServletRequestAttributes) attributes);
-    }
-
     private String getRemoteAddr() {
         HttpServletRequest request = getAttributes().getRequest();
         String xRealIp = request.getHeader("X-Real-IP");
@@ -82,7 +50,7 @@ public class BaseController {
 
     private String getCommon() {
         try {
-            HttpServletRequest request = getAttributes().getRequest();
+            HttpServletRequest request = getHttpRequest();
             String common = String.format("[%s][%s][%s][%s][%s][%s]",
                 getRemoteAddr(), getUserName(), request.getMethod(),
                 request.getRequestURI(), bodyString(request), paramString(request));
