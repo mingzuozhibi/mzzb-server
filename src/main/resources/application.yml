@@ -1,27 +1,9 @@
 ---
 server:
   port: 9090
-
 spring:
   application:
     name: "@pom.artifactId@"
-  datasource:
-    tomcat:
-      test-while-idle: true
-      validation-query: SELECT 1
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
-  profiles:
-    active:
-      - dev
-
----
-spring:
-  profiles: dev
   activemq:
     broker-url: tcp://localhost:61616
     password: ${activemq.password}
@@ -31,22 +13,21 @@ spring:
     username: mzzb_dev
     password: mzzb_dev
   jpa:
+    open-in-view: true
+    hibernate:
+      ddl-auto: update
     show-sql: false
     properties:
-      hibernate:
-        format_sql: true
-
+      hibernate.format_sql: true
+      hibernate.current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
 ---
 spring:
-  profiles: pro
-  activemq:
-    broker-url: tcp://mingzuozhibi.com:61616
+  config:
+    activate:
+      on-profile: pro
   datasource:
     url: jdbc:mysql://localhost:3306/mzzb_pro?useUnicode=true&characterEncoding=utf-8&useSSL=false
     username: mzzb_pro
     password: mzzb_pro
   jpa:
     show-sql: false
-
-logging:
-  file: target/webapp.log
