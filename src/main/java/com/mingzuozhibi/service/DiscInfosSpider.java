@@ -1,11 +1,11 @@
 package com.mingzuozhibi.service;
 
-import com.mingzuozhibi.support.Dao;
-import lombok.extern.slf4j.Slf4j;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
 import com.mingzuozhibi.persist.disc.Disc;
 import com.mingzuozhibi.persist.disc.Disc.DiscType;
 import com.mingzuozhibi.persist.disc.DiscGroup;
+import com.mingzuozhibi.support.Dao;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -119,7 +119,7 @@ public class DiscInfosSpider {
             }
             if (!Objects.equals(date, disc.getReleaseDate())) {
                 jmsMessage.warning("[发售时间不符][%s => %s][%s][套装=%s]", disc.getReleaseDate(), date, disc.getAsin(),
-                        discInfo.isBuyset());
+                    discInfo.isBuyset());
             }
         } else {
             jmsMessage.warning("[发售时间为空][当前设置为%s][%s]", disc.getReleaseDate(), disc.getAsin());

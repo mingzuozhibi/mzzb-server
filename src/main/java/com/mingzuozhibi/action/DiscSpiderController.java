@@ -2,11 +2,11 @@ package com.mingzuozhibi.action;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
-import com.mingzuozhibi.persist.disc.Disc;
-import com.mingzuozhibi.service.DiscInfosSpider;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
+import com.mingzuozhibi.persist.disc.Disc;
+import com.mingzuozhibi.persist.disc.Disc.DiscType;
 import com.mingzuozhibi.service.DiscInfo;
+import com.mingzuozhibi.service.DiscInfosSpider;
 import com.mingzuozhibi.utils.JmsHelper;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -57,7 +57,8 @@ public class DiscSpiderController extends BaseController {
 
     @JmsListener(destination = "prev.update.discs")
     public void discSpiderUpdate(String json) {
-        Type type = new TypeToken<ArrayList<DiscInfo>>() {}.getType();
+        Type type = new TypeToken<ArrayList<DiscInfo>>() {
+        }.getType();
         List<DiscInfo> discInfos = gson.fromJson(json, type);
         LOGGER.info("JMS <- prev.update.discs size=" + discInfos.size());
         discInfosSpider.updateDiscInfos(discInfos);
@@ -65,7 +66,8 @@ public class DiscSpiderController extends BaseController {
 
     @JmsListener(destination = "done.update.discs")
     public void discSpiderUpdate2(String json) {
-        Type type = new TypeToken<ArrayList<DiscInfo>>() {}.getType();
+        Type type = new TypeToken<ArrayList<DiscInfo>>() {
+        }.getType();
         List<DiscInfo> discInfos = gson.fromJson(json, type);
         LOGGER.info("JMS <- done.update.discs size=" + discInfos.size());
         discInfosSpider.updateDiscInfos(discInfos);
@@ -103,7 +105,7 @@ public class DiscSpiderController extends BaseController {
             return result.toString();
         }
 
-        JSONObject discJson =  result.getJSONObject("data");
+        JSONObject discJson = result.getJSONObject("data");
         if (discJson.getBoolean("offTheShelf")) {
             return errorMessage("可能该碟片已下架");
         }
@@ -133,8 +135,8 @@ public class DiscSpiderController extends BaseController {
         return discJson.getString("title");
     }
 
-    private Disc.DiscType createType(JSONObject discJson) {
-        return Disc.DiscType.valueOf(discJson.getString("type"));
+    private DiscType createType(JSONObject discJson) {
+        return DiscType.valueOf(discJson.getString("type"));
     }
 
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");

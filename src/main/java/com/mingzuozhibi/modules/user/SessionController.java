@@ -1,8 +1,6 @@
 package com.mingzuozhibi.modules.user;
 
 import com.mingzuozhibi.action.BaseController;
-import com.mingzuozhibi.modules.user.Session;
-import com.mingzuozhibi.modules.user.User;
 import com.mingzuozhibi.security.UserDetailsImpl;
 import com.mingzuozhibi.support.JsonArg;
 import org.json.JSONArray;

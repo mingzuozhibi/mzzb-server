@@ -1,9 +1,10 @@
 package com.mingzuozhibi.action;
 
+import com.mingzuozhibi.commons.mylog.JmsMessage;
 import com.mingzuozhibi.persist.disc.Disc;
 import com.mingzuozhibi.persist.disc.DiscGroup;
+import com.mingzuozhibi.persist.disc.DiscGroup.ViewType;
 import com.mingzuozhibi.support.JsonArg;
-import com.mingzuozhibi.commons.mylog.JmsMessage;
 import org.hibernate.Criteria;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -30,7 +31,7 @@ public class DiscGroupController extends BaseController {
     public String findAll(@RequestParam(defaultValue = "false") boolean hasPrivate) {
         Criteria criteria = dao.session().createCriteria(DiscGroup.class);
         if (!hasPrivate) {
-            criteria.add(ne("viewType", DiscGroup.ViewType.PrivateList));
+            criteria.add(ne("viewType", ViewType.PrivateList));
         }
 
         @SuppressWarnings("unchecked")
@@ -69,7 +70,7 @@ public class DiscGroupController extends BaseController {
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/api/discGroups", produces = MEDIA_TYPE)
     public String addOne(@JsonArg String key, @JsonArg String title, @JsonArg(defaults = "true") boolean enabled,
-                         @JsonArg(defaults = "PublicList") DiscGroup.ViewType viewType) {
+                         @JsonArg(defaults = "PublicList") ViewType viewType) {
 
         if (key.isEmpty()) {
             if (LOGGER.isWarnEnabled()) {
@@ -104,7 +105,7 @@ public class DiscGroupController extends BaseController {
     @PreAuthorize("hasRole('BASIC')")
     @PutMapping(value = "/api/discGroups/{id}", produces = MEDIA_TYPE)
     public String setOne(@PathVariable("id") Long id, @JsonArg("$.key") String key, @JsonArg("$.title") String title,
-            @JsonArg("$.enabled") boolean enabled, @JsonArg("$.viewType") DiscGroup.ViewType viewType) {
+                         @JsonArg("$.enabled") boolean enabled, @JsonArg("$.viewType") ViewType viewType) {
 
         if (key.isEmpty()) {
             if (LOGGER.isWarnEnabled()) {
@@ -144,7 +145,7 @@ public class DiscGroupController extends BaseController {
         }
         if (!Objects.equals(discGroup.getViewType(), viewType)) {
             jmsMessage.info("[用户=%s][修改列表显示类型][%s=>%s]", getUserName(), discGroup.getViewType().name(),
-                    viewType.name());
+                viewType.name());
             discGroup.setViewType(viewType);
         }
         if (discGroup.isEnabled() != enabled) {

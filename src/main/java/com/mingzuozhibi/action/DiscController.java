@@ -1,10 +1,11 @@
 package com.mingzuozhibi.action;
 
-import com.mingzuozhibi.persist.disc.Disc;
-import com.mingzuozhibi.support.JsonArg;
-import com.mingzuozhibi.utils.RecordUtils;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
+import com.mingzuozhibi.persist.disc.Disc;
+import com.mingzuozhibi.persist.disc.Disc.DiscType;
+import com.mingzuozhibi.support.JsonArg;
 import com.mingzuozhibi.utils.JmsHelper;
+import com.mingzuozhibi.utils.RecordUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,7 +79,7 @@ public class DiscController extends BaseController {
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/api/discs", produces = MEDIA_TYPE)
-    public String addOne(@JsonArg String asin, @JsonArg String title, @JsonArg Disc.DiscType discType,
+    public String addOne(@JsonArg String asin, @JsonArg String title, @JsonArg DiscType discType,
                          @JsonArg String releaseDate) {
         // 校验
         ReleaseDateChecker dateChecker = new ReleaseDateChecker(releaseDate, "yyyy/M/d");
@@ -101,7 +102,7 @@ public class DiscController extends BaseController {
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PutMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
-    public String setOne(@PathVariable Long id, @JsonArg String titlePc, @JsonArg Disc.DiscType discType,
+    public String setOne(@PathVariable Long id, @JsonArg String titlePc, @JsonArg DiscType discType,
                          @JsonArg String releaseDate) {
         // 校验
         ReleaseDateChecker dateChecker = new ReleaseDateChecker(releaseDate, "yyyy-MM-dd");
