@@ -7,6 +7,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
@@ -18,16 +19,18 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class BaseServlet {
 
     public static final String MEDIA_TYPE = MediaType.APPLICATION_JSON_VALUE;
 
-    public static final Set<GrantedAuthority> GUEST_AUTHORITIES = Collections.emptySet();
+    public static final Set<GrantedAuthority> GUEST_AUTHORITIES = Stream.of("NONE")
+        .map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
 
     public static void responseText(HttpServletResponse response, String content) throws IOException {
         response.setContentType(MEDIA_TYPE);
