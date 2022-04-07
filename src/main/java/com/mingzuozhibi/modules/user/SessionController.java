@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -56,7 +56,7 @@ public class SessionController extends BaseController2 {
     @Autowired
     private UserRepository userRepository;
 
-    @GetMapping(value = "/api/session", produces = MEDIA_TYPE)
+    @GetMapping("/api/session")
     public String sessionQuery() {
         getAuthentication().ifPresent(authentication -> {
             if (!SessionUtils.isLogged(authentication)) {
@@ -82,7 +82,7 @@ public class SessionController extends BaseController2 {
         }
     }
 
-    @PostMapping(value = "/api/session", produces = MEDIA_TYPE)
+    @PostMapping("/api/session")
     public String sessionLogin(@JsonArg("$.username") String username,
                                @JsonArg("$.password") String password) {
         CheckResult checks = runAllCheck(
@@ -109,7 +109,7 @@ public class SessionController extends BaseController2 {
         return buildSessionAndCount();
     }
 
-    @DeleteMapping(value = "/api/session", produces = MEDIA_TYPE)
+    @DeleteMapping("/api/session")
     public String sessionLogout() {
         onSessionLogout();
         return buildSessionAndCount();
@@ -122,7 +122,7 @@ public class SessionController extends BaseController2 {
             SessionUtils.setTokenToHeader(session.getToken());
         }
         setAuthentication(buildUserAuthentication(user));
-        user.setLastLoggedIn(LocalDateTime.now().withNano(0));
+        user.setLastLoggedIn(Instant.now());
     }
 
     private void onSessionLogout() {

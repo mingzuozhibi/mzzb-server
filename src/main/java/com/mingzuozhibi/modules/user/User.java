@@ -1,15 +1,13 @@
 package com.mingzuozhibi.modules.user;
 
 import com.mingzuozhibi.commons.BaseModel;
-import org.json.JSONObject;
+import com.mingzuozhibi.commons.gson.Ignore;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 @Entity
@@ -20,8 +18,8 @@ public class User extends BaseModel implements Serializable {
     private boolean enabled;
     private Set<String> roles = new HashSet<>();
 
-    private LocalDateTime registerDate;
-    private LocalDateTime lastLoggedIn;
+    private Instant registerDate;
+    private Instant lastLoggedIn;
 
     public User() {
     }
@@ -30,10 +28,11 @@ public class User extends BaseModel implements Serializable {
         this.username = username;
         this.password = password;
         this.enabled = enabled;
-        this.registerDate = LocalDateTime.now().withNano(0);
+        this.registerDate = Instant.now();
         this.roles.add("ROLE_BASIC");
     }
 
+    @Ignore
     @Column(length = 32, nullable = false)
     public String getPassword() {
         return password;
@@ -72,20 +71,20 @@ public class User extends BaseModel implements Serializable {
     }
 
     @Column(nullable = false)
-    public LocalDateTime getRegisterDate() {
+    public Instant getRegisterDate() {
         return registerDate;
     }
 
-    public void setRegisterDate(LocalDateTime registerDate) {
+    public void setRegisterDate(Instant registerDate) {
         this.registerDate = registerDate;
     }
 
     @Column
-    public LocalDateTime getLastLoggedIn() {
+    public Instant getLastLoggedIn() {
         return lastLoggedIn;
     }
 
-    public void setLastLoggedIn(LocalDateTime lastLoggedIn) {
+    public void setLastLoggedIn(Instant lastLoggedIn) {
         this.lastLoggedIn = lastLoggedIn;
     }
 
@@ -100,20 +99,6 @@ public class User extends BaseModel implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(username);
-    }
-
-    private static final DateTimeFormatter formatterTime = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-
-    public JSONObject toJSON() {
-        JSONObject object = new JSONObject();
-        object.put("id", getId());
-        object.put("username", getUsername());
-        object.put("enabled", isEnabled());
-        object.put("registerDate", getRegisterDate().format(formatterTime));
-        Optional.ofNullable(getLastLoggedIn()).ifPresent(lastLoggedIn -> {
-            object.put("lastLoggedIn", lastLoggedIn.format(formatterTime));
-        });
-        return object;
     }
 
 }

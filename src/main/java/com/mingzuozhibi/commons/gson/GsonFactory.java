@@ -10,6 +10,8 @@ import java.time.Instant;
 
 public abstract class GsonFactory {
 
+    public static final Gson GSON = GsonFactory.createGson();
+
     public static Gson createGson() {
         GsonBuilder gson = new GsonBuilder();
         gson.setExclusionStrategies(new ExclusionStrategy() {

@@ -3,9 +3,6 @@ package com.mingzuozhibi.modules.user;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -52,14 +49,6 @@ public class SessionService {
         if (sessionId != null) {
             sessionRepository2.deleteById(sessionId);
         }
-    }
-
-    public User findSessionUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            return new User();
-        }
-        return null;
     }
 
     public int countSession() {

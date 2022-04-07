@@ -1,18 +1,18 @@
 package com.mingzuozhibi.modules.user;
 
-import com.mingzuozhibi.commons.BaseController;
+import com.mingzuozhibi.commons.BaseController2;
 import com.mingzuozhibi.commons.check.CheckResult;
 import com.mingzuozhibi.commons.check.CheckUtils;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
 import com.mingzuozhibi.support.JsonArg;
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.mingzuozhibi.commons.check.CheckHelper.*;
@@ -20,7 +20,7 @@ import static com.mingzuozhibi.commons.check.CheckUtils.doUpdate;
 import static com.mingzuozhibi.commons.check.CheckUtils.paramNoExists;
 
 @RestController
-public class UserController extends BaseController {
+public class UserController extends BaseController2 {
 
     @Autowired
     private JmsMessage jmsMessage;
@@ -33,24 +33,24 @@ public class UserController extends BaseController {
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping(value = "/api/users")
+    @GetMapping("/api/users")
     public String findAll() {
         List<User> users = userRepository.findAll();
-        return objectResult(UserUtils.buildUsers(users));
+        return dataResult(users);
     }
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping(value = "/api/users/{id}")
+    @GetMapping("/api/users/{id}")
     public String findById(@PathVariable Long id) {
         return userRepository.findById(id)
-            .map(user -> objectResult(user.toJSON()))
+            .map(this::dataResult)
             .orElseGet(() -> paramNoExists("用户ID"));
     }
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(value = "/api/users", produces = MEDIA_TYPE)
+    @PostMapping("/api/users")
     public String createUser(@JsonArg("$.username") String username,
                              @JsonArg("$.password") String password,
                              @JsonArg(value = "$.enabled", defaults = "true") Boolean enabled) {
@@ -61,25 +61,24 @@ public class UserController extends BaseController {
             checkIdentifier(username, "用户密码", 4, 20)
         );
         if (checks.hasError()) {
-            return errorMessage(checks.getError());
+            return errorResult(checks.getError());
         }
         if (!userRepository.existsByUsername(username)) {
             return CheckUtils.paramBeExists("用户名称");
         }
         User user = new User(username, password, enabled);
         userRepository.save(user);
-        JSONObject result = UserUtils.buildUser(user);
-        jmsMessage.info(CheckUtils.doCreate("创建用户", user.getUsername(), result));
-        return objectResult(result);
+        jmsMessage.info(CheckUtils.doCreate("创建用户", user.getUsername(), gson.toJson(user)));
+        return dataResult(user);
     }
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping(value = "/api/users/{id}", produces = MEDIA_TYPE)
+    @PutMapping("/api/users/{id}")
     public String updateUser(@PathVariable Long id,
                              @JsonArg("$.username") String username,
                              @JsonArg("$.password") String password,
-                             @JsonArg(value = "$.enabled") Boolean enabled) {
+                             @JsonArg("$.enabled") Boolean enabled) {
         CheckResult checks = runAllCheck(
             checkNotEmpty(username, "用户名称"),
             checkIdentifier(username, "用户名称", 4, 20),
@@ -87,7 +86,7 @@ public class UserController extends BaseController {
             checkSelected(enabled, "用户启用状态")
         );
         if (checks.hasError()) {
-            return errorMessage(checks.getError());
+            return errorResult(checks.getError());
         }
         Optional<User> byId = userRepository.findById(id);
         if (!byId.isPresent()) {
@@ -98,17 +97,16 @@ public class UserController extends BaseController {
             user.setUsername(username);
             jmsMessage.info(doUpdate("用户名称", user.getUsername(), username));
         }
-        if (StringUtils.isNotEmpty(password))
-            if (!user.getPassword().equals(password)) {
-                user.setPassword(password);
-                onChangePassword(user);
-                jmsMessage.info(doUpdate("用户密码", "******", "******"));
-            }
+        if (StringUtils.isNotEmpty(password) && !Objects.equals(user.getPassword(), password)) {
+            user.setPassword(password);
+            onChangePassword(user);
+            jmsMessage.info(doUpdate("用户密码", "******", "******"));
+        }
         if (user.isEnabled() != enabled) {
             user.setEnabled(enabled);
             jmsMessage.info(doUpdate("用户启用状态", user.isEnabled(), enabled));
         }
-        return objectResult(UserUtils.buildUser(user));
+        return dataResult(user);
     }
 
     private void onChangePassword(User user) {

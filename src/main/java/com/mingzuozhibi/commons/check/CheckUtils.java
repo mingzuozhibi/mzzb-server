@@ -1,6 +1,7 @@
 package com.mingzuozhibi.commons.check;
 
-import org.json.JSONObject;
+import com.mingzuozhibi.commons.gson.GsonFactory;
+import com.mingzuozhibi.commons.model.ErrorResult;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -10,14 +11,14 @@ import java.util.Optional;
 public abstract class CheckUtils {
 
     public static String paramBeExists(String paramName) {
-        return errorMessage(paramName + "已存在");
+        return errorResult(paramName + "已存在");
     }
 
     public static String paramNoExists(String paramName) {
-        return errorMessage(paramName + "不存在");
+        return errorResult(paramName + "不存在");
     }
 
-    public static String doCreate(String entryName, String name, JSONObject json) {
+    public static String doCreate(String entryName, String name, String json) {
         return String.format("[%s][创建%s][name=%s][json=%s]", getLoginName(), entryName, name, json);
     }
 
@@ -32,11 +33,8 @@ public abstract class CheckUtils {
             .orElse("Unknown");
     }
 
-    private static String errorMessage(String message) {
-        JSONObject root = new JSONObject();
-        root.put("success", false);
-        root.put("message", message);
-        return root.toString();
+    private static String errorResult(String message) {
+        return GsonFactory.GSON.toJson(new ErrorResult(message));
     }
 
 }
