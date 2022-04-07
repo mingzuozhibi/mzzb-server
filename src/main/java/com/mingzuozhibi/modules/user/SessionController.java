@@ -3,21 +3,16 @@ package com.mingzuozhibi.modules.user;
 import com.mingzuozhibi.commons.BaseController2;
 import com.mingzuozhibi.commons.check.CheckResult;
 import com.mingzuozhibi.support.JsonArg;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.mingzuozhibi.commons.check.CheckHelper.*;
 import static com.mingzuozhibi.commons.check.CheckUtils.paramNoExists;
@@ -25,38 +20,13 @@ import static com.mingzuozhibi.commons.check.CheckUtils.paramNoExists;
 @RestController
 public class SessionController extends BaseController2 {
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    public static class SessionAndCount {
-        private String userName;
-        private Set<String> roleList;
-        private boolean hasBasic;
-        private boolean hasAdmin;
-        private int sessionCount;
-
-        public SessionAndCount(Authentication authentication, int sessionCount) {
-            this.userName = authentication.getName();
-            this.roleList = getRoleList(authentication);
-            this.hasBasic = roleList.contains("ROLE_BASIC");
-            this.hasAdmin = roleList.contains("ROLE_ADMIN");
-            this.sessionCount = sessionCount;
-        }
-
-        private Set<String> getRoleList(Authentication authentication) {
-            return authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toSet());
-        }
-    }
-
     @Autowired
     private SessionService sessionService;
 
     @Autowired
     private UserRepository userRepository;
 
-    @GetMapping("/api/session")
+    @GetMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionQuery() {
         getAuthentication().ifPresent(authentication -> {
             if (!SessionUtils.isLogged(authentication)) {
@@ -73,16 +43,16 @@ public class SessionController extends BaseController2 {
     }
 
     private String buildSessionAndCount() {
-        int sessionCount = sessionService.countSession();
+        int userCount = sessionService.countSession();
         Optional<Authentication> optional = getAuthentication();
         if (optional.isPresent()) {
-            return dataResult(new SessionAndCount(optional.get(), sessionCount));
+            return dataResult(new SessionAndCount(optional.get(), userCount));
         } else {
-            return dataResult(new SessionAndCount(buildGuestAuthentication(), sessionCount));
+            return dataResult(new SessionAndCount(buildGuestAuthentication(), userCount));
         }
     }
 
-    @PostMapping("/api/session")
+    @PostMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionLogin(@JsonArg("$.username") String username,
                                @JsonArg("$.password") String password) {
         CheckResult checks = runAllCheck(
@@ -99,7 +69,7 @@ public class SessionController extends BaseController2 {
             return paramNoExists("用户名称");
         }
         User user = byUsername.get();
-        if (!user.getPassword().equals(password)) {
+        if (!Objects.equals(user.getPassword(), password)) {
             return errorResult("用户密码错误");
         }
         if (!user.isEnabled()) {
@@ -109,7 +79,7 @@ public class SessionController extends BaseController2 {
         return buildSessionAndCount();
     }
 
-    @DeleteMapping("/api/session")
+    @DeleteMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionLogout() {
         onSessionLogout();
         return buildSessionAndCount();

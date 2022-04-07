@@ -33,7 +33,7 @@ public class UserController extends BaseController2 {
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/api/users")
+    @GetMapping(value = "/api/users", produces = MEDIA_TYPE)
     public String findAll() {
         List<User> users = userRepository.findAll();
         return dataResult(users);
@@ -41,7 +41,7 @@ public class UserController extends BaseController2 {
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/api/users/{id}")
+    @GetMapping(value = "/api/users/{id}", produces = MEDIA_TYPE)
     public String findById(@PathVariable Long id) {
         return userRepository.findById(id)
             .map(this::dataResult)
@@ -50,7 +50,7 @@ public class UserController extends BaseController2 {
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/api/users")
+    @PostMapping(value = "/api/users", produces = MEDIA_TYPE)
     public String createUser(@JsonArg("$.username") String username,
                              @JsonArg("$.password") String password,
                              @JsonArg(value = "$.enabled", defaults = "true") Boolean enabled) {
@@ -58,7 +58,7 @@ public class UserController extends BaseController2 {
             checkNotEmpty(username, "用户名称"),
             checkIdentifier(username, "用户名称", 4, 20),
             checkNotEmpty(password, "用户密码"),
-            checkIdentifier(username, "用户密码", 4, 20)
+            checkMd5Encode(username, "用户密码", 32)
         );
         if (checks.hasError()) {
             return errorResult(checks.getError());
@@ -74,7 +74,7 @@ public class UserController extends BaseController2 {
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/api/users/{id}")
+    @PutMapping(value = "/api/users/{id}", produces = MEDIA_TYPE)
     public String updateUser(@PathVariable Long id,
                              @JsonArg("$.username") String username,
                              @JsonArg("$.password") String password,
@@ -93,7 +93,7 @@ public class UserController extends BaseController2 {
             return paramNoExists("用户ID");
         }
         User user = byId.get();
-        if (!user.getUsername().equals(username)) {
+        if (!Objects.equals(user.getUsername(), username)) {
             user.setUsername(username);
             jmsMessage.info(doUpdate("用户名称", user.getUsername(), username));
         }
