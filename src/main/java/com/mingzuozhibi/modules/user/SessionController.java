@@ -1,10 +1,14 @@
 package com.mingzuozhibi.modules.user;
 
-import com.mingzuozhibi.commons.BaseController;
+import com.mingzuozhibi.commons.BaseController2;
 import com.mingzuozhibi.commons.check.CheckResult;
 import com.mingzuozhibi.support.JsonArg;
-import org.json.JSONObject;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,12 +16,39 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.mingzuozhibi.commons.check.CheckHelper.*;
 import static com.mingzuozhibi.commons.check.CheckUtils.paramNoExists;
 
 @RestController
-public class SessionController extends BaseController {
+public class SessionController extends BaseController2 {
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class SessionAndCount {
+        private String userName;
+        private Set<String> roleList;
+        private boolean hasBasic;
+        private boolean hasAdmin;
+        private int sessionCount;
+
+        public SessionAndCount(Authentication authentication, int sessionCount) {
+            this.userName = authentication.getName();
+            this.roleList = getRoleList(authentication);
+            this.hasBasic = roleList.contains("ROLE_BASIC");
+            this.hasAdmin = roleList.contains("ROLE_ADMIN");
+            this.sessionCount = sessionCount;
+        }
+
+        private Set<String> getRoleList(Authentication authentication) {
+            return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet());
+        }
+    }
 
     @Autowired
     private SessionService sessionService;
@@ -38,13 +69,17 @@ public class SessionController extends BaseController {
                 }
             }
         });
-        return objectResult(buildSession());
+        return buildSessionAndCount();
     }
 
-    public JSONObject buildSession() {
-        JSONObject object = SessionUtils.buildSession();
-        object.put("onlineUserCount", sessionService.countSession());
-        return object;
+    private String buildSessionAndCount() {
+        int sessionCount = sessionService.countSession();
+        Optional<Authentication> optional = getAuthentication();
+        if (optional.isPresent()) {
+            return dataResult(new SessionAndCount(optional.get(), sessionCount));
+        } else {
+            return dataResult(new SessionAndCount(buildGuestAuthentication(), sessionCount));
+        }
     }
 
     @PostMapping(value = "/api/session", produces = MEDIA_TYPE)
@@ -57,7 +92,7 @@ public class SessionController extends BaseController {
             checkMd5Encode(password, "用户密码", 32)
         );
         if (checks.hasError()) {
-            return errorMessage(checks.getError());
+            return errorResult(checks.getError());
         }
         Optional<User> byUsername = userRepository.findByUsername(username);
         if (!byUsername.isPresent()) {
@@ -65,19 +100,19 @@ public class SessionController extends BaseController {
         }
         User user = byUsername.get();
         if (!user.getPassword().equals(password)) {
-            return errorMessage("用户密码错误");
+            return errorResult("用户密码错误");
         }
         if (!user.isEnabled()) {
-            return errorMessage("用户已被停用");
+            return errorResult("用户已被停用");
         }
         onSessionLogin(user, true);
-        return objectResult(buildSession());
+        return buildSessionAndCount();
     }
 
     @DeleteMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionLogout() {
         onSessionLogout();
-        return objectResult(buildSession());
+        return buildSessionAndCount();
     }
 
     private void onSessionLogin(User user, boolean buildNew) {

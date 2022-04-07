@@ -3,9 +3,13 @@ package com.mingzuozhibi.modules.user;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -50,12 +54,22 @@ public class SessionService {
         }
     }
 
-    public Integer countSession() {
+    public User findSessionUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return new User();
+        }
+        return null;
+    }
+
+    public int countSession() {
         String sql = "SELECT COUNT(*) FROM SPRING_SESSION";
         try {
-            return jdbcTemplate.query(sql, rs -> rs.next() ? rs.getInt(1) : 0);
+            return Objects.requireNonNull(jdbcTemplate.query(sql, rs -> rs.next() ? rs.getInt(1) : -1));
         } catch (DataAccessException e) {
-            return -1;
+            return -2;
+        } catch (RuntimeException e) {
+            return -3;
         }
     }
 
