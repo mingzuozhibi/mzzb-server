@@ -1,9 +1,9 @@
 package com.mingzuozhibi.service;
 
 import com.mingzuozhibi.commons.mylog.JmsMessage;
-import com.mingzuozhibi.persist.disc.Disc;
-import com.mingzuozhibi.persist.disc.Disc.DiscType;
-import com.mingzuozhibi.persist.disc.DiscGroup;
+import com.mingzuozhibi.modules.disc.DiscGroup;
+import com.mingzuozhibi.modules.disc.Disc;
+import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import com.mingzuozhibi.support.Dao;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -141,7 +142,7 @@ public class DiscInfosSpider {
         Comparator<Disc> comparator = comparing(Disc::getUpdateTime, nullsFirst(naturalOrder()));
         dao.findBy(DiscGroup.class, "enabled", true).forEach(discGroup -> {
             discGroup.getDiscs().stream().max(comparator).ifPresent(disc -> {
-                discGroup.setModifyTime(disc.getUpdateTime());
+                discGroup.setModifyTime(Instant.from(disc.getUpdateTime()));
             });
         });
     }

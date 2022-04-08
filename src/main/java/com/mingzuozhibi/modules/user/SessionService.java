@@ -5,9 +5,11 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class SessionService {
@@ -27,7 +29,7 @@ public class SessionService {
             return Optional.empty();
         }
         Session session = byToken.get();
-        if (session.getExpired().isBefore(LocalDateTime.now())) {
+        if (session.getExpired().isBefore(Instant.now())) {
             return Optional.empty();
         }
         if (!session.getUser().isEnabled()) {
@@ -38,7 +40,7 @@ public class SessionService {
 
     public Session buildSession(User user) {
         String token = UUID.randomUUID().toString();
-        LocalDateTime expired = LocalDateTime.now().withNano(0).plusDays(14);
+        Instant expired = Instant.now().plusMillis(TimeUnit.DAYS.toMillis(14));
         Session session = new Session(user, token, expired);
         sessionRepository2.save(session);
         return session;
@@ -50,12 +52,14 @@ public class SessionService {
         }
     }
 
-    public Integer countSession() {
+    public int countSession() {
         String sql = "SELECT COUNT(*) FROM SPRING_SESSION";
         try {
-            return jdbcTemplate.query(sql, rs -> rs.next() ? rs.getInt(1) : 0);
+            return Objects.requireNonNull(jdbcTemplate.query(sql, rs -> rs.next() ? rs.getInt(1) : -1));
         } catch (DataAccessException e) {
-            return -1;
+            return -2;
+        } catch (RuntimeException e) {
+            return -3;
         }
     }
 

@@ -1,6 +1,9 @@
-package com.mingzuozhibi.persist.disc;
+package com.mingzuozhibi.modules.disc;
 
 import com.mingzuozhibi.commons.BaseModel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.json.JSONObject;
 
 import javax.persistence.Column;
@@ -14,28 +17,13 @@ import java.util.Optional;
 import java.util.Set;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
 public class Disc extends BaseModel implements Comparable<Disc> {
 
     public enum DiscType {
         Cd, Dvd, Bluray, Auto, Other
-    }
-
-    private String asin;
-    private String title;
-    private String titlePc;
-    private Integer thisRank;
-    private Integer prevRank;
-    private Integer nicoBook;
-    private Integer todayPt;
-    private Integer totalPt;
-    private Integer guessPt;
-    private DiscType discType;
-    private LocalDate releaseDate;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
-    private LocalDateTime modifyTime;
-
-    public Disc() {
     }
 
     public Disc(String asin, String title, DiscType discType, LocalDate releaseDate) {
@@ -47,130 +35,46 @@ public class Disc extends BaseModel implements Comparable<Disc> {
     }
 
     @Column(length = 20, nullable = false, unique = true)
-    public String getAsin() {
-        return asin;
-    }
-
-    public void setAsin(String asin) {
-        this.asin = asin;
-    }
+    private String asin;
 
     @Column(length = 500, nullable = false)
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    private String title;
 
     @Column(length = 500)
-    public String getTitlePc() {
-        return titlePc;
-    }
-
-    public void setTitlePc(String titlePc) {
-        this.titlePc = titlePc;
-    }
+    private String titlePc;
 
     @Column
-    public Integer getThisRank() {
-        return thisRank;
-    }
-
-    public void setThisRank(Integer thisRank) {
-        this.thisRank = thisRank;
-    }
+    private Integer thisRank;
 
     @Column
-    public Integer getPrevRank() {
-        return prevRank;
-    }
-
-    public void setPrevRank(Integer prevRank) {
-        this.prevRank = prevRank;
-    }
+    private Integer prevRank;
 
     @Column
-    public Integer getNicoBook() {
-        return nicoBook;
-    }
-
-    public void setNicoBook(Integer nicoBook) {
-        this.nicoBook = nicoBook;
-    }
+    private Integer nicoBook;
 
     @Column
-    public Integer getTodayPt() {
-        return todayPt;
-    }
-
-    public void setTodayPt(Integer todayPt) {
-        this.todayPt = todayPt;
-    }
+    private Integer todayPt;
 
     @Column
-    public Integer getTotalPt() {
-        return totalPt;
-    }
-
-    public void setTotalPt(Integer totalPt) {
-        this.totalPt = totalPt;
-    }
+    private Integer totalPt;
 
     @Column
-    public Integer getGuessPt() {
-        return guessPt;
-    }
-
-    public void setGuessPt(Integer guessPt) {
-        this.guessPt = guessPt;
-    }
+    private Integer guessPt;
 
     @Column(nullable = false)
-    public DiscType getDiscType() {
-        return discType;
-    }
-
-    public void setDiscType(DiscType discType) {
-        this.discType = discType;
-    }
+    private DiscType discType;
 
     @Column(nullable = false)
-    public LocalDate getReleaseDate() {
-        return releaseDate;
-    }
-
-    public void setReleaseDate(LocalDate releaseDate) {
-        this.releaseDate = releaseDate;
-    }
+    private LocalDate releaseDate;
 
     @Column(nullable = false)
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-    }
+    private LocalDateTime createTime;
 
     @Column
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
-    }
+    private LocalDateTime updateTime;
 
     @Column
-    public LocalDateTime getModifyTime() {
-        return modifyTime;
-    }
-
-    public void setModifyTime(LocalDateTime modifyTime) {
-        this.modifyTime = modifyTime;
-    }
+    private LocalDateTime modifyTime;
 
     @Transient
     public String getLogName() {

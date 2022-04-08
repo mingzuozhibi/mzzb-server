@@ -1,93 +1,51 @@
 package com.mingzuozhibi.modules.user;
 
-import com.mingzuozhibi.commons.BaseModel;
-import org.json.JSONObject;
+import com.mingzuozhibi.commons.BaseModel2;
+import com.mingzuozhibi.commons.gson.Ignore;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 @Entity
-public class User extends BaseModel implements Serializable {
-
-    private String username;
-    private String password;
-    private boolean enabled;
-    private Set<String> roles = new HashSet<>();
-
-    private LocalDateTime registerDate;
-    private LocalDateTime lastLoggedIn;
-
-    public User() {
-    }
+@Getter
+@Setter
+@NoArgsConstructor
+public class User extends BaseModel2 implements Serializable {
 
     public User(String username, String password, boolean enabled) {
         this.username = username;
         this.password = password;
         this.enabled = enabled;
-        this.registerDate = LocalDateTime.now().withNano(0);
+        this.registerDate = Instant.now();
         this.roles.add("ROLE_BASIC");
     }
 
-    @Column(length = 32, nullable = false)
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     @Column(length = 32, unique = true, nullable = false)
-    public String getUsername() {
-        return username;
-    }
+    private String username;
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    @Ignore
+    @Column(length = 32, nullable = false)
+    private String password;
 
     @Column(nullable = false)
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
+    private boolean enabled;
 
     @ElementCollection
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
-    public Set<String> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Set<String> roles) {
-        this.roles = roles;
-    }
+    private Set<String> roles = new HashSet<>();
 
     @Column(nullable = false)
-    public LocalDateTime getRegisterDate() {
-        return registerDate;
-    }
-
-    public void setRegisterDate(LocalDateTime registerDate) {
-        this.registerDate = registerDate;
-    }
+    public Instant registerDate;
 
     @Column
-    public LocalDateTime getLastLoggedIn() {
-        return lastLoggedIn;
-    }
-
-    public void setLastLoggedIn(LocalDateTime lastLoggedIn) {
-        this.lastLoggedIn = lastLoggedIn;
-    }
+    public Instant lastLoggedIn;
 
     @Override
     public boolean equals(Object o) {
@@ -100,20 +58,6 @@ public class User extends BaseModel implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(username);
-    }
-
-    private static final DateTimeFormatter formatterTime = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-
-    public JSONObject toJSON() {
-        JSONObject object = new JSONObject();
-        object.put("id", getId());
-        object.put("username", getUsername());
-        object.put("enabled", isEnabled());
-        object.put("registerDate", getRegisterDate().format(formatterTime));
-        Optional.ofNullable(getLastLoggedIn()).ifPresent(lastLoggedIn -> {
-            object.put("lastLoggedIn", lastLoggedIn.format(formatterTime));
-        });
-        return object;
     }
 
 }

@@ -1,6 +1,6 @@
 package com.mingzuozhibi.utils;
 
-import com.mingzuozhibi.persist.disc.Disc;
+import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.persist.rank.DateRecord;
 import com.mingzuozhibi.support.Dao;
 import org.hibernate.criterion.Order;

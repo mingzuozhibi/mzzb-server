@@ -1,23 +1,24 @@
 package com.mingzuozhibi.modules.user;
 
-import com.mingzuozhibi.commons.BaseController;
+import com.mingzuozhibi.commons.BaseController2;
 import com.mingzuozhibi.commons.check.CheckResult;
 import com.mingzuozhibi.support.JsonArg;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.mingzuozhibi.commons.check.CheckHelper.*;
 import static com.mingzuozhibi.commons.check.CheckUtils.paramNoExists;
 
 @RestController
-public class SessionController extends BaseController {
+public class SessionController extends BaseController2 {
 
     @Autowired
     private SessionService sessionService;
@@ -38,13 +39,17 @@ public class SessionController extends BaseController {
                 }
             }
         });
-        return objectResult(buildSession());
+        return buildSessionAndCount();
     }
 
-    public JSONObject buildSession() {
-        JSONObject object = SessionUtils.buildSession();
-        object.put("onlineUserCount", sessionService.countSession());
-        return object;
+    private String buildSessionAndCount() {
+        int userCount = sessionService.countSession();
+        Optional<Authentication> optional = getAuthentication();
+        if (optional.isPresent()) {
+            return dataResult(new SessionAndCount(optional.get(), userCount));
+        } else {
+            return dataResult(new SessionAndCount(buildGuestAuthentication(), userCount));
+        }
     }
 
     @PostMapping(value = "/api/session", produces = MEDIA_TYPE)
@@ -57,27 +62,27 @@ public class SessionController extends BaseController {
             checkMd5Encode(password, "用户密码", 32)
         );
         if (checks.hasError()) {
-            return errorMessage(checks.getError());
+            return errorResult(checks.getError());
         }
         Optional<User> byUsername = userRepository.findByUsername(username);
         if (!byUsername.isPresent()) {
             return paramNoExists("用户名称");
         }
         User user = byUsername.get();
-        if (!user.getPassword().equals(password)) {
-            return errorMessage("用户密码错误");
+        if (!Objects.equals(user.getPassword(), password)) {
+            return errorResult("用户密码错误");
         }
         if (!user.isEnabled()) {
-            return errorMessage("用户已被停用");
+            return errorResult("用户已被停用");
         }
         onSessionLogin(user, true);
-        return objectResult(buildSession());
+        return buildSessionAndCount();
     }
 
     @DeleteMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionLogout() {
         onSessionLogout();
-        return objectResult(buildSession());
+        return buildSessionAndCount();
     }
 
     private void onSessionLogin(User user, boolean buildNew) {
@@ -87,7 +92,7 @@ public class SessionController extends BaseController {
             SessionUtils.setTokenToHeader(session.getToken());
         }
         setAuthentication(buildUserAuthentication(user));
-        user.setLastLoggedIn(LocalDateTime.now().withNano(0));
+        user.setLastLoggedIn(Instant.now());
     }
 
     private void onSessionLogout() {

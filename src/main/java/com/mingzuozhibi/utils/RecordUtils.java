@@ -1,6 +1,6 @@
 package com.mingzuozhibi.utils;
 
-import com.mingzuozhibi.persist.disc.Disc;
+import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.persist.rank.DateRecord;
 import com.mingzuozhibi.persist.rank.HourRecord;
 import com.mingzuozhibi.support.Dao;

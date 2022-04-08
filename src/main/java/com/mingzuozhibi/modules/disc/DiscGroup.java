@@ -1,10 +1,14 @@
-package com.mingzuozhibi.persist.disc;
+package com.mingzuozhibi.modules.disc;
 
-import com.mingzuozhibi.commons.BaseModel;
+import com.mingzuozhibi.commons.BaseModel2;
+import com.mingzuozhibi.commons.gson.Ignore;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.json.JSONObject;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Objects;
@@ -13,20 +17,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Entity
-public class DiscGroup extends BaseModel implements Comparable<DiscGroup> {
+@Getter
+@Setter
+@NoArgsConstructor
+public class DiscGroup extends BaseModel2 implements Comparable<DiscGroup> {
 
     public enum ViewType {
         SakuraList, PublicList, PrivateList
-    }
-
-    private String key;
-    private String title;
-    private boolean enabled;
-    private ViewType viewType;
-    private LocalDateTime modifyTime;
-    private Set<Disc> discs = new HashSet<>();
-
-    public DiscGroup() {
     }
 
     public DiscGroup(String key, String title, boolean enabled, ViewType viewType) {
@@ -37,61 +34,26 @@ public class DiscGroup extends BaseModel implements Comparable<DiscGroup> {
     }
 
     @Column(name = "`key`", length = 100, nullable = false, unique = true)
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
+    private String key;
 
     @Column(length = 100, nullable = false)
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    private String title;
 
     @Column(nullable = false)
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
+    private boolean enabled;
 
     @Column(nullable = false)
-    public ViewType getViewType() {
-        return viewType;
-    }
-
-    public void setViewType(ViewType viewType) {
-        this.viewType = viewType;
-    }
+    private ViewType viewType;
 
     @Column
-    public LocalDateTime getModifyTime() {
-        return modifyTime;
-    }
+    private Instant modifyTime;
 
-    public void setModifyTime(LocalDateTime modifyTime) {
-        this.modifyTime = modifyTime;
-    }
-
+    @Ignore
     @ManyToMany
     @JoinTable(name = "disc_group_discs",
         joinColumns = {@JoinColumn(name = "disc_group_id")},
         inverseJoinColumns = {@JoinColumn(name = "disc_id")})
-    public Set<Disc> getDiscs() {
-        return discs;
-    }
-
-    public void setDiscs(Set<Disc> discs) {
-        this.discs = discs;
-    }
+    private Set<Disc> discs = new HashSet<>();
 
     @Override
     public int compareTo(DiscGroup o) {
@@ -107,7 +69,7 @@ public class DiscGroup extends BaseModel implements Comparable<DiscGroup> {
         object.put("enabled", isEnabled());
         object.put("viewType", getViewType());
         if (isEnabled() && getModifyTime() != null) {
-            object.put("modifyTime", toEpochMilli(modifyTime));
+            object.put("modifyTime", modifyTime.toEpochMilli());
         }
         return object;
     }

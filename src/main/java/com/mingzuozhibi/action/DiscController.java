@@ -2,8 +2,8 @@ package com.mingzuozhibi.action;
 
 import com.mingzuozhibi.commons.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
-import com.mingzuozhibi.persist.disc.Disc;
-import com.mingzuozhibi.persist.disc.Disc.DiscType;
+import com.mingzuozhibi.modules.disc.Disc;
+import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import com.mingzuozhibi.support.JsonArg;
 import com.mingzuozhibi.utils.JmsHelper;
 import com.mingzuozhibi.utils.RecordUtils;

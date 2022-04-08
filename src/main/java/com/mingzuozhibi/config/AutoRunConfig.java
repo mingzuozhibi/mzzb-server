@@ -17,19 +17,6 @@ public class AutoRunConfig {
     @Autowired
     private ScheduleMission scheduleMission;
 
-    /**
-     * call by MzzbServerApplication
-     */
-    public void runOnStartupServer() {
-        new Thread(() -> {
-            LOGGER.info("开机任务开始");
-            scheduleMission.removeExpiredAutoLoginData();
-            scheduleMission.moveHourRecordToDateRecord();
-            scheduleMission.recordDiscsRankAndComputePt();
-            LOGGER.info("开机任务完成");
-        }).start();
-    }
-
     @Scheduled(cron = "0 0 * * * ?")
     public void runOnEveryHour() {
         new Thread(() -> {
