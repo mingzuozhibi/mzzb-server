@@ -3,6 +3,7 @@ package com.mingzuozhibi.modules.user;
 import com.mingzuozhibi.commons.BaseController2;
 import com.mingzuozhibi.commons.check.CheckResult;
 import com.mingzuozhibi.support.JsonArg;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +18,7 @@ import java.util.Optional;
 import static com.mingzuozhibi.commons.check.CheckHelper.*;
 import static com.mingzuozhibi.commons.check.CheckUtils.paramNoExists;
 
+@Slf4j
 @RestController
 public class SessionController extends BaseController2 {
 
@@ -28,17 +30,16 @@ public class SessionController extends BaseController2 {
 
     @GetMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionQuery() {
-        getAuthentication().ifPresent(authentication -> {
-            if (!SessionUtils.isLogged(authentication)) {
-                String token = SessionUtils.getTokenFromHeader();
-                Optional<Session> sessionOpt = sessionService.vaildSession(token);
-                if (sessionOpt.isPresent()) {
-                    onSessionLogin(sessionOpt.get().getUser(), false);
-                } else {
-                    onSessionLogout();
-                }
-            }
-        });
+        Optional<Authentication> optional = getAuthentication();
+        if (!optional.isPresent()) {
+            log.debug("sessionQuery: Authentication is null");
+            setAuthentication(buildGuestAuthentication());
+        } else if (!SessionUtils.isLogged(optional.get())) {
+            String token = SessionUtils.getTokenFromHeader();
+            sessionService.vaildSession(token).ifPresent(session -> {
+                onSessionLogin(session.getUser(), false);
+            });
+        }
         return buildSessionAndCount();
     }
 
@@ -100,6 +101,7 @@ public class SessionController extends BaseController2 {
         sessionService.cleanSession(sessionId);
         SessionUtils.setTokenToHeader("");
         getHttpSession().invalidate();
+        getHttpRequest().changeSessionId();
         setAuthentication(buildGuestAuthentication());
     }
 

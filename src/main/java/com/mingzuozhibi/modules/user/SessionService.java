@@ -26,10 +26,12 @@ public class SessionService {
         }
         Optional<Session> byToken = sessionRepository2.findByToken(token);
         if (!byToken.isPresent()) {
+            SessionUtils.setTokenToHeader("");
             return Optional.empty();
         }
         Session session = byToken.get();
         if (session.getExpired().isBefore(Instant.now())) {
+            sessionRepository2.delete(session);
             return Optional.empty();
         }
         if (!session.getUser().isEnabled()) {
