@@ -2,55 +2,24 @@ package com.mingzuozhibi.action;
 
 import com.mingzuozhibi.commons.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
+import com.mingzuozhibi.modules.disc.DiscGroup;
+import com.mingzuozhibi.modules.disc.DiscGroup.ViewType;
 import com.mingzuozhibi.persist.disc.Disc;
-import com.mingzuozhibi.persist.disc.DiscGroup;
-import com.mingzuozhibi.persist.disc.DiscGroup.ViewType;
 import com.mingzuozhibi.support.JsonArg;
-import org.hibernate.Criteria;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collector;
-
-import static org.hibernate.criterion.Restrictions.ne;
 
 @RestController
 public class DiscGroupController extends BaseController {
 
     @Autowired
     private JmsMessage jmsMessage;
-
-    @Transactional
-    @GetMapping(value = "/api/discGroups", produces = MEDIA_TYPE)
-    public String findAll(@RequestParam(defaultValue = "false") boolean hasPrivate) {
-        Criteria criteria = dao.session().createCriteria(DiscGroup.class);
-        if (!hasPrivate) {
-            criteria.add(ne("viewType", ViewType.PrivateList));
-        }
-
-        @SuppressWarnings("unchecked")
-        List<DiscGroup> discGroups = criteria.list();
-
-        JSONArray array = discGroups.stream().map(this::toJSON).collect(toJSONArray());
-        return objectResult(array);
-    }
-
-    private JSONObject toJSON(DiscGroup discGroup) {
-        return discGroup.toJSON().put("discCount", discGroup.getDiscs().size());
-    }
-
-    private Collector<JSONObject, JSONArray, JSONArray> toJSONArray() {
-        return Collector.of(JSONArray::new, JSONArray::put, (objects, objects2) -> {
-            return objects.put(objects2.toList());
-        });
-    }
 
     @Transactional
     @GetMapping(value = "/api/discGroups/key/{key}", produces = MEDIA_TYPE)
