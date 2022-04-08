@@ -21,7 +21,7 @@ import static com.mingzuozhibi.commons.check.CheckHelper.*;
 import static com.mingzuozhibi.commons.check.CheckUtils.paramNoExists;
 
 @RestController
-public class DiscGroupController2 extends BaseController2 {
+public class DiscGroupController extends BaseController2 {
 
     @Autowired
     private JmsMessage jmsMessage;
@@ -95,6 +95,28 @@ public class DiscGroupController2 extends BaseController2 {
             jmsMessage.info(CheckUtils.doUpdate("是否更新", discGroup.isEnabled(), enabled));
             discGroup.setEnabled(enabled);
         }
+        return dataResult(discGroup);
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping(value = "/api/discGroups/{id}", produces = MEDIA_TYPE)
+    public String doDelete(@PathVariable("id") Long id) {
+        Optional<DiscGroup> byId = discGroupRepository.findById(id);
+        if (!byId.isPresent()) {
+            return paramNoExists("列表ID");
+        }
+        DiscGroup discGroup = byId.get();
+        if (discGroupRepository.countDiscsById(id) > 0) {
+            jmsMessage.warning(CheckUtils.doDelete("列表", discGroup.getTitle(), gson.toJson(discGroup)));
+            discGroup.getDiscs().forEach(disc -> {
+                jmsMessage.info("[记录删除的碟片][ASIN=%s][NAME=%s]", disc.getAsin(), disc.getLogName());
+            });
+        } else {
+            jmsMessage.notify(CheckUtils.doDelete("列表", discGroup.getTitle(), gson.toJson(discGroup)));
+        }
+        discGroup.getDiscs().clear();
+        discGroupRepository.delete(discGroup);
         return dataResult(discGroup);
     }
 

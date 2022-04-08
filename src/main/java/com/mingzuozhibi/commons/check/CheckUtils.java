@@ -22,6 +22,10 @@ public abstract class CheckUtils {
         return String.format("[%s][创建=%s][name=%s][json=%s]", getLoginName(), entryName, name, json);
     }
 
+    public static String doDelete(String entryName, String name, String json) {
+        return String.format("[%s][删除=%s][name=%s][json=%s]", getLoginName(), entryName, name, json);
+    }
+
     public static String doUpdate(String paramName, Object from, Object to) {
         return String.format("[%s][更新=%s][%s=>%s]", getLoginName(), paramName, from, to);
     }
