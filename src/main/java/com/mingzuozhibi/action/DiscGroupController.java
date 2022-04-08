@@ -4,7 +4,7 @@ import com.mingzuozhibi.commons.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
 import com.mingzuozhibi.modules.disc.DiscGroup;
 import com.mingzuozhibi.modules.disc.DiscGroup.ViewType;
-import com.mingzuozhibi.persist.disc.Disc;
+import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.support.JsonArg;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,21 +20,6 @@ public class DiscGroupController extends BaseController {
 
     @Autowired
     private JmsMessage jmsMessage;
-
-    @Transactional
-    @GetMapping(value = "/api/discGroups/key/{key}", produces = MEDIA_TYPE)
-    public String findOne(@PathVariable String key) {
-        DiscGroup discGroup = dao.lookup(DiscGroup.class, "key", key);
-
-        if (discGroup == null) {
-            if (LOGGER.isWarnEnabled()) {
-                warnRequest("[获取列表失败][指定的列表索引不存在][Key={}]", key);
-            }
-            return errorMessage("指定的列表索引不存在");
-        }
-
-        return objectResult(discGroup.toJSON());
-    }
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")

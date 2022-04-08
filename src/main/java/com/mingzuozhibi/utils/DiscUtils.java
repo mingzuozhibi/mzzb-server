@@ -1,6 +1,6 @@
 package com.mingzuozhibi.utils;
 
-import com.mingzuozhibi.persist.disc.Disc;
+import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.DiscGroup;
 import org.hibernate.Session;
 import org.hibernate.criterion.Order;

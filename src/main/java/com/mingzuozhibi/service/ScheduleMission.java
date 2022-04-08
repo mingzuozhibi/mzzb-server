@@ -1,7 +1,7 @@
 package com.mingzuozhibi.service;
 
 import com.mingzuozhibi.modules.user.Session;
-import com.mingzuozhibi.persist.disc.Disc;
+import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.persist.rank.DateRecord;
 import com.mingzuozhibi.persist.rank.HourRecord;
 import com.mingzuozhibi.support.Dao;

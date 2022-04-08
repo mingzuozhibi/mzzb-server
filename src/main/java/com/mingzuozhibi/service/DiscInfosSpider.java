@@ -2,8 +2,8 @@ package com.mingzuozhibi.service;
 
 import com.mingzuozhibi.commons.mylog.JmsMessage;
 import com.mingzuozhibi.modules.disc.DiscGroup;
-import com.mingzuozhibi.persist.disc.Disc;
-import com.mingzuozhibi.persist.disc.Disc.DiscType;
+import com.mingzuozhibi.modules.disc.Disc;
+import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import com.mingzuozhibi.support.Dao;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;

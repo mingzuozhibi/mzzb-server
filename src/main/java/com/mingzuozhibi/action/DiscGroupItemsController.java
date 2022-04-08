@@ -2,7 +2,7 @@ package com.mingzuozhibi.action;
 
 import com.mingzuozhibi.commons.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
-import com.mingzuozhibi.persist.disc.Disc;
+import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.DiscGroup;
 import org.json.JSONArray;
 import org.json.JSONObject;

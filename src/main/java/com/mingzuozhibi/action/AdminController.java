@@ -1,7 +1,7 @@
 package com.mingzuozhibi.action;
 
 import com.mingzuozhibi.commons.BaseController;
-import com.mingzuozhibi.persist.disc.Disc;
+import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.utils.JmsHelper;
 import com.mingzuozhibi.utils.ReCompute;
 import org.springframework.beans.factory.annotation.Autowired;
