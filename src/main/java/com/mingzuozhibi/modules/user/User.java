@@ -8,7 +8,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -23,7 +23,7 @@ public class User extends BaseModel2 implements Serializable {
         this.username = username;
         this.password = password;
         this.enabled = enabled;
-        this.registerDate = LocalDateTime.now();
+        this.registerDate = Instant.now();
         this.roles.add("ROLE_BASIC");
     }
 
@@ -42,10 +42,10 @@ public class User extends BaseModel2 implements Serializable {
     private Set<String> roles = new HashSet<>();
 
     @Column(nullable = false)
-    public LocalDateTime registerDate;
+    public Instant registerDate;
 
     @Column
-    public LocalDateTime lastLoggedIn;
+    public Instant lastLoggedIn;
 
     @Override
     public boolean equals(Object o) {

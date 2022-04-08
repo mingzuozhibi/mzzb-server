@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -92,7 +92,7 @@ public class SessionController extends BaseController2 {
             SessionUtils.setTokenToHeader(session.getToken());
         }
         setAuthentication(buildUserAuthentication(user));
-        user.setLastLoggedIn(LocalDateTime.now());
+        user.setLastLoggedIn(Instant.now());
     }
 
     private void onSessionLogout() {

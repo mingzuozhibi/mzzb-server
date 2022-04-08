@@ -9,7 +9,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @Entity(name = "auto_login")
 public class Session extends BaseModel2 implements Serializable {
 
-    public Session(User user, String token, LocalDateTime expired) {
+    public Session(User user, String token, Instant expired) {
         this.user = user;
         this.token = token;
         this.expired = expired;
@@ -30,6 +30,6 @@ public class Session extends BaseModel2 implements Serializable {
     private String token;
 
     @Column(nullable = false)
-    private LocalDateTime expired;
+    private Instant expired;
 
 }

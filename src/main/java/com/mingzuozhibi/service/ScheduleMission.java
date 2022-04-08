@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,7 +37,7 @@ public class ScheduleMission {
         dao.execute(session -> {
             @SuppressWarnings("unchecked")
             List<Session> expired = session.createCriteria(Session.class)
-                .add(Restrictions.lt("expired", LocalDateTime.now()))
+                .add(Restrictions.lt("expired", Instant.now()))
                 .list();
             expired.forEach(autoLogin -> dao.delete(autoLogin));
             LOGGER.info("[定时任务][清理自动登入][共{}个]", expired.size());
