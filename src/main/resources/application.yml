@@ -16,7 +16,7 @@ spring:
     open-in-view: true
     hibernate:
       ddl-auto: update
-    show-sql: false
+    show-sql: true
     properties:
       hibernate.format_sql: true
       hibernate.current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
