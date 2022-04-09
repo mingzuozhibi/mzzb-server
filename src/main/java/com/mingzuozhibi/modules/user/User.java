@@ -1,7 +1,7 @@
 package com.mingzuozhibi.modules.user;
 
 import com.mingzuozhibi.commons.BaseModel2;
-import com.mingzuozhibi.commons.gson.Ignore;
+import com.mingzuozhibi.commons.gson.GsonIgnored;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -30,7 +30,7 @@ public class User extends BaseModel2 implements Serializable {
     @Column(length = 32, unique = true, nullable = false)
     private String username;
 
-    @Ignore
+    @GsonIgnored
     @Column(length = 32, nullable = false)
     private String password;
 

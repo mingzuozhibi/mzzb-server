@@ -18,7 +18,7 @@ public abstract class GsonFactory {
         gson.setExclusionStrategies(new ExclusionStrategy() {
             @Override
             public boolean shouldSkipField(FieldAttributes f) {
-                return f.getAnnotation(Ignore.class) != null;
+                return f.getAnnotation(GsonIgnored.class) != null;
             }
 
             @Override

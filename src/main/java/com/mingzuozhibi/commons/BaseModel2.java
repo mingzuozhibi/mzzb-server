@@ -1,6 +1,6 @@
 package com.mingzuozhibi.commons;
 
-import com.mingzuozhibi.commons.gson.Ignore;
+import com.mingzuozhibi.commons.gson.GsonIgnored;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,7 +19,7 @@ public abstract class BaseModel2 implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Ignore
+    @GsonIgnored
     @Version
     private Long version;
 

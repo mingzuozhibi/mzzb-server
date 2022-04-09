@@ -2,10 +2,10 @@ package com.mingzuozhibi.action;
 
 import com.mingzuozhibi.commons.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
+import com.mingzuozhibi.commons.mylog.JmsService;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import com.mingzuozhibi.support.JsonArg;
-import com.mingzuozhibi.utils.JmsHelper;
 import com.mingzuozhibi.utils.RecordUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
@@ -27,7 +27,7 @@ public class DiscController extends BaseController {
     private JmsMessage jmsMessage;
 
     @Autowired
-    private JmsHelper jmsHelper;
+    private JmsService jmsService;
 
     @Transactional
     @PostMapping(value = "/api/updateRank/{asin}/{rank}", produces = MEDIA_TYPE)
@@ -94,7 +94,7 @@ public class DiscController extends BaseController {
         dao.save(disc);
 
         JSONObject result = disc.toJSON();
-        jmsHelper.sendDiscTrack(disc.getAsin(), disc.getTitle());
+        jmsService.sendDiscTrack(disc.getAsin(), disc.getTitle());
         jmsMessage.info("%s 创建碟片[%s], disc=%s", getUserName(), asin, result.toString());
         return objectResult(result);
     }

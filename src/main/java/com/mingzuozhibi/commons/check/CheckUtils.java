@@ -34,7 +34,7 @@ public abstract class CheckUtils {
         SecurityContext context = SecurityContextHolder.getContext();
         return Optional.ofNullable(context.getAuthentication())
             .map(Principal::getName)
-            .orElse("Unknown");
+            .orElse("System");
     }
 
     private static String errorResult(String message) {
