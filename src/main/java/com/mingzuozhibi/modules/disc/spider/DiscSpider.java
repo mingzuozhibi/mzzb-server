@@ -67,24 +67,28 @@ public class DiscSpider {
 
     @Transactional
     public void applyDiscUpdates(List<DiscUpdate> discUpdates) {
-        jmsMessage.notify("开始更新日亚排名");
-        LocalDateTime updateOn = LocalDateTime.now();
-        for (DiscUpdate discUpdate : discUpdates) {
-            for (int i = 0; i < 3; i++) {
-                try {
-                    applyDiscUpdate(discUpdate, updateOn);
-                    break;
-                } catch (Exception e) {
-                    e.printStackTrace();
+        try {
+            jmsMessage.notify("开始更新日亚排名");
+            LocalDateTime updateOn = LocalDateTime.now();
+            for (DiscUpdate discUpdate : discUpdates) {
+                for (int i = 0; i < 3; i++) {
+                    try {
+                        applyDiscUpdate(discUpdate, updateOn);
+                        break;
+                    } catch (Exception e) {
+                        jmsMessage.warning("未能更新日亚排名(%d/3)：%s", i + 1, e.getMessage());
+                    }
                 }
             }
-        }
 
-        if (discUpdates.size() > 0) {
-            jmsMessage.notify("成功更新日亚排名：共%d个", discUpdates.size());
-            discGroupRepository.updateModifyTime();
-        } else {
-            jmsMessage.warning("未能更新日亚排名");
+            if (discUpdates.size() > 0) {
+                discGroupRepository.updateModifyTime();
+                jmsMessage.notify("成功更新日亚排名：共%d个", discUpdates.size());
+            } else {
+                jmsMessage.notify("未能更新日亚排名：无数据");
+            }
+        } catch (Exception e) {
+            jmsMessage.warning("未能更新日亚排名：%s", e.getMessage());
         }
     }
 
