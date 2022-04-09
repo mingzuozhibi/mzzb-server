@@ -101,7 +101,6 @@ public class SessionController extends BaseController2 {
         sessionService.cleanSession(sessionId);
         SessionUtils.setTokenToHeader("");
         getHttpSession().invalidate();
-        getHttpRequest().changeSessionId();
         setAuthentication(buildGuestAuthentication());
     }
 
