@@ -1,11 +1,11 @@
-package com.mingzuozhibi.service;
+package com.mingzuozhibi.modules.spider;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Setter
 @Getter
-public class DiscInfo {
+public class DiscUpdate {
 
     private String asin;
     private String type;

@@ -1,9 +1,8 @@
 package com.mingzuozhibi.modules.user;
 
-import com.mingzuozhibi.commons.BaseController2;
-import com.mingzuozhibi.commons.check.CheckResult;
-import com.mingzuozhibi.commons.check.CheckUtils;
+import com.mingzuozhibi.commons.base.BaseController2;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
+import com.mingzuozhibi.modules.auth.RememberRepository;
 import com.mingzuozhibi.support.JsonArg;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +14,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.mingzuozhibi.commons.check.CheckHelper.*;
-import static com.mingzuozhibi.commons.check.CheckUtils.doUpdate;
-import static com.mingzuozhibi.commons.check.CheckUtils.paramNoExists;
+import static com.mingzuozhibi.commons.utils.ChecksUtils.*;
+import static com.mingzuozhibi.commons.utils.ModifyUtils.logCreate;
+import static com.mingzuozhibi.commons.utils.ModifyUtils.logUpdate;
 
 @RestController
 public class UserController extends BaseController2 {
@@ -29,7 +28,7 @@ public class UserController extends BaseController2 {
     private UserRepository userRepository;
 
     @Autowired
-    private SessionRepository2 sessionRepository2;
+    private RememberRepository rememberRepository;
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
@@ -54,21 +53,21 @@ public class UserController extends BaseController2 {
     public String createUser(@JsonArg("$.username") String username,
                              @JsonArg("$.password") String password,
                              @JsonArg(value = "$.enabled", defaults = "true") Boolean enabled) {
-        CheckResult checks = runAllCheck(
+        Optional<String> checks = runChecks(
             checkNotEmpty(username, "用户名称"),
             checkIdentifier(username, "用户名称", 4, 20),
             checkNotEmpty(password, "用户密码"),
             checkMd5Encode(username, "用户密码", 32)
         );
-        if (checks.hasError()) {
-            return errorResult(checks.getError());
+        if (checks.isPresent()) {
+            return errorResult(checks.get());
         }
         if (!userRepository.existsByUsername(username)) {
-            return CheckUtils.paramBeExists("用户名称");
+            return paramBeExists("用户名称");
         }
         User user = new User(username, password, enabled);
         userRepository.save(user);
-        jmsMessage.info(CheckUtils.doCreate("创建用户", user.getUsername(), gson.toJson(user)));
+        jmsMessage.info(logCreate("创建用户", user.getUsername(), gson.toJson(user)));
         return dataResult(user);
     }
 
@@ -79,14 +78,14 @@ public class UserController extends BaseController2 {
                              @JsonArg("$.username") String username,
                              @JsonArg("$.password") String password,
                              @JsonArg("$.enabled") Boolean enabled) {
-        CheckResult checks = runAllCheck(
+        Optional<String> checks = runChecks(
             checkNotEmpty(username, "用户名称"),
             checkIdentifier(username, "用户名称", 4, 20),
             checkMd5Encode(username, "用户密码", 32),
             checkSelected(enabled, "用户启用状态")
         );
-        if (checks.hasError()) {
-            return errorResult(checks.getError());
+        if (checks.isPresent()) {
+            return errorResult(checks.get());
         }
         Optional<User> byId = userRepository.findById(id);
         if (!byId.isPresent()) {
@@ -95,22 +94,22 @@ public class UserController extends BaseController2 {
         User user = byId.get();
         if (!Objects.equals(user.getUsername(), username)) {
             user.setUsername(username);
-            jmsMessage.info(doUpdate("用户名称", user.getUsername(), username));
+            jmsMessage.info(logUpdate("用户名称", user.getUsername(), username));
         }
         if (StringUtils.isNotEmpty(password) && !Objects.equals(user.getPassword(), password)) {
             user.setPassword(password);
             onChangePassword(user);
-            jmsMessage.info(doUpdate("用户密码", "******", "******"));
+            jmsMessage.info(logUpdate("用户密码", "******", "******"));
         }
         if (user.isEnabled() != enabled) {
             user.setEnabled(enabled);
-            jmsMessage.info(doUpdate("用户启用状态", user.isEnabled(), enabled));
+            jmsMessage.info(logUpdate("用户启用状态", user.isEnabled(), enabled));
         }
         return dataResult(user);
     }
 
     private void onChangePassword(User user) {
-        sessionRepository2.deleteByUser(user);
+        rememberRepository.deleteByUser(user);
     }
 
 }

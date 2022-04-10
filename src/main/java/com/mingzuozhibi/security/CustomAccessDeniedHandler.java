@@ -1,6 +1,6 @@
 package com.mingzuozhibi.security;
 
-import com.mingzuozhibi.commons.BaseController;
+import com.mingzuozhibi.commons.base.BaseController;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;

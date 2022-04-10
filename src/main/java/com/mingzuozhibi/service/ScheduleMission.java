@@ -1,6 +1,6 @@
 package com.mingzuozhibi.service;
 
-import com.mingzuozhibi.modules.user.Session;
+import com.mingzuozhibi.modules.auth.Remember;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.persist.rank.DateRecord;
 import com.mingzuozhibi.persist.rank.HourRecord;
@@ -36,7 +36,7 @@ public class ScheduleMission {
     public void removeExpiredAutoLoginData() {
         dao.execute(session -> {
             @SuppressWarnings("unchecked")
-            List<Session> expired = session.createCriteria(Session.class)
+            List<Remember> expired = session.createCriteria(Remember.class)
                 .add(Restrictions.lt("expired", Instant.now()))
                 .list();
             expired.forEach(autoLogin -> dao.delete(autoLogin));

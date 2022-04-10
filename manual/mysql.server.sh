@@ -21,6 +21,8 @@ wait_for_stopped() {
 
 exec_daemon_start() {
   echo "$NAME is starting..."
+  mkdir -p /var/run/mysqld
+  chown mysql:mysql /var/run/mysqld
   nohup sudo -u mysql $DAEMON >/dev/null 2>&1 &
   wait_for_started
   echo "$NAME started successfully, Pid=$(cat $PIDFILE)"

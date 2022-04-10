@@ -1,6 +1,6 @@
 package com.mingzuozhibi.modules.disc;
 
-import com.mingzuozhibi.commons.BaseModel;
+import com.mingzuozhibi.commons.base.BaseModel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

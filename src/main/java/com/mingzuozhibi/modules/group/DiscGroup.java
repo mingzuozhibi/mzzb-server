@@ -1,7 +1,8 @@
-package com.mingzuozhibi.modules.disc;
+package com.mingzuozhibi.modules.group;
 
-import com.mingzuozhibi.commons.BaseModel2;
-import com.mingzuozhibi.commons.gson.Ignore;
+import com.mingzuozhibi.commons.base.BaseModel2;
+import com.mingzuozhibi.commons.gson.GsonIgnored;
+import com.mingzuozhibi.modules.disc.Disc;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -48,7 +49,7 @@ public class DiscGroup extends BaseModel2 implements Comparable<DiscGroup> {
     @Column
     private Instant modifyTime;
 
-    @Ignore
+    @GsonIgnored
     @ManyToMany
     @JoinTable(name = "disc_group_discs",
         joinColumns = {@JoinColumn(name = "disc_group_id")},

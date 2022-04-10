@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class DataResult<T> extends ErrorResult {
+public class DataResult<T> extends BaseResult {
 
     private T data;
 

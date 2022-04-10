@@ -7,12 +7,12 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ErrorResult {
+public class BaseResult {
 
     private boolean success;
     private String message;
 
-    public ErrorResult(String message) {
+    public BaseResult(String message) {
         this.success = false;
         this.message = message;
     }

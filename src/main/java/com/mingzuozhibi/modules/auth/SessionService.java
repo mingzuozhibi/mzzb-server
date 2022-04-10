@@ -1,5 +1,6 @@
-package com.mingzuozhibi.modules.user;
+package com.mingzuozhibi.modules.auth;
 
+import com.mingzuozhibi.modules.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -18,37 +19,39 @@ public class SessionService {
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
-    private SessionRepository2 sessionRepository2;
+    private RememberRepository rememberRepository;
 
-    public Optional<Session> vaildSession(String token) {
+    public Optional<Remember> vaildSession(String token) {
         if (token == null || token.length() != 36) {
             return Optional.empty();
         }
-        Optional<Session> byToken = sessionRepository2.findByToken(token);
+        Optional<Remember> byToken = rememberRepository.findByToken(token);
         if (!byToken.isPresent()) {
+            SessionUtils.setTokenToHeader("");
             return Optional.empty();
         }
-        Session session = byToken.get();
-        if (session.getExpired().isBefore(Instant.now())) {
+        Remember remember = byToken.get();
+        if (remember.getExpired().isBefore(Instant.now())) {
+            rememberRepository.delete(remember);
             return Optional.empty();
         }
-        if (!session.getUser().isEnabled()) {
+        if (!remember.getUser().isEnabled()) {
             return Optional.empty();
         }
-        return Optional.of(session);
+        return Optional.of(remember);
     }
 
-    public Session buildSession(User user) {
+    public Remember buildSession(User user) {
         String token = UUID.randomUUID().toString();
         Instant expired = Instant.now().plusMillis(TimeUnit.DAYS.toMillis(14));
-        Session session = new Session(user, token, expired);
-        sessionRepository2.save(session);
-        return session;
+        Remember remember = new Remember(user, token, expired);
+        rememberRepository.save(remember);
+        return remember;
     }
 
     public void cleanSession(Long sessionId) {
         if (sessionId != null) {
-            sessionRepository2.deleteById(sessionId);
+            rememberRepository.deleteById(sessionId);
         }
     }
 

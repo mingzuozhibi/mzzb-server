@@ -1,11 +1,11 @@
 package com.mingzuozhibi.action;
 
-import com.mingzuozhibi.commons.BaseController;
+import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
+import com.mingzuozhibi.commons.mylog.JmsService;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import com.mingzuozhibi.support.JsonArg;
-import com.mingzuozhibi.utils.JmsHelper;
 import com.mingzuozhibi.utils.RecordUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
@@ -20,6 +20,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
 
+import static com.mingzuozhibi.commons.utils.SecurityUtils.getLoginName;
+
 @RestController
 public class DiscController extends BaseController {
 
@@ -27,7 +29,7 @@ public class DiscController extends BaseController {
     private JmsMessage jmsMessage;
 
     @Autowired
-    private JmsHelper jmsHelper;
+    private JmsService jmsService;
 
     @Transactional
     @PostMapping(value = "/api/updateRank/{asin}/{rank}", produces = MEDIA_TYPE)
@@ -43,7 +45,7 @@ public class DiscController extends BaseController {
         disc.setModifyTime(now);
         disc.setUpdateTime(now);
         jmsMessage.info("%s 更新了[%s]的排名: %d->%d, 标题: %s",
-            getUserName(), asin, disc.getPrevRank(), disc.getThisRank(), disc.getTitle());
+            getLoginName(), asin, disc.getPrevRank(), disc.getThisRank(), disc.getTitle());
         return objectResult(disc.toJSON());
     }
 
@@ -85,7 +87,7 @@ public class DiscController extends BaseController {
         // 校验
         ReleaseDateChecker dateChecker = new ReleaseDateChecker(releaseDate, "yyyy/M/d");
         if (dateChecker.hasError()) {
-            return errorMessage(dateChecker.error);
+            return errorMessage(dateChecker.getError());
         }
         LocalDate localDate = dateChecker.getData();
 
@@ -94,8 +96,8 @@ public class DiscController extends BaseController {
         dao.save(disc);
 
         JSONObject result = disc.toJSON();
-        jmsHelper.sendDiscTrack(disc.getAsin(), disc.getTitle());
-        jmsMessage.info("%s 创建碟片[%s], disc=%s", getUserName(), asin, result.toString());
+        jmsService.sendDiscTrack(disc.getAsin(), disc.getTitle());
+        jmsMessage.info("%s 创建碟片[%s], disc=%s", getLoginName(), asin, result.toString());
         return objectResult(result);
     }
 
@@ -108,7 +110,7 @@ public class DiscController extends BaseController {
         // 校验
         ReleaseDateChecker dateChecker = new ReleaseDateChecker(releaseDate, "yyyy-MM-dd");
         if (dateChecker.hasError()) {
-            return errorMessage(dateChecker.error);
+            return errorMessage(dateChecker.getError());
         }
         LocalDate localDate = dateChecker.getData();
 
@@ -130,16 +132,16 @@ public class DiscController extends BaseController {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         // 修改中
         if (!Objects.equals(disc.getTitlePc(), titlePc)) {
-            jmsMessage.info("[用户=%s][修改碟片标题][%s][%s=>%s]", getUserName(), disc.getAsin(), disc.getTitlePc(), titlePc);
+            jmsMessage.info("[用户=%s][修改碟片标题][%s][%s=>%s]", getLoginName(), disc.getAsin(), disc.getTitlePc(), titlePc);
             disc.setTitlePc(titlePc);
         }
         if (!Objects.equals(disc.getDiscType(), discType)) {
-            jmsMessage.info("[用户=%s][修改碟片类型][%s][%s=>%s]", getUserName(), disc.getAsin(), disc.getDiscType().name(),
+            jmsMessage.info("[用户=%s][修改碟片类型][%s][%s=>%s]", getLoginName(), disc.getAsin(), disc.getDiscType().name(),
                 discType.name());
             disc.setDiscType(discType);
         }
         if (!Objects.equals(disc.getReleaseDate(), localDate)) {
-            jmsMessage.info("[用户=%s][修改碟片发售日期][%s][%s=>%s]", getUserName(), disc.getAsin(),
+            jmsMessage.info("[用户=%s][修改碟片发售日期][%s][%s=>%s]", getLoginName(), disc.getAsin(),
                 disc.getReleaseDate().format(formatter), localDate.format(formatter));
             disc.setReleaseDate(localDate);
         }

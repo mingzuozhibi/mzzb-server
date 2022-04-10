@@ -1,8 +1,8 @@
 package com.mingzuozhibi.action;
 
-import com.mingzuozhibi.commons.BaseController;
+import com.mingzuozhibi.commons.base.BaseController;
+import com.mingzuozhibi.commons.mylog.JmsService;
 import com.mingzuozhibi.modules.disc.Disc;
-import com.mingzuozhibi.utils.JmsHelper;
 import com.mingzuozhibi.utils.ReCompute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,7 +24,7 @@ public class AdminController extends BaseController {
     private ReCompute reCompute;
 
     @Autowired
-    private JmsHelper jmsHelper;
+    private JmsService jmsService;
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
@@ -72,7 +72,7 @@ public class AdminController extends BaseController {
                 Statement stmt = connection.createStatement();
                 ResultSet rs = stmt.executeQuery("select asin, title from disc");
                 while (rs.next()) {
-                    jmsHelper.sendDiscTrack(rs.getString("asin"), rs.getString("title"));
+                    jmsService.sendDiscTrack(rs.getString("asin"), rs.getString("title"));
                 }
                 return null;
             });
