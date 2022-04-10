@@ -23,6 +23,13 @@ public class DiscGroup extends BaseModel2 implements Comparable<DiscGroup> {
         SakuraList, PublicList, PrivateList
     }
 
+    public DiscGroup(String key, String title, Boolean enabled, ViewType viewType) {
+        this.key = key;
+        this.title = title;
+        this.enabled = enabled;
+        this.viewType = viewType;
+    }
+
     @Column(name = "`key`", length = 100, nullable = false, unique = true)
     private String key;
 

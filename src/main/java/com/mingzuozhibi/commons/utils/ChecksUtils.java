@@ -48,7 +48,7 @@ public abstract class ChecksUtils {
         return Optional.of(error);
     }
 
-    public static String paramBeExists(String paramName) {
+    public static String paramExists(String paramName) {
         return errorResult("指定的" + paramName + "已存在");
     }
 

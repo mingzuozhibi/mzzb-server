@@ -62,7 +62,7 @@ public class UserController extends BaseController2 {
             return errorResult(checks.get());
         }
         if (!userRepository.existsByUsername(username)) {
-            return paramBeExists("用户名称");
+            return paramExists("用户名称");
         }
         User user = new User(username, password, enabled);
         userRepository.save(user);

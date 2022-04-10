@@ -18,8 +18,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.mingzuozhibi.commons.utils.ChecksUtils.*;
-import static com.mingzuozhibi.commons.utils.ModifyUtils.logDelete;
-import static com.mingzuozhibi.commons.utils.ModifyUtils.logUpdate;
+import static com.mingzuozhibi.commons.utils.ModifyUtils.*;
 
 @RestController
 public class DiscGroupController extends BaseController2 {
@@ -57,6 +56,31 @@ public class DiscGroupController extends BaseController2 {
             return paramNotExists("列表索引");
         }
         return dataResult(byKey.get());
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('BASIC')")
+    @PostMapping(value = "/api/discGroups", produces = MEDIA_TYPE)
+    public String doCreate(@JsonArg("$.key") String key,
+                           @JsonArg("$.title") String title,
+                           @JsonArg("$.enabled") Boolean enabled,
+                           @JsonArg("$.viewType") ViewType viewType) {
+        Optional<String> checks = runChecks(
+            checkNotEmpty(key, "列表索引"),
+            checkNotEmpty(title, "列表标题"),
+            checkSelected(enabled, "是否更新"),
+            checkSelected(viewType, "列表类型")
+        );
+        if (checks.isPresent()) {
+            return errorResult(checks.get());
+        }
+        if (discGroupRepository.findByKey(key).isPresent()) {
+            return paramExists("列表索引");
+        }
+        DiscGroup discGroup = new DiscGroup(key, title, enabled, viewType);
+        discGroupRepository.save(discGroup);
+        jmsMessage.notify(logCreate("列表", discGroup.getTitle(), gson.toJson(discGroup)));
+        return dataResult(discGroup);
     }
 
     @Transactional
