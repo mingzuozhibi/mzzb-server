@@ -1,6 +1,6 @@
 package com.mingzuozhibi.modules.user;
 
-import com.mingzuozhibi.commons.BaseController2;
+import com.mingzuozhibi.commons.base.BaseController2;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
 import com.mingzuozhibi.commons.utils.ModifyUtils;
 import com.mingzuozhibi.modules.auth.RememberRepository;
@@ -16,7 +16,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.mingzuozhibi.commons.utils.ChecksUtils.*;
-import static com.mingzuozhibi.commons.utils.ModifyUtils.doUpdate;
 
 @RestController
 public class UserController extends BaseController2 {
@@ -94,16 +93,16 @@ public class UserController extends BaseController2 {
         User user = byId.get();
         if (!Objects.equals(user.getUsername(), username)) {
             user.setUsername(username);
-            jmsMessage.info(doUpdate("用户名称", user.getUsername(), username));
+            jmsMessage.info(ModifyUtils.doUpdate("用户名称", user.getUsername(), username));
         }
         if (StringUtils.isNotEmpty(password) && !Objects.equals(user.getPassword(), password)) {
             user.setPassword(password);
             onChangePassword(user);
-            jmsMessage.info(doUpdate("用户密码", "******", "******"));
+            jmsMessage.info(ModifyUtils.doUpdate("用户密码", "******", "******"));
         }
         if (user.isEnabled() != enabled) {
             user.setEnabled(enabled);
-            jmsMessage.info(doUpdate("用户启用状态", user.isEnabled(), enabled));
+            jmsMessage.info(ModifyUtils.doUpdate("用户启用状态", user.isEnabled(), enabled));
         }
         return dataResult(user);
     }

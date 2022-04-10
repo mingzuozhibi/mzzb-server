@@ -1,4 +1,4 @@
-package com.mingzuozhibi.commons;
+package com.mingzuozhibi.commons.base;
 
 import javax.persistence.*;
 import java.io.Serializable;

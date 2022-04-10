@@ -2,7 +2,7 @@ package com.mingzuozhibi.modules.group;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.mingzuozhibi.commons.BaseController2;
+import com.mingzuozhibi.commons.base.BaseController2;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
 import com.mingzuozhibi.commons.utils.ModifyUtils;
 import com.mingzuozhibi.modules.group.DiscGroup.ViewType;

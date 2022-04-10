@@ -46,7 +46,7 @@ public abstract class SecurityUtils {
         return token;
     }
 
-    public static String loginName() {
+    public static String getLoginName() {
         return getAuthentication().map(Principal::getName).orElse("*system*");
     }
 

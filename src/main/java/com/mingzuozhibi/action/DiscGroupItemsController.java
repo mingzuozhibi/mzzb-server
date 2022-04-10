@@ -1,8 +1,7 @@
 package com.mingzuozhibi.action;
 
-import com.mingzuozhibi.commons.BaseController;
+import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
-import com.mingzuozhibi.commons.utils.SecurityUtils;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.group.DiscGroup;
 import org.json.JSONArray;
@@ -15,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.mingzuozhibi.commons.utils.SecurityUtils.getLoginName;
 
 @RestController
 public class DiscGroupItemsController extends BaseController {
@@ -93,7 +94,7 @@ public class DiscGroupItemsController extends BaseController {
         }
 
         discGroup.getDiscs().add(disc);
-        jmsMessage.info("[用户=%s][添加碟片成功][列表=%s][碟片=%s]", SecurityUtils.loginName(), discGroup.getTitle(), disc.getLogName());
+        jmsMessage.info("[用户=%s][添加碟片成功][列表=%s][碟片=%s]", getLoginName(), discGroup.getTitle(), disc.getLogName());
         return objectResult(disc.toJSON());
     }
 
@@ -123,7 +124,7 @@ public class DiscGroupItemsController extends BaseController {
         }
 
         discGroup.getDiscs().remove(disc);
-        jmsMessage.info("[用户=%s][移除碟片成功][列表=%s][碟片=%s]", SecurityUtils.loginName(), discGroup.getTitle(), disc.getLogName());
+        jmsMessage.info("[用户=%s][移除碟片成功][列表=%s][碟片=%s]", getLoginName(), discGroup.getTitle(), disc.getLogName());
         return objectResult(disc.toJSON());
     }
 

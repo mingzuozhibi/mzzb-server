@@ -1,4 +1,4 @@
-package com.mingzuozhibi.commons;
+package com.mingzuozhibi.commons.base;
 
 import com.mingzuozhibi.commons.gson.GsonIgnored;
 import lombok.Getter;

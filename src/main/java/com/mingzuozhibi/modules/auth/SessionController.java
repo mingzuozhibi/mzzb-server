@@ -1,6 +1,6 @@
 package com.mingzuozhibi.modules.auth;
 
-import com.mingzuozhibi.commons.BaseController2;
+import com.mingzuozhibi.commons.base.BaseController2;
 import com.mingzuozhibi.modules.user.User;
 import com.mingzuozhibi.modules.user.UserRepository;
 import com.mingzuozhibi.support.JsonArg;

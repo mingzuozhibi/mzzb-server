@@ -1,6 +1,5 @@
-package com.mingzuozhibi.commons;
+package com.mingzuozhibi.commons.base;
 
-import com.mingzuozhibi.commons.utils.SecurityUtils;
 import com.mingzuozhibi.commons.utils.ServletUtils;
 import com.mingzuozhibi.support.Dao;
 import org.json.JSONObject;
@@ -10,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
+
+import static com.mingzuozhibi.commons.utils.SecurityUtils.getLoginName;
 
 public class BaseController extends ServletUtils {
 
@@ -54,7 +55,7 @@ public class BaseController extends ServletUtils {
         try {
             HttpServletRequest request = getHttpRequest();
             String common = String.format("[%s][%s][%s][%s][%s][%s]",
-                getRemoteAddr(), SecurityUtils.loginName(), request.getMethod(),
+                getRemoteAddr(), getLoginName(), request.getMethod(),
                 request.getRequestURI(), bodyString(request), paramString(request));
             return common.replace("{}", "{empty}");
         } catch (Exception e) {

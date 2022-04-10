@@ -2,7 +2,7 @@ package com.mingzuozhibi.action;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.mingzuozhibi.commons.BaseController;
+import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
 import com.mingzuozhibi.commons.mylog.JmsService;
 import com.mingzuozhibi.commons.utils.ModifyUtils;
