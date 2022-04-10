@@ -3,7 +3,7 @@ package com.mingzuozhibi.action;
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
 import com.mingzuozhibi.modules.disc.Disc;
-import com.mingzuozhibi.modules.group.DiscGroup;
+import com.mingzuozhibi.modules.disc.DiscGroup;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;

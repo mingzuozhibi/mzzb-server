@@ -1,8 +1,7 @@
-package com.mingzuozhibi.modules.group;
+package com.mingzuozhibi.modules.disc;
 
 import com.mingzuozhibi.commons.base.BaseModel2;
 import com.mingzuozhibi.commons.gson.GsonIgnored;
-import com.mingzuozhibi.modules.disc.Disc;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
