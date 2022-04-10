@@ -1,7 +1,7 @@
 package com.mingzuozhibi.commons.utils;
 
 import com.mingzuozhibi.commons.gson.GsonFactory;
-import com.mingzuozhibi.commons.model.BaseResult;
+import com.mingzuozhibi.commons.result.BaseResult;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
