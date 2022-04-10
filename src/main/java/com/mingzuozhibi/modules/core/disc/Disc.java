@@ -1,12 +1,11 @@
-package com.mingzuozhibi.modules.disc;
+package com.mingzuozhibi.modules.core.disc;
 
 import com.google.gson.JsonObject;
-import com.mingzuozhibi.commons.base.BaseModel;
+import com.mingzuozhibi.commons.base.BaseModel2;
 import com.mingzuozhibi.commons.gson.GsonFactory;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.json.JSONObject;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -20,7 +19,7 @@ import java.util.Optional;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Disc extends BaseModel implements Comparable<Disc> {
+public class Disc extends BaseModel2 implements Comparable<Disc> {
 
     public enum DiscType {
         Cd, Dvd, Bluray, Auto, Other
@@ -116,31 +115,6 @@ public class Disc extends BaseModel implements Comparable<Disc> {
     public JsonObject toJson() {
         JsonObject object = GsonFactory.GSON.toJsonTree(this).getAsJsonObject();
         object.addProperty("surplusDays", this.getSurplusDays());
-        return object;
-    }
-
-    public JSONObject toJSON() {
-        JSONObject object = new JSONObject();
-        object.put("id", getId());
-        object.put("asin", getAsin());
-        object.put("title", getTitle());
-        object.put("titlePc", getTitlePc());
-        object.put("thisRank", getThisRank());
-        object.put("prevRank", getPrevRank());
-        object.put("nicoBook", getNicoBook());
-        object.put("todayPt", getTodayPt());
-        object.put("totalPt", getTotalPt());
-        object.put("guessPt", getGuessPt());
-        object.put("discType", getDiscType().name());
-        object.put("releaseDate", getReleaseDate().toString());
-        object.put("surplusDays", getSurplusDays());
-        object.put("createTime", toEpochMilli(getCreateTime()));
-        Optional.ofNullable(getUpdateTime()).ifPresent(updateTime -> {
-            object.put("updateTime", toEpochMilli(updateTime));
-        });
-        Optional.ofNullable(getModifyTime()).ifPresent(modifyTime -> {
-            object.put("modifyTime", toEpochMilli(modifyTime));
-        });
         return object;
     }
 

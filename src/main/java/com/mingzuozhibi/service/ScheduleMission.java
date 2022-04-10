@@ -1,9 +1,9 @@
 package com.mingzuozhibi.service;
 
-import com.mingzuozhibi.modules.auth.Remember;
-import com.mingzuozhibi.modules.disc.Disc;
-import com.mingzuozhibi.persist.rank.DateRecord;
-import com.mingzuozhibi.persist.rank.HourRecord;
+import com.mingzuozhibi.modules.auth.remember.Remember;
+import com.mingzuozhibi.modules.core.disc.Disc;
+import com.mingzuozhibi.modules.core.record.DateRecord;
+import com.mingzuozhibi.modules.core.record.HourRecord;
 import com.mingzuozhibi.support.Dao;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
@@ -53,7 +53,7 @@ public class ScheduleMission {
                 .list();
             hourRecords.forEach(hourRecord -> {
                 DateRecord dateRecord = new DateRecord(hourRecord.getDisc(), hourRecord.getDate());
-                hourRecord.getAverRank().ifPresent(dateRecord::setRank);
+                Optional.ofNullable(hourRecord.getAverRank()).ifPresent(dateRecord::setRank);
                 Optional.ofNullable(hourRecord.getTodayPt()).ifPresent(dateRecord::setTodayPt);
                 Optional.ofNullable(hourRecord.getTotalPt()).ifPresent(dateRecord::setTotalPt);
                 Optional.ofNullable(hourRecord.getGuessPt()).ifPresent(dateRecord::setGuessPt);
@@ -133,7 +133,7 @@ public class ScheduleMission {
     }
 
     private void computeTodayPt(HourRecord hourRecord) {
-        hourRecord.getAverRank().ifPresent(rank -> {
+        Optional.ofNullable(hourRecord.getAverRank()).ifPresent(rank -> {
             hourRecord.setTodayPt(24 * computeHourPt(hourRecord.getDisc(), rank));
         });
     }

@@ -1,4 +1,4 @@
-package com.mingzuozhibi.modules.auth;
+package com.mingzuozhibi.modules.auth.user;
 
 import com.mingzuozhibi.commons.base.BaseModel2;
 import com.mingzuozhibi.commons.gson.GsonIgnored;

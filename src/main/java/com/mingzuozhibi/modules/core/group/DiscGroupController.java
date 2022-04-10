@@ -1,11 +1,12 @@
-package com.mingzuozhibi.modules.disc;
+package com.mingzuozhibi.modules.core.group;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseController2;
-import com.mingzuozhibi.commons.mylog.JmsMessage;
 import com.mingzuozhibi.commons.utils.ModifyUtils;
-import com.mingzuozhibi.modules.disc.DiscGroup.ViewType;
+import com.mingzuozhibi.modules.core.disc.Disc;
+import com.mingzuozhibi.modules.core.disc.DiscRepository;
+import com.mingzuozhibi.modules.core.group.DiscGroup.ViewType;
 import com.mingzuozhibi.support.JsonArg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,9 +23,6 @@ import static com.mingzuozhibi.commons.utils.ModifyUtils.*;
 
 @RestController
 public class DiscGroupController extends BaseController2 {
-
-    @Autowired
-    private JmsMessage jmsMessage;
 
     @Autowired
     private DiscRepository discRepository;
@@ -168,7 +166,7 @@ public class DiscGroupController extends BaseController2 {
         }
         DiscGroup discGroup = byId.get();
 
-        Optional<Disc> byId2 = discRepository.findById(id);
+        Optional<Disc> byId2 = discRepository.findById(discId);
         if (!byId2.isPresent()) {
             return paramNotExists("碟片ID");
         }
@@ -193,7 +191,7 @@ public class DiscGroupController extends BaseController2 {
         }
         DiscGroup discGroup = byId.get();
 
-        Optional<Disc> byId2 = discRepository.findById(id);
+        Optional<Disc> byId2 = discRepository.findById(discId);
         if (!byId2.isPresent()) {
             return paramNotExists("碟片ID");
         }

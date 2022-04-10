@@ -41,8 +41,12 @@ public abstract class ChecksUtils {
             paramName + "不是标准的" + length + "位Md5编码");
     }
 
+    public static Optional<String> checkDateText(String dateText, String paramName, String pattern) {
+        return checkMatches(dateText, pattern, paramName + "的格式必须为" + pattern);
+    }
+
     public static Optional<String> checkMatches(String text, String regex, String error) {
-        if (text.matches(regex)) {
+        if (text == null || text.matches(regex)) {
             return Optional.empty();
         }
         return Optional.of(error);

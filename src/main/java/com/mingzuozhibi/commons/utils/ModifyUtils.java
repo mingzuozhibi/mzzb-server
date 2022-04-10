@@ -16,6 +16,10 @@ public abstract class ModifyUtils {
         return String.format("[%s][更新%s][%s=>%s]", getLoginName(), paramName, from, to);
     }
 
+    public static String logUpdate(String paramName, Object from, Object to, String name) {
+        return String.format("[%s][更新%s][%s=>%s][name=%s]", getLoginName(), paramName, from, to, name);
+    }
+
     public static String logPush(String paramName, String itemName, String listName) {
         return String.format("[%s][添加%s到列表][项目=%s][列表=%s]", getLoginName(), paramName, itemName, listName);
     }
