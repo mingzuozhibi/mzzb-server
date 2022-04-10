@@ -168,7 +168,7 @@ public class DiscGroupController extends BaseController2 {
         }
         DiscGroup discGroup = byId.get();
 
-        Optional<Disc> byId2 = discRepository.findById(id);
+        Optional<Disc> byId2 = discRepository.findById(discId);
         if (!byId2.isPresent()) {
             return paramNotExists("碟片ID");
         }
@@ -193,7 +193,7 @@ public class DiscGroupController extends BaseController2 {
         }
         DiscGroup discGroup = byId.get();
 
-        Optional<Disc> byId2 = discRepository.findById(id);
+        Optional<Disc> byId2 = discRepository.findById(discId);
         if (!byId2.isPresent()) {
             return paramNotExists("碟片ID");
         }
