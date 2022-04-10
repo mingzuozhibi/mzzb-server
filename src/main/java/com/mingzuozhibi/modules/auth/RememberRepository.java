@@ -1,6 +1,5 @@
 package com.mingzuozhibi.modules.auth;
 
-import com.mingzuozhibi.modules.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

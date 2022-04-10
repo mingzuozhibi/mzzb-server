@@ -1,8 +1,6 @@
 package com.mingzuozhibi.modules.auth;
 
 import com.mingzuozhibi.commons.base.BaseController2;
-import com.mingzuozhibi.modules.user.User;
-import com.mingzuozhibi.modules.user.UserRepository;
 import com.mingzuozhibi.support.JsonArg;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
