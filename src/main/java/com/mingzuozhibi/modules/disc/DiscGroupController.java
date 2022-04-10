@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -43,9 +44,7 @@ public class DiscGroupController extends BaseController2 {
         }
         JsonArray array = new JsonArray();
         discGroups.forEach(discGroup -> {
-            JsonObject object = gson.toJsonTree(discGroup).getAsJsonObject();
-            object.addProperty("discCount", discRepository.countByGroupId(discGroup.getId()));
-            array.add(object);
+            array.add(buildWithCount(discGroup));
         });
         return dataResult(array);
     }
@@ -131,8 +130,7 @@ public class DiscGroupController extends BaseController2 {
             return paramNotExists("列表索引");
         }
         DiscGroup discGroup = byKey.get();
-        JsonObject object = gson.toJsonTree(discGroup).getAsJsonObject();
-        object.add("discs", gson.toJsonTree(discGroup.getDiscs()));
+        JsonObject object = buildWithDiscs(discGroup);
         return dataResult(object);
     }
 
@@ -158,7 +156,7 @@ public class DiscGroupController extends BaseController2 {
         discGroup.getDiscs().add(disc);
 
         jmsMessage.notify(ModifyUtils.logPush("碟片", disc.getLogName(), discGroup.getTitle()));
-        return dataResult(disc);
+        return dataResult(disc.toJson());
     }
 
     @Transactional
@@ -183,7 +181,25 @@ public class DiscGroupController extends BaseController2 {
         discGroup.getDiscs().remove(disc);
 
         jmsMessage.notify(ModifyUtils.logDrop("碟片", disc.getLogName(), discGroup.getTitle()));
-        return dataResult(disc.toJSON());
+        return dataResult(disc.toJson());
+    }
+
+    private JsonObject buildWithCount(DiscGroup discGroup) {
+        JsonObject object = gson.toJsonTree(discGroup).getAsJsonObject();
+        object.addProperty("discCount", discRepository.countByGroupId(discGroup.getId()));
+        return object;
+    }
+
+    private JsonObject buildWithDiscs(DiscGroup discGroup) {
+        JsonObject object = gson.toJsonTree(discGroup).getAsJsonObject();
+        object.add("discs", buildDiscs(discGroup.getDiscs()));
+        return object;
+    }
+
+    private static JsonArray buildDiscs(Collection<Disc> discs) {
+        JsonArray array = new JsonArray();
+        discs.forEach(disc -> array.add(disc.toJson()));
+        return array;
     }
 
 }
