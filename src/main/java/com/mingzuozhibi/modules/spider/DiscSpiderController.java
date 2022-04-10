@@ -40,6 +40,7 @@ public class DiscSpiderController extends BaseController2 {
     @Autowired
     private DiscRepository discRepository;
 
+    @Transactional
     @Scheduled(cron = "0 59 * * * ?")
     @GetMapping("/admin/sendNeedUpdateAsins")
     public void sendNeedUpdateAsins() {
@@ -48,6 +49,7 @@ public class DiscSpiderController extends BaseController2 {
         jmsMessage.notify("JMS -> need.update.asins size=" + asins.size());
     }
 
+    @Transactional
     @JmsListener(destination = "prev.update.discs")
     public void discSpiderUpdate(String json) {
         TypeToken<?> typeToken = TypeToken.getParameterized(ArrayList.class, DiscUpdate.class);
@@ -56,6 +58,7 @@ public class DiscSpiderController extends BaseController2 {
         discSpider.applyDiscUpdates(discUpdates);
     }
 
+    @Transactional
     @JmsListener(destination = "done.update.discs")
     public void discSpiderUpdate2(String json) {
         TypeToken<?> typeToken = TypeToken.getParameterized(ArrayList.class, DiscUpdate.class);
@@ -82,7 +85,7 @@ public class DiscSpiderController extends BaseController2 {
         return searchDiscFromAmazon(asin);
     }
 
-    public String searchDiscFromAmazon(@PathVariable String asin) {
+    private String searchDiscFromAmazon(@PathVariable String asin) {
         SearchTask<DiscUpdate> task = discSpider.runSearchTask(asin);
         if (!task.isSuccess()) {
             return errorResult(task.getMessage());
