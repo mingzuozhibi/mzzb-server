@@ -1,4 +1,4 @@
-package com.mingzuozhibi.modules.disc.rank;
+package com.mingzuozhibi.modules.core.record;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

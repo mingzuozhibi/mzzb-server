@@ -1,4 +1,4 @@
-package com.mingzuozhibi.modules.disc;
+package com.mingzuozhibi.modules.core.disc;
 
 import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseModel;

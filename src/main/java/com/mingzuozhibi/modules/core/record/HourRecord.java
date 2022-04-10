@@ -1,10 +1,9 @@
-package com.mingzuozhibi.modules.disc.rank;
+package com.mingzuozhibi.modules.core.record;
 
 import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseModel;
 import com.mingzuozhibi.commons.gson.GsonIgnored;
-import com.mingzuozhibi.modules.disc.Disc;
-import com.mingzuozhibi.modules.disc.DiscRecord;
+import com.mingzuozhibi.modules.core.disc.Disc;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

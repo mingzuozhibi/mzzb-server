@@ -1,11 +1,13 @@
-package com.mingzuozhibi.modules.disc;
+package com.mingzuozhibi.modules.core.group;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseController2;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
 import com.mingzuozhibi.commons.utils.ModifyUtils;
-import com.mingzuozhibi.modules.disc.DiscGroup.ViewType;
+import com.mingzuozhibi.modules.core.disc.Disc;
+import com.mingzuozhibi.modules.core.disc.DiscRepository;
+import com.mingzuozhibi.modules.core.group.DiscGroup.ViewType;
 import com.mingzuozhibi.support.JsonArg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;

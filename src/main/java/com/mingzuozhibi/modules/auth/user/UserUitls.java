@@ -1,10 +1,10 @@
-package com.mingzuozhibi.utils;
+package com.mingzuozhibi.modules.auth.user;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Objects;
 
-public abstract class EncodeUtils {
+public abstract class UserUitls {
 
     public static String encode(String username, String password) {
         Objects.requireNonNull(username);

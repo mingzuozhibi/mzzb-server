@@ -1,9 +1,10 @@
-package com.mingzuozhibi.modules.disc;
+package com.mingzuozhibi.modules.core.disc;
 
 import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseController2;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
-import com.mingzuozhibi.modules.disc.Disc.DiscType;
+import com.mingzuozhibi.modules.core.disc.Disc.DiscType;
+import com.mingzuozhibi.modules.core.record.DiscRecordService;
 import com.mingzuozhibi.support.JsonArg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;

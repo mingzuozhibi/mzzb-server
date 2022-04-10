@@ -1,6 +1,7 @@
-package com.mingzuozhibi.modules.disc;
+package com.mingzuozhibi.modules.core.group;
 
 import com.mingzuozhibi.commons.gson.adapter.AdapterUtils;
+import com.mingzuozhibi.modules.core.disc.Disc;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Comparator;

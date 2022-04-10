@@ -1,6 +1,6 @@
-package com.mingzuozhibi.modules.disc.rank;
+package com.mingzuozhibi.modules.core.record;
 
-import com.mingzuozhibi.modules.disc.Disc;
+import com.mingzuozhibi.modules.core.disc.Disc;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;

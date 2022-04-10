@@ -1,6 +1,7 @@
-package com.mingzuozhibi.modules.disc;
+package com.mingzuozhibi.modules.core.record;
 
 import com.google.gson.JsonObject;
+import com.mingzuozhibi.modules.core.disc.Disc;
 
 import java.time.LocalDate;
 

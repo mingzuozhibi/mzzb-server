@@ -1,6 +1,7 @@
-package com.mingzuozhibi.modules.auth;
+package com.mingzuozhibi.modules.auth.remember;
 
 import com.mingzuozhibi.commons.base.BaseModel2;
+import com.mingzuozhibi.modules.auth.user.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

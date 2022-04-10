@@ -1,9 +1,8 @@
-package com.mingzuozhibi.modules.disc;
+package com.mingzuozhibi.modules.core.record;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.mingzuozhibi.modules.disc.rank.DateRecordRepository;
-import com.mingzuozhibi.modules.disc.rank.HourRecordRepository;
+import com.mingzuozhibi.modules.core.disc.Disc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,9 +1,9 @@
 package com.mingzuozhibi.service;
 
-import com.mingzuozhibi.modules.auth.Remember;
-import com.mingzuozhibi.modules.disc.Disc;
-import com.mingzuozhibi.modules.disc.rank.DateRecord;
-import com.mingzuozhibi.modules.disc.rank.HourRecord;
+import com.mingzuozhibi.modules.auth.remember.Remember;
+import com.mingzuozhibi.modules.core.disc.Disc;
+import com.mingzuozhibi.modules.core.record.DateRecord;
+import com.mingzuozhibi.modules.core.record.HourRecord;
 import com.mingzuozhibi.support.Dao;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;

@@ -2,7 +2,7 @@ package com.mingzuozhibi.action;
 
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsService;
-import com.mingzuozhibi.modules.disc.Disc;
+import com.mingzuozhibi.modules.core.disc.Disc;
 import com.mingzuozhibi.utils.ReCompute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
