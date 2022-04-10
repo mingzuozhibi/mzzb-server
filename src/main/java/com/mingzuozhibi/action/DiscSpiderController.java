@@ -5,7 +5,6 @@ import com.google.gson.reflect.TypeToken;
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
 import com.mingzuozhibi.commons.mylog.JmsService;
-import com.mingzuozhibi.commons.utils.ModifyUtils;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import com.mingzuozhibi.modules.disc.DiscRepository;
@@ -29,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.mingzuozhibi.commons.utils.ModifyUtils.logCreate;
 import static com.mingzuozhibi.utils.DiscUtils.needUpdateAsins;
 
 @RestController
@@ -110,7 +110,7 @@ public class DiscSpiderController extends BaseController {
 
         Disc disc = createDisc(asin, discUpdate);
         jmsService.sendDiscTrack(disc.getAsin(), disc.getTitle());
-        jmsMessage.success(ModifyUtils.doCreate("碟片", disc.getTitle(), asin));
+        jmsMessage.success(logCreate("碟片", disc.getTitle(), asin));
 
         JSONObject data = disc.toJSON();
         return objectResult(data);
