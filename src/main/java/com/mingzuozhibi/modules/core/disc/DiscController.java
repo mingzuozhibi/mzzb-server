@@ -2,7 +2,6 @@ package com.mingzuozhibi.modules.core.disc;
 
 import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseController2;
-import com.mingzuozhibi.commons.mylog.JmsMessage;
 import com.mingzuozhibi.modules.core.disc.Disc.DiscType;
 import com.mingzuozhibi.modules.core.record.DiscRecordService;
 import com.mingzuozhibi.support.JsonArg;
@@ -25,9 +24,6 @@ import static com.mingzuozhibi.commons.utils.ModifyUtils.logUpdate;
 public class DiscController extends BaseController2 {
 
     public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy/M/d");
-
-    @Autowired
-    private JmsMessage jmsMessage;
 
     @Autowired
     private DiscRepository discRepository;

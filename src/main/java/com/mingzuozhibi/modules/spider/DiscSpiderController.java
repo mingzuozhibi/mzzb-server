@@ -1,9 +1,7 @@
 package com.mingzuozhibi.modules.spider;
 
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mingzuozhibi.commons.base.BaseController2;
-import com.mingzuozhibi.commons.mylog.JmsMessage;
 import com.mingzuozhibi.commons.mylog.JmsService;
 import com.mingzuozhibi.modules.core.disc.Disc;
 import com.mingzuozhibi.modules.core.disc.Disc.DiscType;
@@ -31,13 +29,7 @@ import static com.mingzuozhibi.commons.utils.ModifyUtils.logCreate;
 public class DiscSpiderController extends BaseController2 {
 
     @Autowired
-    private Gson gson;
-
-    @Autowired
     private JmsService jmsService;
-
-    @Autowired
-    private JmsMessage jmsMessage;
 
     @Autowired
     private DiscSpider discSpider;

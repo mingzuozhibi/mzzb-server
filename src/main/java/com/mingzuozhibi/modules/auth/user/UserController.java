@@ -1,7 +1,6 @@
 package com.mingzuozhibi.modules.auth.user;
 
 import com.mingzuozhibi.commons.base.BaseController2;
-import com.mingzuozhibi.commons.mylog.JmsMessage;
 import com.mingzuozhibi.modules.auth.remember.RememberRepository;
 import com.mingzuozhibi.support.JsonArg;
 import org.apache.commons.lang3.StringUtils;
@@ -20,9 +19,6 @@ import static com.mingzuozhibi.commons.utils.ModifyUtils.logUpdate;
 
 @RestController
 public class UserController extends BaseController2 {
-
-    @Autowired
-    private JmsMessage jmsMessage;
 
     @Autowired
     private UserRepository userRepository;
