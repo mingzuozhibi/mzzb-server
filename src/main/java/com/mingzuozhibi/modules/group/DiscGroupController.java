@@ -3,9 +3,8 @@ package com.mingzuozhibi.modules.group;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.BaseController2;
-import com.mingzuozhibi.commons.check.CheckResult;
-import com.mingzuozhibi.commons.check.CheckUtils;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
+import com.mingzuozhibi.commons.utils.ModifyUtils;
 import com.mingzuozhibi.modules.group.DiscGroup.ViewType;
 import com.mingzuozhibi.support.JsonArg;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +16,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.mingzuozhibi.commons.check.CheckHelper.*;
-import static com.mingzuozhibi.commons.check.CheckUtils.paramNoExists;
+import static com.mingzuozhibi.commons.utils.ChecksUtils.*;
 
 @RestController
 public class DiscGroupController extends BaseController2 {
@@ -65,14 +63,14 @@ public class DiscGroupController extends BaseController2 {
                            @JsonArg("$.title") String title,
                            @JsonArg("$.enabled") Boolean enabled,
                            @JsonArg("$.viewType") ViewType viewType) {
-        CheckResult checks = runAllCheck(
+        Optional<String> checks = runChecks(
             checkNotEmpty(key, "列表索引"),
             checkNotEmpty(title, "列表标题"),
             checkSelected(enabled, "是否更新"),
             checkSelected(viewType, "列表类型")
         );
-        if (checks.hasError()) {
-            return errorResult(checks.getError());
+        if (checks.isPresent()) {
+            return errorResult(checks.get());
         }
         Optional<DiscGroup> byId = discGroupRepository.findById(id);
         if (!byId.isPresent()) {
@@ -80,19 +78,19 @@ public class DiscGroupController extends BaseController2 {
         }
         DiscGroup discGroup = byId.get();
         if (!Objects.equals(discGroup.getKey(), key)) {
-            jmsMessage.info(CheckUtils.doUpdate("列表索引", discGroup.getKey(), key));
+            jmsMessage.info(ModifyUtils.doUpdate("列表索引", discGroup.getKey(), key));
             discGroup.setKey(key);
         }
         if (!Objects.equals(discGroup.getTitle(), title)) {
-            jmsMessage.info(CheckUtils.doUpdate("列表标题", discGroup.getTitle(), title));
+            jmsMessage.info(ModifyUtils.doUpdate("列表标题", discGroup.getTitle(), title));
             discGroup.setTitle(title);
         }
         if (!Objects.equals(discGroup.getViewType(), viewType)) {
-            jmsMessage.info(CheckUtils.doUpdate("列表类型", discGroup.getViewType(), viewType));
+            jmsMessage.info(ModifyUtils.doUpdate("列表类型", discGroup.getViewType(), viewType));
             discGroup.setViewType(viewType);
         }
         if (!Objects.equals(discGroup.isEnabled(), enabled)) {
-            jmsMessage.info(CheckUtils.doUpdate("是否更新", discGroup.isEnabled(), enabled));
+            jmsMessage.info(ModifyUtils.doUpdate("是否更新", discGroup.isEnabled(), enabled));
             discGroup.setEnabled(enabled);
         }
         return dataResult(discGroup);
@@ -108,12 +106,12 @@ public class DiscGroupController extends BaseController2 {
         }
         DiscGroup discGroup = byId.get();
         if (discGroupRepository.countDiscsById(id) > 0) {
-            jmsMessage.warning(CheckUtils.doDelete("列表", discGroup.getTitle(), gson.toJson(discGroup)));
+            jmsMessage.warning(ModifyUtils.doDelete("列表", discGroup.getTitle(), gson.toJson(discGroup)));
             discGroup.getDiscs().forEach(disc -> {
                 jmsMessage.info("[记录删除的碟片][ASIN=%s][NAME=%s]", disc.getAsin(), disc.getLogName());
             });
         } else {
-            jmsMessage.notify(CheckUtils.doDelete("列表", discGroup.getTitle(), gson.toJson(discGroup)));
+            jmsMessage.notify(ModifyUtils.doDelete("列表", discGroup.getTitle(), gson.toJson(discGroup)));
         }
         discGroup.getDiscs().clear();
         discGroupRepository.delete(discGroup);

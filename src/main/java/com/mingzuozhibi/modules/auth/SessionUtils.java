@@ -1,12 +1,12 @@
 package com.mingzuozhibi.modules.auth;
 
-import com.mingzuozhibi.commons.BaseServlet;
+import com.mingzuozhibi.commons.utils.ServletUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.function.Predicate;
 
-public abstract class SessionUtils extends BaseServlet {
+public abstract class SessionUtils extends ServletUtils {
 
     public static String getTokenFromHeader() {
         return getHttpRequest().getHeader("session-token");

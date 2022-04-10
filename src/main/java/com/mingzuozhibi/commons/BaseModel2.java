@@ -6,9 +6,6 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Optional;
 
 @Getter
 @Setter
@@ -22,11 +19,5 @@ public abstract class BaseModel2 implements Serializable {
     @GsonIgnored
     @Version
     private Long version;
-
-    protected Long toEpochMilli(LocalDateTime dateTime) {
-        return Optional.ofNullable(dateTime)
-            .map(date -> date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
-            .orElse(0L);
-    }
 
 }

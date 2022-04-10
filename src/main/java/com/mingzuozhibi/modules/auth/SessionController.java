@@ -1,7 +1,6 @@
 package com.mingzuozhibi.modules.auth;
 
 import com.mingzuozhibi.commons.BaseController2;
-import com.mingzuozhibi.commons.check.CheckResult;
 import com.mingzuozhibi.modules.user.User;
 import com.mingzuozhibi.modules.user.UserRepository;
 import com.mingzuozhibi.support.JsonArg;
@@ -17,8 +16,9 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.mingzuozhibi.commons.check.CheckHelper.*;
-import static com.mingzuozhibi.commons.check.CheckUtils.paramNoExists;
+import static com.mingzuozhibi.commons.utils.ChecksUtils.*;
+import static com.mingzuozhibi.commons.utils.SecurityUtils.*;
+import static com.mingzuozhibi.modules.auth.SessionUtils.*;
 
 @Slf4j
 @RestController
@@ -36,8 +36,8 @@ public class SessionController extends BaseController2 {
         if (!optional.isPresent()) {
             log.debug("sessionQuery: Authentication is null");
             setAuthentication(buildGuestAuthentication());
-        } else if (!SessionUtils.isLogged(optional.get())) {
-            String token = SessionUtils.getTokenFromHeader();
+        } else if (!isLogged(optional.get())) {
+            String token = getTokenFromHeader();
             sessionService.vaildSession(token).ifPresent(remember -> {
                 onSessionLogin(remember.getUser(), false);
             });
@@ -45,27 +45,17 @@ public class SessionController extends BaseController2 {
         return buildSessionAndCount();
     }
 
-    private String buildSessionAndCount() {
-        int userCount = sessionService.countSession();
-        Optional<Authentication> optional = getAuthentication();
-        if (optional.isPresent()) {
-            return dataResult(new SessionAndCount(optional.get(), userCount));
-        } else {
-            return dataResult(new SessionAndCount(buildGuestAuthentication(), userCount));
-        }
-    }
-
     @PostMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionLogin(@JsonArg("$.username") String username,
                                @JsonArg("$.password") String password) {
-        CheckResult checks = runAllCheck(
+        Optional<String> checks = runChecks(
             checkNotEmpty(username, "用户名称"),
             checkIdentifier(username, "用户名称", 4, 20),
             checkNotEmpty(password, "用户密码"),
             checkMd5Encode(password, "用户密码", 32)
         );
-        if (checks.hasError()) {
-            return errorResult(checks.getError());
+        if (checks.isPresent()) {
+            return errorResult(checks.get());
         }
         Optional<User> byUsername = userRepository.findByUsername(username);
         if (!byUsername.isPresent()) {
@@ -84,25 +74,31 @@ public class SessionController extends BaseController2 {
 
     @DeleteMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionLogout() {
-        onSessionLogout();
+        Long sessionId = getSessionId();
+        sessionService.cleanSession(sessionId);
+        setTokenToHeader("");
+        setAuthentication(buildGuestAuthentication());
         return buildSessionAndCount();
+    }
+
+    private String buildSessionAndCount() {
+        int userCount = sessionService.countSession();
+        Optional<Authentication> optional = getAuthentication();
+        if (optional.isPresent()) {
+            return dataResult(new SessionAndCount(optional.get(), userCount));
+        } else {
+            return dataResult(new SessionAndCount(buildGuestAuthentication(), userCount));
+        }
     }
 
     private void onSessionLogin(User user, boolean buildNew) {
         if (buildNew) {
             Remember remember = sessionService.buildSession(user);
-            SessionUtils.setSessionId(remember.getId());
-            SessionUtils.setTokenToHeader(remember.getToken());
+            setSessionId(remember.getId());
+            setTokenToHeader(remember.getToken());
         }
         setAuthentication(buildUserAuthentication(user));
         user.setLastLoggedIn(Instant.now());
-    }
-
-    private void onSessionLogout() {
-        Long sessionId = SessionUtils.getSessionId();
-        sessionService.cleanSession(sessionId);
-        SessionUtils.setTokenToHeader("");
-        setAuthentication(buildGuestAuthentication());
     }
 
 }

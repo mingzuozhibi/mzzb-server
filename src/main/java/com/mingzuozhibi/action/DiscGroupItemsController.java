@@ -2,6 +2,7 @@ package com.mingzuozhibi.action;
 
 import com.mingzuozhibi.commons.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
+import com.mingzuozhibi.commons.utils.SecurityUtils;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.group.DiscGroup;
 import org.json.JSONArray;
@@ -92,7 +93,7 @@ public class DiscGroupItemsController extends BaseController {
         }
 
         discGroup.getDiscs().add(disc);
-        jmsMessage.info("[用户=%s][添加碟片成功][列表=%s][碟片=%s]", getUserName(), discGroup.getTitle(), disc.getLogName());
+        jmsMessage.info("[用户=%s][添加碟片成功][列表=%s][碟片=%s]", SecurityUtils.loginName(), discGroup.getTitle(), disc.getLogName());
         return objectResult(disc.toJSON());
     }
 
@@ -122,7 +123,7 @@ public class DiscGroupItemsController extends BaseController {
         }
 
         discGroup.getDiscs().remove(disc);
-        jmsMessage.info("[用户=%s][移除碟片成功][列表=%s][碟片=%s]", getUserName(), discGroup.getTitle(), disc.getLogName());
+        jmsMessage.info("[用户=%s][移除碟片成功][列表=%s][碟片=%s]", SecurityUtils.loginName(), discGroup.getTitle(), disc.getLogName());
         return objectResult(disc.toJSON());
     }
 

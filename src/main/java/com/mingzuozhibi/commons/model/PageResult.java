@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class PageResult<T> extends ErrorResult {
+public class PageResult<T> extends BaseResult {
 
     private List<T> data;
     private PageObj page;

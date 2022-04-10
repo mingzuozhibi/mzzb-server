@@ -1,9 +1,8 @@
 package com.mingzuozhibi.modules.user;
 
 import com.mingzuozhibi.commons.BaseController2;
-import com.mingzuozhibi.commons.check.CheckResult;
-import com.mingzuozhibi.commons.check.CheckUtils;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
+import com.mingzuozhibi.commons.utils.ModifyUtils;
 import com.mingzuozhibi.modules.auth.RememberRepository;
 import com.mingzuozhibi.support.JsonArg;
 import org.apache.commons.lang3.StringUtils;
@@ -16,9 +15,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.mingzuozhibi.commons.check.CheckHelper.*;
-import static com.mingzuozhibi.commons.check.CheckUtils.doUpdate;
-import static com.mingzuozhibi.commons.check.CheckUtils.paramNoExists;
+import static com.mingzuozhibi.commons.utils.ChecksUtils.*;
+import static com.mingzuozhibi.commons.utils.ModifyUtils.doUpdate;
 
 @RestController
 public class UserController extends BaseController2 {
@@ -55,21 +53,21 @@ public class UserController extends BaseController2 {
     public String createUser(@JsonArg("$.username") String username,
                              @JsonArg("$.password") String password,
                              @JsonArg(value = "$.enabled", defaults = "true") Boolean enabled) {
-        CheckResult checks = runAllCheck(
+        Optional<String> checks = runChecks(
             checkNotEmpty(username, "用户名称"),
             checkIdentifier(username, "用户名称", 4, 20),
             checkNotEmpty(password, "用户密码"),
             checkMd5Encode(username, "用户密码", 32)
         );
-        if (checks.hasError()) {
-            return errorResult(checks.getError());
+        if (checks.isPresent()) {
+            return errorResult(checks.get());
         }
         if (!userRepository.existsByUsername(username)) {
-            return CheckUtils.paramBeExists("用户名称");
+            return paramBeExists("用户名称");
         }
         User user = new User(username, password, enabled);
         userRepository.save(user);
-        jmsMessage.info(CheckUtils.doCreate("创建用户", user.getUsername(), gson.toJson(user)));
+        jmsMessage.info(ModifyUtils.doCreate("创建用户", user.getUsername(), gson.toJson(user)));
         return dataResult(user);
     }
 
@@ -80,14 +78,14 @@ public class UserController extends BaseController2 {
                              @JsonArg("$.username") String username,
                              @JsonArg("$.password") String password,
                              @JsonArg("$.enabled") Boolean enabled) {
-        CheckResult checks = runAllCheck(
+        Optional<String> checks = runChecks(
             checkNotEmpty(username, "用户名称"),
             checkIdentifier(username, "用户名称", 4, 20),
             checkMd5Encode(username, "用户密码", 32),
             checkSelected(enabled, "用户启用状态")
         );
-        if (checks.hasError()) {
-            return errorResult(checks.getError());
+        if (checks.isPresent()) {
+            return errorResult(checks.get());
         }
         Optional<User> byId = userRepository.findById(id);
         if (!byId.isPresent()) {

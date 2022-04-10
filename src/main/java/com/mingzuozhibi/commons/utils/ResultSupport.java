@@ -1,14 +1,13 @@
-package com.mingzuozhibi.commons;
+package com.mingzuozhibi.commons.utils;
 
 import com.google.gson.Gson;
 import com.mingzuozhibi.commons.model.BaseResult;
 import com.mingzuozhibi.commons.model.DataResult;
 import com.mingzuozhibi.commons.model.PageResult;
-import com.mingzuozhibi.commons.utils.ServletUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 
-public class BaseController2 extends ServletUtils {
+public class ResultSupport {
 
     @Autowired
     protected Gson gson;
