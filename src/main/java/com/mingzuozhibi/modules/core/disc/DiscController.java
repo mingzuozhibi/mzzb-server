@@ -61,7 +61,7 @@ public class DiscController extends BaseController2 {
         Optional<String> checks = runChecks(
             checkSelected(discType, "碟片类型"),
             checkNotEmpty(releaseDate, "发售日期"),
-            checkDateText(releaseDate, "发售日期", "yyyy/M/d")
+            checkDateText(releaseDate, "发售日期", "\\d{4}/\\d{1,2}/\\d{1,2}")
         );
         if (checks.isPresent()) {
             return errorResult(checks.get());
@@ -83,7 +83,7 @@ public class DiscController extends BaseController2 {
         Optional<String> checks = runChecks(
             checkSelected(discType, "碟片类型"),
             checkNotEmpty(releaseDate, "发售日期"),
-            checkDateText(releaseDate, "发售日期", "yyyy/M/d")
+            checkDateText(releaseDate, "发售日期", "\\d{4}/\\d{1,2}/\\d{1,2}")
         );
         if (checks.isPresent()) {
             return errorResult(checks.get());
