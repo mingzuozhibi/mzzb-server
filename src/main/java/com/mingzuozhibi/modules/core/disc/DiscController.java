@@ -38,7 +38,7 @@ public class DiscController extends BaseController2 {
         if (!byId.isPresent()) {
             return paramNotExists("碟片ID");
         }
-        return dataResult(byId.get());
+        return dataResult(byId.get().toJson());
     }
 
     @Transactional
@@ -48,7 +48,7 @@ public class DiscController extends BaseController2 {
         if (!byId.isPresent()) {
             return paramNotExists("碟片ASIN");
         }
-        return dataResult(byId.get());
+        return dataResult(byId.get().toJson());
     }
 
     @Transactional
@@ -70,7 +70,7 @@ public class DiscController extends BaseController2 {
         Disc disc = new Disc(asin, title, discType, localDate);
         discRepository.save(disc);
         jmsMessage.success(logCreate("碟片", disc.getLogName(), gson.toJson(disc)));
-        return dataResult(disc);
+        return dataResult(disc.toJson());
     }
 
     @Transactional
@@ -106,10 +106,11 @@ public class DiscController extends BaseController2 {
             disc.setReleaseDate(localDate);
             jmsMessage.info(logUpdate("发售日期", disc.getReleaseDate(), localDate));
         }
-        return dataResult(disc);
+        return dataResult(disc.toJson());
     }
 
     @Transactional
+    @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/api/updateRank/{asin}/{rank}", produces = MEDIA_TYPE)
     public String doUpdateRank(@PathVariable("asin") String asin,
                                @PathVariable("rank") Integer rank) {
@@ -124,7 +125,7 @@ public class DiscController extends BaseController2 {
         disc.setModifyTime(now);
         disc.setUpdateTime(now);
         jmsMessage.info(logUpdate("碟片排名", disc.getPrevRank(), disc.getThisRank(), disc.getLogName()));
-        return dataResult(disc);
+        return dataResult(disc.toJson());
     }
 
     @Transactional
