@@ -25,7 +25,7 @@ public abstract class ChecksUtils {
     }
 
     public static Optional<String> checkSelected(Object value, String paramName) {
-        if (Objects.isNull(value)) {
+        if (!Objects.isNull(value)) {
             return Optional.empty();
         }
         return Optional.of(paramName + "必须选择");
