@@ -7,7 +7,7 @@ import com.mingzuozhibi.commons.mylog.JmsService;
 import com.mingzuozhibi.modules.core.disc.Disc;
 import com.mingzuozhibi.modules.core.disc.Disc.DiscType;
 import com.mingzuozhibi.modules.core.disc.DiscRepository;
-import com.mingzuozhibi.modules.core.group.DiscGroupRepository;
+import com.mingzuozhibi.modules.core.disc.DiscService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
@@ -34,10 +34,10 @@ public class DiscSpider {
     private JmsMessage jmsMessage;
 
     @Autowired
-    private DiscRepository discRepository;
+    private DiscService discService;
 
     @Autowired
-    private DiscGroupRepository discGroupRepository;
+    private DiscRepository discRepository;
 
     private final Map<String, SearchTask<DiscUpdate>> waitMap = Collections.synchronizedMap(new HashMap<>());
 
@@ -82,7 +82,7 @@ public class DiscSpider {
             }
 
             if (discUpdates.size() > 0) {
-                discGroupRepository.updateModifyTime();
+                discService.updateGroupModifyTime();
                 jmsMessage.notify("成功更新日亚排名：共%d个", discUpdates.size());
             } else {
                 jmsMessage.notify("未能更新日亚排名：无数据");

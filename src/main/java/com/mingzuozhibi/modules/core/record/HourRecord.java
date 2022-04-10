@@ -1,7 +1,7 @@
 package com.mingzuozhibi.modules.core.record;
 
 import com.google.gson.JsonObject;
-import com.mingzuozhibi.commons.base.BaseModel;
+import com.mingzuozhibi.commons.base.BaseModel2;
 import com.mingzuozhibi.commons.gson.GsonIgnored;
 import com.mingzuozhibi.modules.core.disc.Disc;
 import lombok.Getter;
@@ -20,7 +20,7 @@ import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 @Getter
 @Setter
 @NoArgsConstructor
-public class HourRecord extends BaseModel implements DiscRecord {
+public class HourRecord extends BaseModel2 implements DiscRecord {
 
     public HourRecord(Disc disc, LocalDate date) {
         this.disc = disc;
@@ -47,7 +47,6 @@ public class HourRecord extends BaseModel implements DiscRecord {
     @GsonIgnored
     private HourRecordEmbedded embedded;
 
-    @Transient
     public void setRank(int hour, Integer rank) {
         if (this.embedded == null) {
             this.embedded = new HourRecordEmbedded();

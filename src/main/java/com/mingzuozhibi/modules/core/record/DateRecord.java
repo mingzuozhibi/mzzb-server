@@ -8,10 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 import java.time.LocalDate;
 
 import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
@@ -46,12 +43,11 @@ public class DateRecord extends BaseModel2 implements DiscRecord {
     @Column
     private Double guessPt;
 
-    @Override
+    @Transient
     public Double getAverRank() {
         return rank;
     }
 
-    @Override
     public JsonObject toJson() {
         return GSON.toJsonTree(this).getAsJsonObject();
     }

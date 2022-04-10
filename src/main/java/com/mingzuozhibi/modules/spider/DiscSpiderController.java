@@ -1,18 +1,14 @@
-package com.mingzuozhibi.action;
+package com.mingzuozhibi.modules.spider;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.mingzuozhibi.commons.base.BaseController;
+import com.mingzuozhibi.commons.base.BaseController2;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
 import com.mingzuozhibi.commons.mylog.JmsService;
 import com.mingzuozhibi.modules.core.disc.Disc;
 import com.mingzuozhibi.modules.core.disc.Disc.DiscType;
 import com.mingzuozhibi.modules.core.disc.DiscRepository;
-import com.mingzuozhibi.modules.spider.DiscSpider;
-import com.mingzuozhibi.modules.spider.DiscUpdate;
-import com.mingzuozhibi.modules.spider.SearchTask;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.mingzuozhibi.modules.core.disc.DiscService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -27,12 +23,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.mingzuozhibi.commons.utils.ModifyUtils.logCreate;
-import static com.mingzuozhibi.utils.DiscUtils.needUpdateAsins;
 
 @RestController
-public class DiscSpiderController extends BaseController {
+public class DiscSpiderController extends BaseController2 {
 
     @Autowired
     private Gson gson;
@@ -47,23 +43,24 @@ public class DiscSpiderController extends BaseController {
     private DiscSpider discSpider;
 
     @Autowired
+    private DiscService discService;
+
+    @Autowired
     private DiscRepository discRepository;
 
     @Scheduled(cron = "0 59 * * * ?")
     @GetMapping("/admin/sendNeedUpdateAsins")
     public void sendNeedUpdateAsins() {
-        dao.execute(session -> {
-            JSONArray array = new JSONArray();
-            needUpdateAsins(session).forEach(array::put);
-            jmsService.convertAndSend("need.update.asins", array.toString());
-        });
+        Set<String> asins = discService.findNeedUpdateAsins();
+        jmsService.convertAndSend("need.update.asins", gson.toJson(asins));
+        jmsMessage.notify("JMS -> need.update.asins size=" + asins.size());
     }
 
     @JmsListener(destination = "prev.update.discs")
     public void discSpiderUpdate(String json) {
         TypeToken<?> typeToken = TypeToken.getParameterized(ArrayList.class, DiscUpdate.class);
         List<DiscUpdate> discUpdates = gson.fromJson(json, typeToken.getType());
-        LOGGER.info("JMS <- prev.update.discs size=" + discUpdates.size());
+        jmsMessage.notify("JMS <- prev.update.discs size=" + discUpdates.size());
         discSpider.applyDiscUpdates(discUpdates);
     }
 
@@ -71,17 +68,15 @@ public class DiscSpiderController extends BaseController {
     public void discSpiderUpdate2(String json) {
         TypeToken<?> typeToken = TypeToken.getParameterized(ArrayList.class, DiscUpdate.class);
         List<DiscUpdate> discUpdates = gson.fromJson(json, typeToken.getType());
-        LOGGER.info("JMS <- done.update.discs size=" + discUpdates.size());
+        jmsMessage.notify("JMS <- done.update.discs size=" + discUpdates.size());
         discSpider.applyDiscUpdates(discUpdates);
     }
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping(value = "/api/admin/fetchCount")
-    public String fetchCount() {
-        int fetchCount = needUpdateAsins(dao.session()).size();
-        debugRequest("[fetchCount:{}]", fetchCount);
-        return objectResult(fetchCount);
+    public String getFetchCount() {
+        return dataResult(discService.findNeedUpdateAsins().size());
     }
 
     @Transactional
@@ -90,30 +85,24 @@ public class DiscSpiderController extends BaseController {
     public String searchDisc(@PathVariable String asin) {
         Optional<Disc> byAsin = discRepository.findByAsin(asin);
         if (byAsin.isPresent()) {
-            return objectResult(byAsin.get().toJSON());
+            return dataResult(byAsin.get().toJson());
         }
         return searchDiscFromAmazon(asin);
     }
 
-    private String searchDiscFromAmazon(@PathVariable String asin) {
-        if (LOGGER.isInfoEnabled()) {
-            infoRequest("[申请查询碟片][开始从日亚查询][ASIN={}]", asin);
-        }
+    public String searchDiscFromAmazon(@PathVariable String asin) {
         SearchTask<DiscUpdate> task = discSpider.runSearchTask(asin);
         if (!task.isSuccess()) {
-            return errorMessage(task.getMessage());
+            return errorResult(task.getMessage());
         }
         DiscUpdate discUpdate = task.getData();
         if (discUpdate.isOffTheShelf()) {
-            return errorMessage("可能该碟片已下架");
+            return errorResult("可能该碟片已下架");
         }
-
         Disc disc = createDisc(asin, discUpdate);
         jmsService.sendDiscTrack(disc.getAsin(), disc.getTitle());
         jmsMessage.success(logCreate("碟片", disc.getTitle(), asin));
-
-        JSONObject data = disc.toJSON();
-        return objectResult(data);
+        return dataResult(disc);
     }
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -125,6 +114,7 @@ public class DiscSpiderController extends BaseController {
             .map(date -> LocalDate.parse(date, formatter))
             .orElseGet(LocalDate::now);
         Disc disc = new Disc(asin, title, discType, releaseDate);
+        jmsMessage.warning("创建碟片时未发现发售日期，碟片=" + disc.getLogName());
         return discRepository.save(disc);
     }
 

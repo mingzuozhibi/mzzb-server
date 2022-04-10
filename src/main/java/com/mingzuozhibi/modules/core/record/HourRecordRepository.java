@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface HourRecordRepository extends JpaRepository<HourRecord, Long> {
 
     Optional<HourRecord> findByDiscAndDate(Disc disc, LocalDate now);
+
 }
