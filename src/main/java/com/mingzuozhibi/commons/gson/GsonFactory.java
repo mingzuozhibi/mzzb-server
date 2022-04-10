@@ -1,12 +1,15 @@
 package com.mingzuozhibi.commons.gson;
 
-import com.google.gson.*;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
-import com.google.gson.stream.JsonWriter;
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.mingzuozhibi.commons.gson.adapter.AdapterOfInstant;
+import com.mingzuozhibi.commons.gson.adapter.AdapterOfLocalDate;
+import com.mingzuozhibi.commons.gson.adapter.AdapterOfLocalDateTime;
 
-import java.io.IOException;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public abstract class GsonFactory {
@@ -26,47 +29,9 @@ public abstract class GsonFactory {
                 return false;
             }
         });
-        gson.registerTypeAdapter(Instant.class, new TypeAdapter<Instant>() {
-            @Override
-            public void write(JsonWriter writer, Instant instant) throws IOException {
-                if (instant != null) {
-                    writer.value(instant.toEpochMilli());
-                } else {
-                    writer.nullValue();
-                }
-            }
-
-            @Override
-            public Instant read(JsonReader reader) throws IOException {
-                if (reader.peek() == JsonToken.NULL) {
-                    reader.nextNull();
-                    return null;
-                } else {
-                    return Instant.ofEpochMilli(reader.nextLong());
-                }
-            }
-        });
-        gson.registerTypeAdapter(LocalDateTime.class, new TypeAdapter<LocalDateTime>() {
-            @Override
-            public void write(JsonWriter writer, LocalDateTime time) throws IOException {
-                if (time != null) {
-                    writer.value(InstantUtils.toInstant(time).toEpochMilli());
-                } else {
-                    writer.nullValue();
-                }
-            }
-
-            @Override
-            public LocalDateTime read(JsonReader reader) throws IOException {
-                if (reader.peek() == JsonToken.NULL) {
-                    reader.nextNull();
-                    return null;
-                } else {
-                    Instant instant = Instant.ofEpochMilli(reader.nextLong());
-                    return InstantUtils.toLocalDateTime(instant);
-                }
-            }
-        });
+        gson.registerTypeAdapter(Instant.class, new AdapterOfInstant());
+        gson.registerTypeAdapter(LocalDate.class, new AdapterOfLocalDate());
+        gson.registerTypeAdapter(LocalDateTime.class, new AdapterOfLocalDateTime());
         return gson.create();
     }
 

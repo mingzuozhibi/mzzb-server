@@ -1,8 +1,7 @@
 package com.mingzuozhibi.modules.disc;
 
-import com.mingzuozhibi.commons.gson.InstantUtils;
+import com.mingzuozhibi.commons.gson.adapter.AdapterUtils;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
 import java.util.Comparator;
 import java.util.List;
@@ -22,7 +21,7 @@ public interface DiscGroupRepository extends JpaRepository<DiscGroup, Long> {
         Comparator<Disc> comparator = comparing(Disc::getUpdateTime, nullsFirst(naturalOrder()));
         findByEnabled(true).forEach(discGroup -> {
             discGroup.getDiscs().stream().max(comparator).ifPresent(disc -> {
-                discGroup.setModifyTime(InstantUtils.toInstant(disc.getUpdateTime()));
+                discGroup.setModifyTime(AdapterUtils.toInstant(disc.getUpdateTime()));
             });
         });
     }
