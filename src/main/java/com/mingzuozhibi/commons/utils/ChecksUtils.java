@@ -49,11 +49,19 @@ public abstract class ChecksUtils {
     }
 
     public static String paramBeExists(String paramName) {
-        return errorResult(paramName + "已存在");
+        return errorResult("指定的" + paramName + "已存在");
     }
 
-    public static String paramNoExists(String paramName) {
-        return errorResult(paramName + "不存在");
+    public static String paramNotExists(String paramName) {
+        return errorResult("指定的" + paramName + "不存在");
+    }
+
+    public static String itemsExists(String itemName) {
+        return errorResult("指定的" + itemName + "已存在于列表");
+    }
+
+    public static String itemsNotExists(String itemName) {
+        return errorResult("指定的" + itemName + "不存在于列表");
     }
 
     private static String errorResult(String message) {

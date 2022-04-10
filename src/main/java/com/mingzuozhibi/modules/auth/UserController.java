@@ -43,7 +43,7 @@ public class UserController extends BaseController2 {
     public String findById(@PathVariable Long id) {
         return userRepository.findById(id)
             .map(this::dataResult)
-            .orElseGet(() -> paramNoExists("用户ID"));
+            .orElseGet(() -> paramNotExists("用户ID"));
     }
 
     @Transactional
@@ -88,7 +88,7 @@ public class UserController extends BaseController2 {
         }
         Optional<User> byId = userRepository.findById(id);
         if (!byId.isPresent()) {
-            return paramNoExists("用户ID");
+            return paramNotExists("用户ID");
         }
         User user = byId.get();
         if (!Objects.equals(user.getUsername(), username)) {

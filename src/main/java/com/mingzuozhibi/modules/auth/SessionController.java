@@ -57,7 +57,7 @@ public class SessionController extends BaseController2 {
         }
         Optional<User> byUsername = userRepository.findByUsername(username);
         if (!byUsername.isPresent()) {
-            return paramNoExists("用户名称");
+            return paramNotExists("用户名称");
         }
         User user = byUsername.get();
         if (!Objects.equals(user.getPassword(), password)) {
