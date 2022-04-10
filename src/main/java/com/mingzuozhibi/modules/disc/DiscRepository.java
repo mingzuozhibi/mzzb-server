@@ -7,4 +7,5 @@ import java.util.Optional;
 public interface DiscRepository extends JpaRepository<Disc, Long> {
 
     Optional<Disc> findByAsin(String asin);
+
 }

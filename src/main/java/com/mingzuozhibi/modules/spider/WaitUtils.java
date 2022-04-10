@@ -1,4 +1,4 @@
-package com.mingzuozhibi.modules.disc.spider;
+package com.mingzuozhibi.modules.spider;
 
 import java.time.Instant;
 

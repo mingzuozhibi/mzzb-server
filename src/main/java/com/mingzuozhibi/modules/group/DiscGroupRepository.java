@@ -1,6 +1,7 @@
-package com.mingzuozhibi.modules.disc;
+package com.mingzuozhibi.modules.group;
 
 import com.mingzuozhibi.commons.gson.InstantUtils;
+import com.mingzuozhibi.modules.disc.Disc;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

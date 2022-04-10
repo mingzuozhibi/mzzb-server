@@ -1,4 +1,4 @@
-package com.mingzuozhibi.modules.disc.spider;
+package com.mingzuozhibi.modules.spider;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -6,7 +6,7 @@ import com.mingzuozhibi.commons.mylog.JmsMessage;
 import com.mingzuozhibi.commons.mylog.JmsService;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
-import com.mingzuozhibi.modules.disc.DiscGroupRepository;
+import com.mingzuozhibi.modules.group.DiscGroupRepository;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

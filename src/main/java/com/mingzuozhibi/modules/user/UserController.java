@@ -4,6 +4,7 @@ import com.mingzuozhibi.commons.BaseController2;
 import com.mingzuozhibi.commons.check.CheckResult;
 import com.mingzuozhibi.commons.check.CheckUtils;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
+import com.mingzuozhibi.modules.auth.RememberRepository;
 import com.mingzuozhibi.support.JsonArg;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ public class UserController extends BaseController2 {
     private UserRepository userRepository;
 
     @Autowired
-    private SessionRepository2 sessionRepository2;
+    private RememberRepository rememberRepository;
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
@@ -110,7 +111,7 @@ public class UserController extends BaseController2 {
     }
 
     private void onChangePassword(User user) {
-        sessionRepository2.deleteByUser(user);
+        rememberRepository.deleteByUser(user);
     }
 
 }

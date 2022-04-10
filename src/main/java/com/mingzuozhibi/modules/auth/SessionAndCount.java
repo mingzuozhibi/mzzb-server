@@ -1,4 +1,4 @@
-package com.mingzuozhibi.modules.user;
+package com.mingzuozhibi.modules.auth;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,4 +1,4 @@
-package com.mingzuozhibi.modules.disc.spider;
+package com.mingzuozhibi.modules.spider;
 
 import lombok.Getter;
 import lombok.Setter;

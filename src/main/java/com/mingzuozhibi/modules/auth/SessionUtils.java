@@ -1,4 +1,4 @@
-package com.mingzuozhibi.modules.user;
+package com.mingzuozhibi.modules.auth;
 
 import com.mingzuozhibi.commons.BaseServlet;
 import org.springframework.security.core.Authentication;

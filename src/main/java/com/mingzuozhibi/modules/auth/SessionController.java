@@ -1,7 +1,9 @@
-package com.mingzuozhibi.modules.user;
+package com.mingzuozhibi.modules.auth;
 
 import com.mingzuozhibi.commons.BaseController2;
 import com.mingzuozhibi.commons.check.CheckResult;
+import com.mingzuozhibi.modules.user.User;
+import com.mingzuozhibi.modules.user.UserRepository;
 import com.mingzuozhibi.support.JsonArg;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +38,8 @@ public class SessionController extends BaseController2 {
             setAuthentication(buildGuestAuthentication());
         } else if (!SessionUtils.isLogged(optional.get())) {
             String token = SessionUtils.getTokenFromHeader();
-            sessionService.vaildSession(token).ifPresent(session -> {
-                onSessionLogin(session.getUser(), false);
+            sessionService.vaildSession(token).ifPresent(remember -> {
+                onSessionLogin(remember.getUser(), false);
             });
         }
         return buildSessionAndCount();
@@ -88,9 +90,9 @@ public class SessionController extends BaseController2 {
 
     private void onSessionLogin(User user, boolean buildNew) {
         if (buildNew) {
-            Session session = sessionService.buildSession(user);
-            SessionUtils.setSessionId(session.getId());
-            SessionUtils.setTokenToHeader(session.getToken());
+            Remember remember = sessionService.buildSession(user);
+            SessionUtils.setSessionId(remember.getId());
+            SessionUtils.setTokenToHeader(remember.getToken());
         }
         setAuthentication(buildUserAuthentication(user));
         user.setLastLoggedIn(Instant.now());
