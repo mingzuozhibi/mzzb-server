@@ -1,5 +1,7 @@
 package com.mingzuozhibi.commons.base;
 
+import com.mingzuozhibi.commons.gson.GsonIgnored;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -23,6 +25,7 @@ public abstract class BaseModel implements Serializable {
     }
 
     @Version
+    @GsonIgnored
     public Long getVersion() {
         return version;
     }

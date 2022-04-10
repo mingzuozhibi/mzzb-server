@@ -1,6 +1,8 @@
 package com.mingzuozhibi.modules.disc;
 
+import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseModel;
+import com.mingzuozhibi.commons.gson.GsonFactory;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,10 +13,8 @@ import javax.persistence.Entity;
 import javax.persistence.Transient;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 @Entity
 @Getter
@@ -113,6 +113,12 @@ public class Disc extends BaseModel implements Comparable<Disc> {
         }
     }
 
+    public JsonObject toJson() {
+        JsonObject object = GsonFactory.GSON.toJsonTree(this).getAsJsonObject();
+        object.addProperty("surplusDays", this.getSurplusDays());
+        return object;
+    }
+
     public JSONObject toJSON() {
         JSONObject object = new JSONObject();
         object.put("id", getId());
@@ -135,14 +141,6 @@ public class Disc extends BaseModel implements Comparable<Disc> {
         Optional.ofNullable(getModifyTime()).ifPresent(modifyTime -> {
             object.put("modifyTime", toEpochMilli(modifyTime));
         });
-        return object;
-    }
-
-    public JSONObject toJSON(Set<String> columns) {
-        JSONObject object = toJSON();
-        new HashSet<>(object.keySet()).stream()
-            .filter(key -> !columns.contains(key))
-            .forEach(object::remove);
         return object;
     }
 

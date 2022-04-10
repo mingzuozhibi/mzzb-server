@@ -16,8 +16,8 @@ public abstract class BaseModel2 implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @GsonIgnored
     @Version
+    @GsonIgnored
     private Long version;
 
 }

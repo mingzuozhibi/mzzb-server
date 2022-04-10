@@ -1,6 +1,5 @@
 package com.mingzuozhibi.modules.auth;
 
-import com.mingzuozhibi.modules.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;

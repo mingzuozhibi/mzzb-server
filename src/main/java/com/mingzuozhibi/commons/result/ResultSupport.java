@@ -1,9 +1,6 @@
-package com.mingzuozhibi.commons.utils;
+package com.mingzuozhibi.commons.result;
 
 import com.google.gson.Gson;
-import com.mingzuozhibi.commons.model.BaseResult;
-import com.mingzuozhibi.commons.model.DataResult;
-import com.mingzuozhibi.commons.model.PageResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 

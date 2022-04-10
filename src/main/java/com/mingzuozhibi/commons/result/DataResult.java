@@ -1,4 +1,4 @@
-package com.mingzuozhibi.commons.model;
+package com.mingzuozhibi.commons.result;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

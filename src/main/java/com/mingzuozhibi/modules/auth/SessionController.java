@@ -1,8 +1,6 @@
 package com.mingzuozhibi.modules.auth;
 
 import com.mingzuozhibi.commons.base.BaseController2;
-import com.mingzuozhibi.modules.user.User;
-import com.mingzuozhibi.modules.user.UserRepository;
 import com.mingzuozhibi.support.JsonArg;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +57,7 @@ public class SessionController extends BaseController2 {
         }
         Optional<User> byUsername = userRepository.findByUsername(username);
         if (!byUsername.isPresent()) {
-            return paramNoExists("用户名称");
+            return paramNotExists("用户名称");
         }
         User user = byUsername.get();
         if (!Objects.equals(user.getPassword(), password)) {

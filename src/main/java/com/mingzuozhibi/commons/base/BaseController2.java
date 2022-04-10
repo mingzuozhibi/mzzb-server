@@ -1,6 +1,6 @@
 package com.mingzuozhibi.commons.base;
 
-import com.mingzuozhibi.commons.utils.ResultSupport;
+import com.mingzuozhibi.commons.result.ResultSupport;
 import org.springframework.http.MediaType;
 
 public class BaseController2 extends ResultSupport {

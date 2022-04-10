@@ -1,8 +1,7 @@
-package com.mingzuozhibi.modules.user;
+package com.mingzuozhibi.modules.auth;
 
 import com.mingzuozhibi.commons.base.BaseController2;
 import com.mingzuozhibi.commons.mylog.JmsMessage;
-import com.mingzuozhibi.modules.auth.RememberRepository;
 import com.mingzuozhibi.support.JsonArg;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +43,7 @@ public class UserController extends BaseController2 {
     public String findById(@PathVariable Long id) {
         return userRepository.findById(id)
             .map(this::dataResult)
-            .orElseGet(() -> paramNoExists("用户ID"));
+            .orElseGet(() -> paramNotExists("用户ID"));
     }
 
     @Transactional
@@ -63,7 +62,7 @@ public class UserController extends BaseController2 {
             return errorResult(checks.get());
         }
         if (!userRepository.existsByUsername(username)) {
-            return paramBeExists("用户名称");
+            return paramExists("用户名称");
         }
         User user = new User(username, password, enabled);
         userRepository.save(user);
@@ -89,7 +88,7 @@ public class UserController extends BaseController2 {
         }
         Optional<User> byId = userRepository.findById(id);
         if (!byId.isPresent()) {
-            return paramNoExists("用户ID");
+            return paramNotExists("用户ID");
         }
         User user = byId.get();
         if (!Objects.equals(user.getUsername(), username)) {

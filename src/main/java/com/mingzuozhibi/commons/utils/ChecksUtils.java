@@ -1,7 +1,7 @@
 package com.mingzuozhibi.commons.utils;
 
 import com.mingzuozhibi.commons.gson.GsonFactory;
-import com.mingzuozhibi.commons.model.BaseResult;
+import com.mingzuozhibi.commons.result.BaseResult;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
@@ -25,7 +25,7 @@ public abstract class ChecksUtils {
     }
 
     public static Optional<String> checkSelected(Object value, String paramName) {
-        if (Objects.isNull(value)) {
+        if (!Objects.isNull(value)) {
             return Optional.empty();
         }
         return Optional.of(paramName + "必须选择");
@@ -48,12 +48,20 @@ public abstract class ChecksUtils {
         return Optional.of(error);
     }
 
-    public static String paramBeExists(String paramName) {
-        return errorResult(paramName + "已存在");
+    public static String paramExists(String paramName) {
+        return errorResult("指定的" + paramName + "已存在");
     }
 
-    public static String paramNoExists(String paramName) {
-        return errorResult(paramName + "不存在");
+    public static String paramNotExists(String paramName) {
+        return errorResult("指定的" + paramName + "不存在");
+    }
+
+    public static String itemsExists(String itemName) {
+        return errorResult("指定的" + itemName + "已存在于列表");
+    }
+
+    public static String itemsNotExists(String itemName) {
+        return errorResult("指定的" + itemName + "不存在于列表");
     }
 
     private static String errorResult(String message) {
