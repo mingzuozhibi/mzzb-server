@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.time.LocalDate;
 
 import static com.mingzuozhibi.commons.utils.FormatUtils.DATE_FORMATTER;
@@ -59,24 +57,6 @@ public class AdminController extends BaseController {
         try {
             Disc disc = dao.get(Disc.class, id);
             reCompute.reComputeDateRecords(disc);
-            return objectResult("done");
-        } catch (RuntimeException e) {
-            return errorMessage(e.getMessage());
-        }
-    }
-
-    @Transactional
-    @GetMapping(value = "/admin/reSendDiscTrack", produces = MEDIA_TYPE)
-    public String reSendDiscTrack() {
-        try {
-            dao.jdbc(connection -> {
-                Statement stmt = connection.createStatement();
-                ResultSet rs = stmt.executeQuery("select asin, title from disc");
-                while (rs.next()) {
-                    jmsService.sendDiscTrack(rs.getString("asin"), rs.getString("title"));
-                }
-                return null;
-            });
             return objectResult("done");
         } catch (RuntimeException e) {
             return errorMessage(e.getMessage());

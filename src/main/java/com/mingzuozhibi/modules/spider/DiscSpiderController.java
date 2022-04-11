@@ -8,7 +8,6 @@ import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.group.DiscGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +18,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static com.mingzuozhibi.commons.utils.FormatUtils.DATE_FORMATTER;
 import static com.mingzuozhibi.commons.utils.ModifyUtils.logCreate;
@@ -37,18 +35,10 @@ public class DiscSpiderController extends BaseController2 {
     private DiscUpdater discUpdater;
 
     @Autowired
-    private DiscGroupService discGroupService;
-
-    @Autowired
     private DiscRepository discRepository;
 
-    @Scheduled(cron = "0 59 * * * ?")
-    @GetMapping("/admin/sendNeedUpdateAsins")
-    public void sendNeedUpdateAsins() {
-        Set<String> asins = discGroupService.findNeedUpdateAsins();
-        jmsService.convertAndSend("need.update.asins", gson.toJson(asins));
-        jmsMessage.notify("JMS -> need.update.asins size=" + asins.size());
-    }
+    @Autowired
+    private DiscGroupService discGroupService;
 
     @JmsListener(destination = "prev.update.discs")
     public void discSpiderUpdate(String json) {
