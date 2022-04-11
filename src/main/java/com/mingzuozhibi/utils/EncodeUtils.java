@@ -1,12 +1,12 @@
-package com.mingzuozhibi.modules.user;
+package com.mingzuozhibi.utils;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Objects;
 
-public abstract class UserUitls {
+public abstract class EncodeUtils {
 
-    public static String encode(String username, String password) {
+    public static String encodePassword(String username, String password) {
         Objects.requireNonNull(username);
         Objects.requireNonNull(password);
         return md5(username + md5(password));

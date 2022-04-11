@@ -1,4 +1,4 @@
-package com.mingzuozhibi.commons.utils;
+package com.mingzuozhibi.utils;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.context.request.RequestContextHolder;

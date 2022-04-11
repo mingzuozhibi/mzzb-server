@@ -1,6 +1,6 @@
 package com.mingzuozhibi.modules.user;
 
-import com.mingzuozhibi.commons.base.BaseController2;
+import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.modules.remember.RememberRepository;
 import com.mingzuozhibi.support.JsonArg;
 import org.apache.commons.lang3.StringUtils;
@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.mingzuozhibi.commons.utils.ChecksUtils.*;
-import static com.mingzuozhibi.commons.utils.ModifyUtils.logCreate;
-import static com.mingzuozhibi.commons.utils.ModifyUtils.logUpdate;
+import static com.mingzuozhibi.utils.ChecksUtils.*;
+import static com.mingzuozhibi.utils.ModifyUtils.logCreate;
+import static com.mingzuozhibi.utils.ModifyUtils.logUpdate;
 
 @RestController
-public class UserController extends BaseController2 {
+public class UserController extends BaseController {
 
     @Autowired
     private UserRepository userRepository;
@@ -36,9 +36,11 @@ public class UserController extends BaseController2 {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/api/users/{id}", produces = MEDIA_TYPE)
     public String findById(@PathVariable Long id) {
-        return userRepository.findById(id)
-            .map(this::dataResult)
-            .orElseGet(() -> paramNotExists("用户ID"));
+        Optional<User> byId = userRepository.findById(id);
+        if (!byId.isPresent()) {
+            return paramNotExists("用户ID");
+        }
+        return dataResult(byId.get());
     }
 
     @Transactional

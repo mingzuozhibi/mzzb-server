@@ -5,7 +5,9 @@ import com.mingzuozhibi.commons.mylog.JmsMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 
-public class ResultSupport {
+import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
+
+public abstract class ResultSupport {
 
     @Autowired
     protected Gson gson;
@@ -13,8 +15,8 @@ public class ResultSupport {
     @Autowired
     protected JmsMessage jmsMessage;
 
-    protected String errorResult(String error) {
-        return gson.toJson(new BaseResult(error));
+    public static String errorResult(String message) {
+        return GSON.toJson(new BaseResult(message));
     }
 
     protected <T> String dataResult(T data) {

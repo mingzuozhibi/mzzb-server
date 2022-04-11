@@ -2,12 +2,12 @@ package com.mingzuozhibi.modules.group;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.mingzuozhibi.commons.base.BaseController2;
-import com.mingzuozhibi.commons.utils.ModifyUtils;
+import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.group.DiscGroup.ViewType;
 import com.mingzuozhibi.support.JsonArg;
+import com.mingzuozhibi.utils.ModifyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,13 +17,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.mingzuozhibi.commons.utils.ChecksUtils.*;
-import static com.mingzuozhibi.commons.utils.ModifyUtils.*;
 import static com.mingzuozhibi.modules.group.DiscGroupUtils.buildWithCount;
 import static com.mingzuozhibi.modules.group.DiscGroupUtils.buildWithDiscs;
+import static com.mingzuozhibi.utils.ChecksUtils.*;
+import static com.mingzuozhibi.utils.ModifyUtils.*;
 
 @RestController
-public class DiscGroupController extends BaseController2 {
+public class DiscGroupController extends BaseController {
 
     @Autowired
     private DiscRepository discRepository;

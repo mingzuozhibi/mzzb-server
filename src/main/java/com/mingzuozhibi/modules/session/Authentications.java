@@ -1,7 +1,7 @@
-package com.mingzuozhibi.commons.utils;
+package com.mingzuozhibi.modules.session;
 
+import com.mingzuozhibi.config.UserDetailsImpl;
 import com.mingzuozhibi.modules.user.User;
-import com.mingzuozhibi.security.UserDetailsImpl;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -11,16 +11,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
-import java.security.Principal;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.mingzuozhibi.commons.utils.ServletUtils.getHttpRequest;
+import static com.mingzuozhibi.utils.ServletUtils.getHttpRequest;
 
-public abstract class SessionUtils {
+public abstract class Authentications {
 
     public static final Set<GrantedAuthority> GUEST_AUTHORITIES = Stream.of("NONE")
         .map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
@@ -44,10 +43,6 @@ public abstract class SessionUtils {
             userDetails, userDetails.getPassword(), userDetails.getAuthorities());
         token.setDetails(details);
         return token;
-    }
-
-    public static String getLoginName() {
-        return getAuthentication().map(Principal::getName).orElse("*system*");
     }
 
 }

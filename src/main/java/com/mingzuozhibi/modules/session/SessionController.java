@@ -1,6 +1,6 @@
 package com.mingzuozhibi.modules.session;
 
-import com.mingzuozhibi.commons.base.BaseController2;
+import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.modules.remember.Remember;
 import com.mingzuozhibi.modules.user.User;
 import com.mingzuozhibi.modules.user.UserRepository;
@@ -18,13 +18,13 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.mingzuozhibi.commons.utils.ChecksUtils.*;
-import static com.mingzuozhibi.commons.utils.SessionUtils.*;
+import static com.mingzuozhibi.modules.session.Authentications.*;
 import static com.mingzuozhibi.modules.session.SessionUtils.*;
+import static com.mingzuozhibi.utils.ChecksUtils.*;
 
 @Slf4j
 @RestController
-public class SessionController extends BaseController2 {
+public class SessionController extends BaseController {
 
     @Autowired
     private SessionService sessionService;

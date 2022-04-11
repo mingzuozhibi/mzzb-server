@@ -1,12 +1,11 @@
-package com.mingzuozhibi.commons.utils;
+package com.mingzuozhibi.utils;
 
-import com.mingzuozhibi.commons.result.BaseResult;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
+import static com.mingzuozhibi.commons.result.ResultSupport.errorResult;
 
 public abstract class ChecksUtils {
 
@@ -67,10 +66,6 @@ public abstract class ChecksUtils {
 
     public static String itemsNotExists(String itemName) {
         return errorResult("指定的" + itemName + "不存在于列表");
-    }
-
-    private static String errorResult(String message) {
-        return GSON.toJson(new BaseResult(message));
     }
 
 }

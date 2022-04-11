@@ -1,7 +1,7 @@
 package com.mingzuozhibi.modules.record;
 
 import com.google.gson.JsonObject;
-import com.mingzuozhibi.commons.base.BaseModel2;
+import com.mingzuozhibi.commons.base.BaseModel;
 import com.mingzuozhibi.commons.gson.GsonIgnored;
 import com.mingzuozhibi.modules.disc.Disc;
 import lombok.Getter;
@@ -20,7 +20,7 @@ import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 @Getter
 @Setter
 @NoArgsConstructor
-public class HourRecord extends BaseModel2 implements BaseRecord {
+public class HourRecord extends BaseModel implements Record {
 
     public HourRecord(Disc disc, LocalDate date) {
         this.disc = disc;
