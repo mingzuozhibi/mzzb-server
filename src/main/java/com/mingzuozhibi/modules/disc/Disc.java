@@ -6,14 +6,15 @@ import com.mingzuozhibi.commons.gson.GsonFactory;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Transient;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.Objects;
-import java.util.Optional;
 
 @Entity
 @Getter
@@ -77,7 +78,11 @@ public class Disc extends BaseModel2 implements Comparable<Disc> {
 
     @Transient
     public String getLogName() {
-        return String.format("(%s)%s", asin, Optional.ofNullable(titlePc).orElse(title));
+        if (StringUtils.isNotEmpty(titlePc)) {
+            return String.format("(%s)%s", asin, titlePc);
+        } else {
+            return String.format("(%s)%s", asin, title);
+        }
     }
 
     @Transient
@@ -101,15 +106,9 @@ public class Disc extends BaseModel2 implements Comparable<Disc> {
     @Override
     public int compareTo(Disc disc) {
         Objects.requireNonNull(disc);
-        Integer rank1 = this.getThisRank();
-        Integer rank2 = disc.getThisRank();
-        boolean empty1 = rank1 == null;
-        boolean empty2 = rank2 == null;
-        if (!empty1 && !empty2) {
-            return rank1.compareTo(rank2);
-        } else {
-            return empty1 && empty2 ? 0 : empty1 ? 1 : -1;
-        }
+        Comparator<Integer> keyComparator = Comparator.nullsLast(Comparator.naturalOrder());
+        Comparator<Disc> comparator = Comparator.comparing(Disc::getThisRank, keyComparator);
+        return comparator.compare(this, disc);
     }
 
     public JsonObject toJson() {
