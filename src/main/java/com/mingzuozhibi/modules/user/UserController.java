@@ -36,9 +36,11 @@ public class UserController extends BaseController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/api/users/{id}", produces = MEDIA_TYPE)
     public String findById(@PathVariable Long id) {
-        return userRepository.findById(id)
-            .map(this::dataResult)
-            .orElseGet(() -> paramNotExists("用户ID"));
+        Optional<User> byId = userRepository.findById(id);
+        if (!byId.isPresent()) {
+            return paramNotExists("用户ID");
+        }
+        return dataResult(byId.get());
     }
 
     @Transactional
