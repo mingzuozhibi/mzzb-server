@@ -2,6 +2,7 @@ package com.mingzuozhibi.modules.admin;
 
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsService;
+import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.group.DiscGroupService;
 import com.mingzuozhibi.modules.record.RecordCompute;
@@ -12,12 +13,16 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.Set;
 
+import static com.mingzuozhibi.utils.ChecksUtils.paramNotExists;
 import static com.mingzuozhibi.utils.FormatUtils.DATE_FORMATTER;
+import static com.mingzuozhibi.utils.ModifyUtils.logUpdate;
 
 @RestController
 public class AdminController extends BaseController {
@@ -72,17 +77,32 @@ public class AdminController extends BaseController {
     }
 
     @Transactional
-    @GetMapping(value = "/admin/computeDate/{date}", produces = MEDIA_TYPE)
-    public void computeDate(@PathVariable String date) {
+    @GetMapping(value = "/admin/reComputeDate/{date}", produces = MEDIA_TYPE)
+    public void reComputeDate(@PathVariable String date) {
         recordCompute.computeDate(LocalDate.parse(date, DATE_FORMATTER));
     }
 
     @Transactional
-    @GetMapping(value = "/admin/computeDisc/{id}", produces = MEDIA_TYPE)
-    public void computeDisc(@PathVariable Long id) {
+    @GetMapping(value = "/admin/reComputeDisc/{id}", produces = MEDIA_TYPE)
+    public void reComputeDisc(@PathVariable Long id) {
         discRepository.findById(id).ifPresent(disc -> {
             recordCompute.computeDisc(disc);
         });
+    }
+
+    @Transactional
+    @PostMapping(value = "/api/admin/reComputeDisc2/{id}", produces = MEDIA_TYPE)
+    public String reComputeDisc2(@PathVariable Long id) {
+        Optional<Disc> byId = discRepository.findById(id);
+        if (!byId.isPresent()) {
+            return paramNotExists("碟片ID");
+        }
+        Disc disc = byId.get();
+        Integer pt1 = disc.getTotalPt();
+        recordCompute.computeDisc(disc);
+        Integer pt2 = disc.getTotalPt();
+        jmsMessage.notify(logUpdate("碟片PT", pt1, pt2));
+        return dataResult("compute: " + pt1 + "->" + pt2);
     }
 
 }
