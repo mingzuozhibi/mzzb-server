@@ -1,20 +1,25 @@
 package com.mingzuozhibi.modules.admin;
 
-import com.mingzuozhibi.commons.base.BaseController2;
+import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsService;
 import com.mingzuozhibi.commons.utils.ThreadUtils;
+import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.group.DiscGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.Set;
 
+import static com.mingzuozhibi.commons.utils.FormatUtils.DATE_FORMATTER;
+
 @RestController
-public class AdminController2 extends BaseController2 {
+public class AdminController extends BaseController {
 
     @Autowired
     private JmsService jmsService;
@@ -24,6 +29,12 @@ public class AdminController2 extends BaseController2 {
 
     @Autowired
     private AdminService adminService;
+
+    @Autowired
+    private ComputeService computeService;
+
+    @Autowired
+    private DiscRepository discRepository;
 
     @Autowired
     private DiscGroupService discGroupService;
@@ -56,6 +67,21 @@ public class AdminController2 extends BaseController2 {
             while (rs.next()) {
                 jmsService.sendDiscTrack(rs.getString("asin"), rs.getString("title"));
             }
+        });
+    }
+
+    @Transactional
+    @GetMapping(value = "/admin/computeDate/{date}", produces = MEDIA_TYPE)
+    public void computeDate(@PathVariable String date) {
+        LocalDate localDate = LocalDate.parse(date, DATE_FORMATTER);
+        computeService.computeDate(localDate);
+    }
+
+    @Transactional
+    @GetMapping(value = "/admin/computeDisc/{id}", produces = MEDIA_TYPE)
+    public void computeDisc(@PathVariable Long id) {
+        discRepository.findById(id).ifPresent(disc -> {
+            computeService.computeDisc(disc);
         });
     }
 

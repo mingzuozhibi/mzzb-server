@@ -1,6 +1,6 @@
 package com.mingzuozhibi.modules.session;
 
-import com.mingzuozhibi.commons.base.BaseController2;
+import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.modules.remember.Remember;
 import com.mingzuozhibi.modules.user.User;
 import com.mingzuozhibi.modules.user.UserRepository;
@@ -24,7 +24,7 @@ import static com.mingzuozhibi.modules.session.SessionUtils.*;
 
 @Slf4j
 @RestController
-public class SessionController extends BaseController2 {
+public class SessionController extends BaseController {
 
     @Autowired
     private SessionService sessionService;

@@ -2,7 +2,7 @@ package com.mingzuozhibi.modules.group;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.mingzuozhibi.commons.base.BaseController2;
+import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.utils.ModifyUtils;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.DiscRepository;
@@ -23,7 +23,7 @@ import static com.mingzuozhibi.modules.group.DiscGroupUtils.buildWithCount;
 import static com.mingzuozhibi.modules.group.DiscGroupUtils.buildWithDiscs;
 
 @RestController
-public class DiscGroupController extends BaseController2 {
+public class DiscGroupController extends BaseController {
 
     @Autowired
     private DiscRepository discRepository;

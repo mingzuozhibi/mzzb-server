@@ -1,7 +1,7 @@
 package com.mingzuozhibi.modules.spider;
 
 import com.google.gson.reflect.TypeToken;
-import com.mingzuozhibi.commons.base.BaseController2;
+import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsService;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.DiscRepository;
@@ -23,7 +23,7 @@ import static com.mingzuozhibi.commons.utils.FormatUtils.DATE_FORMATTER;
 import static com.mingzuozhibi.commons.utils.ModifyUtils.logCreate;
 
 @RestController
-public class DiscSpiderController extends BaseController2 {
+public class DiscSpiderController extends BaseController {
 
     @Autowired
     private JmsService jmsService;

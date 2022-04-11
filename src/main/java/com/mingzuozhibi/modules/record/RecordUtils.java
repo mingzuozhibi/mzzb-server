@@ -7,11 +7,10 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import static com.mingzuozhibi.commons.utils.FormatUtils.DATE_FORMATTER;
-import static com.mingzuozhibi.utils.ReCompute.computeHourPt;
 
-public abstract class BaseRecordUtils {
+public abstract class RecordUtils {
 
-    public static JsonObject buildRecord(BaseRecord record) {
+    public static JsonObject buildRecord(Record record) {
         JsonObject object = new JsonObject();
         object.addProperty("id", record.getId());
         object.addProperty("date", record.getDate().format(DATE_FORMATTER));
@@ -30,7 +29,7 @@ public abstract class BaseRecordUtils {
         return object;
     }
 
-    public static void computePt(Disc disc, LocalDate date, BaseRecord record0, BaseRecord record1, BaseRecord record7) {
+    public static void computePt(Disc disc, LocalDate date, Record record0, Record record1, Record record7) {
         if (date.isBefore(disc.getReleaseDate())) {
             computeTodayPt(record0);
             computeTotalPt(record0, record1);
@@ -42,13 +41,13 @@ public abstract class BaseRecordUtils {
         }
     }
 
-    private static void computeTodayPt(BaseRecord record) {
+    private static void computeTodayPt(Record record) {
         Optional.ofNullable(record.getAverRank()).ifPresent(rank -> {
             record.setTodayPt(24 * computeHourPt(record.getDisc(), rank));
         });
     }
 
-    private static void computeTotalPt(BaseRecord record0, BaseRecord record1) {
+    private static void computeTotalPt(Record record0, Record record1) {
         if (record1 == null || record1.getTotalPt() == null) {
             record0.setTotalPt(record0.getTodayPt());
         } else if (record0.getTodayPt() != null) {
@@ -58,7 +57,7 @@ public abstract class BaseRecordUtils {
         }
     }
 
-    private static void computeGuessPt(BaseRecord record0, BaseRecord record7) {
+    private static void computeGuessPt(Record record0, Record record7) {
         if (record7 == null) {
             return;
         }
@@ -71,4 +70,41 @@ public abstract class BaseRecordUtils {
         }
     }
 
+    public static double computeHourPt(Disc disc, double rank) {
+        switch (disc.getDiscType()) {
+            case Cd:
+                return computeHourPt(150, 5.25, rank);
+            case Auto:
+            case Bluray:
+                return computePtOfBD(rank);
+            case Dvd:
+                return computeHourPt(100, 4.2, rank);
+            default:
+                return 0d;
+        }
+    }
+
+    private static double computePtOfBD(double rank) {
+        if (rank <= 10) {
+            return computeHourPt(100, 3.2, rank);
+        } else if (rank <= 20) {
+            return computeHourPt(100, 3.3, rank);
+        } else if (rank <= 50) {
+            return computeHourPt(100, 3.4, rank);
+        } else if (rank <= 100) {
+            return computeHourPt(100, 3.6, rank);
+        } else if (rank <= 300) {
+            return computeHourPt(100, 3.8, rank);
+        } else {
+            return computeHourPt(100, 3.9, rank);
+        }
+    }
+
+    private static double computeHourPt(int div, double base, double rank) {
+        return div / Math.exp(Math.log(rank) / Math.log(base));
+    }
+
+    public static Integer safeIntValue(Double value) {
+        return Optional.ofNullable(value).map(Double::intValue).orElse(null);
+    }
 }

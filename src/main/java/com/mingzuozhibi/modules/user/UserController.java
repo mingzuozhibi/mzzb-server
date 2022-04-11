@@ -1,6 +1,6 @@
 package com.mingzuozhibi.modules.user;
 
-import com.mingzuozhibi.commons.base.BaseController2;
+import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.modules.remember.RememberRepository;
 import com.mingzuozhibi.support.JsonArg;
 import org.apache.commons.lang3.StringUtils;
@@ -17,7 +17,7 @@ import static com.mingzuozhibi.commons.utils.ModifyUtils.logCreate;
 import static com.mingzuozhibi.commons.utils.ModifyUtils.logUpdate;
 
 @RestController
-public class UserController extends BaseController2 {
+public class UserController extends BaseController {
 
     @Autowired
     private UserRepository userRepository;

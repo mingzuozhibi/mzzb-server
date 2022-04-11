@@ -1,9 +1,9 @@
 package com.mingzuozhibi.modules.disc;
 
 import com.google.gson.JsonObject;
-import com.mingzuozhibi.commons.base.BaseController2;
+import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
-import com.mingzuozhibi.modules.record.BaseRecordService;
+import com.mingzuozhibi.modules.record.RecordService;
 import com.mingzuozhibi.support.JsonArg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,13 +21,13 @@ import static com.mingzuozhibi.commons.utils.ModifyUtils.logCreate;
 import static com.mingzuozhibi.commons.utils.ModifyUtils.logUpdate;
 
 @RestController
-public class DiscController extends BaseController2 {
+public class DiscController extends BaseController {
+
+    @Autowired
+    private RecordService recordService;
 
     @Autowired
     private DiscRepository discRepository;
-
-    @Autowired
-    private BaseRecordService baseRecordService;
 
     @Transactional
     @GetMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
@@ -58,7 +58,7 @@ public class DiscController extends BaseController2 {
         }
         Disc disc = byId.get();
         JsonObject object = gson.toJsonTree(disc).getAsJsonObject();
-        object.add("records", baseRecordService.findRecords(disc));
+        object.add("records", recordService.buildBaseRecords(disc));
         return dataResult(object);
     }
 

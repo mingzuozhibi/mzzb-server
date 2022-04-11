@@ -5,7 +5,7 @@ import com.mingzuozhibi.modules.disc.Disc;
 
 import java.time.LocalDate;
 
-public interface BaseRecord {
+public interface Record {
 
     Long getId();
 

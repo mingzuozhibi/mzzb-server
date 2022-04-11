@@ -1,6 +1,6 @@
 package com.mingzuozhibi.modules.remember;
 
-import com.mingzuozhibi.commons.base.BaseModel2;
+import com.mingzuozhibi.commons.base.BaseModel;
 import com.mingzuozhibi.modules.user.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +16,7 @@ import java.time.Instant;
 @Setter
 @NoArgsConstructor
 @Entity(name = "auto_login")
-public class Remember extends BaseModel2 implements Serializable {
+public class Remember extends BaseModel implements Serializable {
 
     public Remember(User user, String token, Instant expired) {
         this.user = user;
