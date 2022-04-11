@@ -4,6 +4,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
+import com.mingzuozhibi.commons.utils.MyTimeUtils;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -13,7 +14,7 @@ public class AdapterOfLocalDateTime extends TypeAdapter<LocalDateTime> {
     @Override
     public void write(JsonWriter out, LocalDateTime value) throws IOException {
         if (value != null) {
-            out.value(AdapterUtils.toEpochMilli(value));
+            out.value(MyTimeUtils.toEpochMilli(value));
         } else {
             out.nullValue();
         }
@@ -25,7 +26,7 @@ public class AdapterOfLocalDateTime extends TypeAdapter<LocalDateTime> {
             in.nextNull();
             return null;
         } else {
-            return AdapterUtils.ofEpochMilli(in.nextLong());
+            return MyTimeUtils.ofEpochMilli(in.nextLong());
         }
     }
 

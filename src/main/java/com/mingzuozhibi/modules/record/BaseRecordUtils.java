@@ -16,10 +16,10 @@ public abstract class BaseRecordUtils {
         object.addProperty("id", record.getId());
         object.addProperty("date", record.getDate().format(DATE_FORMATTER));
         Optional.ofNullable(record.getAverRank()).ifPresent(rank -> {
-            addDouble(object, "averRank", rank);
+            object.addProperty("averRank", rank.intValue());
         });
         Optional.ofNullable(record.getTodayPt()).ifPresent(todayPt -> {
-            addDouble(object, "todayPt", todayPt);
+            object.addProperty("todayPt", todayPt.intValue());
         });
         Optional.ofNullable(record.getTotalPt()).ifPresent(totalPt -> {
             object.addProperty("totalPt", totalPt.intValue());
@@ -28,14 +28,6 @@ public abstract class BaseRecordUtils {
             object.addProperty("guessPt", guessPt.intValue());
         });
         return object;
-    }
-
-    private static void addDouble(JsonObject object, String name, Double number) {
-        if (number < 10) {
-            object.addProperty(name, number);
-        } else {
-            object.addProperty(name, number.intValue());
-        }
     }
 
     public static void computePt(Disc disc, LocalDate date, BaseRecord record0, BaseRecord record1, BaseRecord record7) {

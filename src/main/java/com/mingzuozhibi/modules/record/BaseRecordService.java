@@ -2,9 +2,10 @@ package com.mingzuozhibi.modules.record;
 
 import com.google.gson.JsonArray;
 import com.mingzuozhibi.modules.disc.Disc;
-import com.mingzuozhibi.modules.disc.DiscService;
+import com.mingzuozhibi.modules.group.DiscGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,7 +19,7 @@ import static com.mingzuozhibi.utils.ReCompute.safeIntValue;
 public class BaseRecordService {
 
     @Autowired
-    private DiscService discService;
+    private DiscGroupService discGroupService;
 
     @Autowired
     private HourRecordRepository hourRecordRepository;
@@ -26,6 +27,7 @@ public class BaseRecordService {
     @Autowired
     private DateRecordRepository dateRecordRepository;
 
+    @Transactional
     public JsonArray findRecords(Disc disc) {
         JsonArray array = new JsonArray();
         hourRecordRepository.findByDiscAndDate(disc, LocalDate.now())
@@ -35,15 +37,18 @@ public class BaseRecordService {
         return array;
     }
 
+    @Transactional
     public DateRecord findDateRecord(Disc disc, LocalDate date) {
         return dateRecordRepository.findByDiscAndDate(disc, date);
     }
 
+    @Transactional
     public HourRecord findOrCreateHourRecord(Disc disc, LocalDate date) {
         return hourRecordRepository.findByDiscAndDate(disc, date)
             .orElseGet(() -> hourRecordRepository.save(new HourRecord(disc, date)));
     }
 
+    @Transactional
     public int moveExpiredHourRecords() {
         List<HourRecord> hourRecords = hourRecordRepository.findByDateBeforeOrderByDate(LocalDate.now());
         hourRecords.forEach(hourRecord -> {
@@ -58,12 +63,13 @@ public class BaseRecordService {
         return hourRecords.size();
     }
 
+    @Transactional
     public int recordRankAndComputePt() {
         // +9 timezone and prev hour, so +1h -1h = +0h
         LocalDateTime now = LocalDateTime.now();
         LocalDate date = now.toLocalDate();
         int hour = now.getHour();
-        Set<Disc> discs = discService.findNeedRecordDiscs();
+        Set<Disc> discs = discGroupService.findNeedRecordDiscs();
         discs.forEach(disc -> {
             HourRecord record0 = findOrCreateHourRecord(disc, date);
             BaseRecord record1 = findDateRecord(disc, date.minusDays(1));

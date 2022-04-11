@@ -13,13 +13,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import static com.mingzuozhibi.commons.utils.ChecksUtils.*;
 import static com.mingzuozhibi.commons.utils.ModifyUtils.*;
+import static com.mingzuozhibi.modules.group.DiscGroupUtils.buildWithCount;
+import static com.mingzuozhibi.modules.group.DiscGroupUtils.buildWithDiscs;
 
 @RestController
 public class DiscGroupController extends BaseController2 {
@@ -33,15 +34,11 @@ public class DiscGroupController extends BaseController2 {
     @Transactional
     @GetMapping(value = "/api/discGroups", produces = MEDIA_TYPE)
     public String findAll(@RequestParam(defaultValue = "false") boolean hasPrivate) {
-        List<DiscGroup> discGroups;
-        if (hasPrivate) {
-            discGroups = discGroupRepository.findAll();
-        } else {
-            discGroups = discGroupRepository.findByViewTypeNot(ViewType.PrivateList);
-        }
+        List<DiscGroup> discGroups = discGroupRepository.findAllHasPrivate(hasPrivate);
         JsonArray array = new JsonArray();
         discGroups.forEach(discGroup -> {
-            array.add(buildWithCount(discGroup));
+            long count = discRepository.countGroupDiscs(discGroup.getId());
+            array.add(buildWithCount(discGroup, count));
         });
         return dataResult(array);
     }
@@ -131,7 +128,7 @@ public class DiscGroupController extends BaseController2 {
             return paramNotExists("列表ID");
         }
         DiscGroup discGroup = byId.get();
-        if (discRepository.countByGroupId(id) > 0) {
+        if (discRepository.countGroupDiscs(id) > 0) {
             jmsMessage.warning(logDelete("列表", discGroup.getTitle(), gson.toJson(discGroup)));
             discGroup.getDiscs().forEach(disc -> {
                 jmsMessage.info("[记录删除的碟片][ASIN=%s][NAME=%s]", disc.getAsin(), disc.getLogName());
@@ -172,7 +169,7 @@ public class DiscGroupController extends BaseController2 {
         }
         Disc disc = byId2.get();
 
-        if (discRepository.countByGroupId(id, discId) > 0) {
+        if (discRepository.existsDiscInGroup(discGroup, disc)) {
             return itemsExists("碟片");
         }
         discGroup.getDiscs().add(disc);
@@ -197,31 +194,13 @@ public class DiscGroupController extends BaseController2 {
         }
         Disc disc = byId2.get();
 
-        if (discRepository.countByGroupId(id, discId) == 0) {
+        if (!discRepository.existsDiscInGroup(discGroup, disc)) {
             return itemsNotExists("碟片");
         }
         discGroup.getDiscs().remove(disc);
 
-        jmsMessage.notify(ModifyUtils.logDrop("碟片", disc.getLogName(), discGroup.getTitle()));
+        jmsMessage.notify(logDrop("碟片", disc.getLogName(), discGroup.getTitle()));
         return dataResult(disc.toJson());
-    }
-
-    private JsonObject buildWithCount(DiscGroup discGroup) {
-        JsonObject object = gson.toJsonTree(discGroup).getAsJsonObject();
-        object.addProperty("discCount", discRepository.countByGroupId(discGroup.getId()));
-        return object;
-    }
-
-    private JsonObject buildWithDiscs(DiscGroup discGroup) {
-        JsonObject object = gson.toJsonTree(discGroup).getAsJsonObject();
-        object.add("discs", buildDiscs(discGroup.getDiscs()));
-        return object;
-    }
-
-    private static JsonArray buildDiscs(Collection<Disc> discs) {
-        JsonArray array = new JsonArray();
-        discs.forEach(disc -> array.add(disc.toJson()));
-        return array;
     }
 
 }

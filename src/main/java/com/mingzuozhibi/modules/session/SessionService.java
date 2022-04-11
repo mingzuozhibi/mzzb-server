@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -23,6 +24,7 @@ public class SessionService {
     @Autowired
     private RememberRepository rememberRepository;
 
+    @Transactional
     public Optional<Remember> vaildSession(String token) {
         if (token == null || token.length() != 36) {
             return Optional.empty();
@@ -43,6 +45,7 @@ public class SessionService {
         return Optional.of(remember);
     }
 
+    @Transactional
     public Remember buildSession(User user) {
         String token = UUID.randomUUID().toString();
         Instant expired = Instant.now().plusMillis(TimeUnit.DAYS.toMillis(14));
@@ -51,12 +54,14 @@ public class SessionService {
         return remember;
     }
 
+    @Transactional
     public void cleanSession(Long sessionId) {
         if (sessionId != null) {
             rememberRepository.deleteById(sessionId);
         }
     }
 
+    @Transactional
     public int countSession() {
         String sql = "SELECT COUNT(*) FROM SPRING_SESSION";
         try {

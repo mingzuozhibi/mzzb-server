@@ -9,7 +9,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -30,8 +29,7 @@ public class UserController extends BaseController2 {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/api/users", produces = MEDIA_TYPE)
     public String findAll() {
-        List<User> users = userRepository.findAll();
-        return dataResult(users);
+        return dataResult(userRepository.findAll());
     }
 
     @Transactional

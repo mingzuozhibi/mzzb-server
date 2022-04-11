@@ -1,7 +1,6 @@
-package com.mingzuozhibi.modules.disc;
+package com.mingzuozhibi.modules.group;
 
-import com.mingzuozhibi.commons.gson.adapter.AdapterUtils;
-import com.mingzuozhibi.modules.group.DiscGroupRepository;
+import com.mingzuozhibi.modules.disc.Disc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,10 +11,11 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.mingzuozhibi.commons.utils.MyTimeUtils.toInstant;
 import static java.util.Comparator.*;
 
 @Service
-public class DiscService {
+public class DiscGroupService {
 
     @Autowired
     private DiscGroupRepository discGroupRepository;
@@ -41,7 +41,7 @@ public class DiscService {
         Comparator<Disc> comparator = comparing(Disc::getUpdateTime, nullsFirst(naturalOrder()));
         discGroupRepository.findByEnabled(true).forEach(discGroup -> {
             discGroup.getDiscs().stream().max(comparator).ifPresent(disc -> {
-                discGroup.setModifyTime(AdapterUtils.toInstant(disc.getUpdateTime()));
+                discGroup.setModifyTime(toInstant(disc.getUpdateTime()));
             });
         });
     }

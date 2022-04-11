@@ -10,6 +10,14 @@ public interface DiscGroupRepository extends JpaRepository<DiscGroup, Long> {
 
     List<DiscGroup> findByViewTypeNot(DiscGroup.ViewType privateList);
 
+    default List<DiscGroup> findAllHasPrivate(boolean hasPrivate) {
+        if (hasPrivate) {
+            return findAll();
+        } else {
+            return findByViewTypeNot(DiscGroup.ViewType.PrivateList);
+        }
+    }
+
     List<DiscGroup> findByEnabled(boolean enabled);
 
     Optional<DiscGroup> findByKey(String key);

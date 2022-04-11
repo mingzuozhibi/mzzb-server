@@ -8,6 +8,7 @@ import com.mingzuozhibi.support.JsonArg;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,6 +32,7 @@ public class SessionController extends BaseController2 {
     @Autowired
     private UserRepository userRepository;
 
+    @Transactional
     @GetMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionQuery() {
         Optional<Authentication> optional = getAuthentication();
@@ -46,6 +48,7 @@ public class SessionController extends BaseController2 {
         return buildSessionAndCount();
     }
 
+    @Transactional
     @PostMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionLogin(@JsonArg("$.username") String username,
                                @JsonArg("$.password") String password) {
@@ -73,6 +76,7 @@ public class SessionController extends BaseController2 {
         return buildSessionAndCount();
     }
 
+    @Transactional
     @DeleteMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionLogout() {
         Long sessionId = getSessionId();

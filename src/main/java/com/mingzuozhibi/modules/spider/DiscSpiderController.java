@@ -4,9 +4,8 @@ import com.google.gson.reflect.TypeToken;
 import com.mingzuozhibi.commons.base.BaseController2;
 import com.mingzuozhibi.commons.mylog.JmsService;
 import com.mingzuozhibi.modules.disc.Disc;
-import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import com.mingzuozhibi.modules.disc.DiscRepository;
-import com.mingzuozhibi.modules.disc.DiscService;
+import com.mingzuozhibi.modules.group.DiscGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -35,7 +34,10 @@ public class DiscSpiderController extends BaseController2 {
     private DiscSpider discSpider;
 
     @Autowired
-    private DiscService discService;
+    private DiscUpdater discUpdater;
+
+    @Autowired
+    private DiscGroupService discGroupService;
 
     @Autowired
     private DiscRepository discRepository;
@@ -43,32 +45,32 @@ public class DiscSpiderController extends BaseController2 {
     @Scheduled(cron = "0 59 * * * ?")
     @GetMapping("/admin/sendNeedUpdateAsins")
     public void sendNeedUpdateAsins() {
-        Set<String> asins = discService.findNeedUpdateAsins();
+        Set<String> asins = discGroupService.findNeedUpdateAsins();
         jmsService.convertAndSend("need.update.asins", gson.toJson(asins));
         jmsMessage.notify("JMS -> need.update.asins size=" + asins.size());
     }
 
     @JmsListener(destination = "prev.update.discs")
     public void discSpiderUpdate(String json) {
-        TypeToken<?> typeToken = TypeToken.getParameterized(ArrayList.class, DiscUpdate.class);
-        List<DiscUpdate> discUpdates = gson.fromJson(json, typeToken.getType());
-        jmsMessage.notify("JMS <- prev.update.discs size=" + discUpdates.size());
-        discSpider.applyDiscUpdates(discUpdates);
+        TypeToken<?> typeToken = TypeToken.getParameterized(ArrayList.class, DiscInfo.class);
+        List<DiscInfo> discInfos = gson.fromJson(json, typeToken.getType());
+        jmsMessage.notify("JMS <- prev.update.discs size=" + discInfos.size());
+        discUpdater.updateDiscs(discInfos);
     }
 
     @JmsListener(destination = "done.update.discs")
     public void discSpiderUpdate2(String json) {
-        TypeToken<?> typeToken = TypeToken.getParameterized(ArrayList.class, DiscUpdate.class);
-        List<DiscUpdate> discUpdates = gson.fromJson(json, typeToken.getType());
-        jmsMessage.notify("JMS <- done.update.discs size=" + discUpdates.size());
-        discSpider.applyDiscUpdates(discUpdates);
+        TypeToken<?> typeToken = TypeToken.getParameterized(ArrayList.class, DiscInfo.class);
+        List<DiscInfo> discInfos = gson.fromJson(json, typeToken.getType());
+        jmsMessage.notify("JMS <- done.update.discs size=" + discInfos.size());
+        discUpdater.updateDiscs(discInfos);
     }
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping(value = "/api/admin/fetchCount")
     public String getFetchCount() {
-        return dataResult(discService.findNeedUpdateAsins().size());
+        return dataResult(discGroupService.findNeedUpdateAsins().size());
     }
 
     @Transactional
@@ -79,28 +81,25 @@ public class DiscSpiderController extends BaseController2 {
         if (byAsin.isPresent()) {
             return dataResult(byAsin.get().toJson());
         }
-        return searchDiscFromAmazon(asin);
-    }
-
-    private String searchDiscFromAmazon(@PathVariable String asin) {
-        SearchTask<DiscUpdate> task = discSpider.runSearchTask(asin);
+        SearchTask<DiscInfo> task = discSpider.sendDiscUpdate(asin);
         if (!task.isSuccess()) {
             return errorResult(task.getMessage());
         }
-        DiscUpdate discUpdate = task.getData();
-        if (discUpdate.isOffTheShelf()) {
+        DiscInfo discInfo = task.getData();
+        if (discInfo.isOffTheShelf()) {
             return errorResult("可能该碟片已下架");
         }
-        Disc disc = createDisc(asin, discUpdate);
+        Disc disc = createDisc(asin, discInfo);
         jmsService.sendDiscTrack(disc.getAsin(), disc.getTitle());
         jmsMessage.success(logCreate("碟片", disc.getTitle(), disc.getLogName()));
         return dataResult(disc);
     }
 
-    private Disc createDisc(@PathVariable String asin, DiscUpdate discUpdate) {
-        String title = discUpdate.getTitle();
-        DiscType discType = DiscType.valueOf(discUpdate.getType());
-        LocalDate releaseDate = Optional.ofNullable(discUpdate.getDate())
+
+    private Disc createDisc(@PathVariable String asin, DiscInfo discInfo) {
+        String title = discInfo.getTitle();
+        Disc.DiscType discType = Disc.DiscType.valueOf(discInfo.getType());
+        LocalDate releaseDate = Optional.ofNullable(discInfo.getDate())
             .map(date -> LocalDate.parse(date, DATE_FORMATTER))
             .orElseGet(LocalDate::now);
         Disc disc = new Disc(asin, title, discType, releaseDate);

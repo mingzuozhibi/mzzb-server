@@ -50,6 +50,19 @@ public class DiscController extends BaseController2 {
     }
 
     @Transactional
+    @GetMapping(value = "/api/discs/{id}/records", produces = MEDIA_TYPE)
+    public String findRecords(@PathVariable Long id) {
+        Optional<Disc> byId = discRepository.findById(id);
+        if (!byId.isPresent()) {
+            return paramNotExists("碟片ID");
+        }
+        Disc disc = byId.get();
+        JsonObject object = gson.toJsonTree(disc).getAsJsonObject();
+        object.add("records", baseRecordService.findRecords(disc));
+        return dataResult(object);
+    }
+
+    @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/api/discs", produces = MEDIA_TYPE)
     public String doCreate(@JsonArg String asin,
@@ -124,19 +137,6 @@ public class DiscController extends BaseController2 {
         disc.setUpdateTime(now);
         jmsMessage.info(logUpdate("碟片排名", disc.getPrevRank(), disc.getThisRank(), disc.getLogName()));
         return dataResult(disc.toJson());
-    }
-
-    @Transactional
-    @GetMapping(value = "/api/discs/{id}/records", produces = MEDIA_TYPE)
-    public String findRecords(@PathVariable Long id) {
-        Optional<Disc> byId = discRepository.findById(id);
-        if (!byId.isPresent()) {
-            return paramNotExists("碟片ID");
-        }
-        Disc disc = byId.get();
-        JsonObject object = gson.toJsonTree(disc).getAsJsonObject();
-        object.add("records", baseRecordService.findRecords(disc));
-        return dataResult(object);
     }
 
 }

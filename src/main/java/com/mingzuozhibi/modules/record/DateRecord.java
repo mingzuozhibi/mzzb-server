@@ -24,8 +24,8 @@ public class DateRecord extends BaseModel2 implements BaseRecord {
         this.date = date;
     }
 
-    @OneToOne(fetch = FetchType.LAZY)
     @GsonIgnored
+    @OneToOne(fetch = FetchType.LAZY)
     private Disc disc;
 
     @Column(nullable = false)

@@ -1,10 +1,10 @@
-package com.mingzuozhibi.commons.gson.adapter;
+package com.mingzuozhibi.commons.utils;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-public abstract class AdapterUtils {
+public abstract class MyTimeUtils {
 
     public static Instant toInstant(LocalDateTime time) {
         return time.atZone(ZoneId.systemDefault()).toInstant();

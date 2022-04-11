@@ -1,6 +1,7 @@
 package com.mingzuozhibi.commons.result;
 
 import com.google.gson.Gson;
+import com.mingzuozhibi.commons.mylog.JmsMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 
@@ -8,6 +9,9 @@ public class ResultSupport {
 
     @Autowired
     protected Gson gson;
+
+    @Autowired
+    protected JmsMessage jmsMessage;
 
     protected String errorResult(String error) {
         return gson.toJson(new BaseResult(error));
