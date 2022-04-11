@@ -1,11 +1,11 @@
-package com.mingzuozhibi.modules.core.record;
+package com.mingzuozhibi.modules.record;
 
 import com.google.gson.JsonObject;
-import com.mingzuozhibi.modules.core.disc.Disc;
+import com.mingzuozhibi.modules.disc.Disc;
 
 import java.time.LocalDate;
 
-public interface DiscRecord {
+public interface BaseRecord {
 
     Long getId();
 

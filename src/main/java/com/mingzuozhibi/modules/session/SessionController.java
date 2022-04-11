@@ -1,9 +1,9 @@
-package com.mingzuozhibi.modules.auth.session;
+package com.mingzuozhibi.modules.session;
 
 import com.mingzuozhibi.commons.base.BaseController2;
-import com.mingzuozhibi.modules.auth.remember.Remember;
-import com.mingzuozhibi.modules.auth.user.User;
-import com.mingzuozhibi.modules.auth.user.UserRepository;
+import com.mingzuozhibi.modules.remember.Remember;
+import com.mingzuozhibi.modules.user.User;
+import com.mingzuozhibi.modules.user.UserRepository;
 import com.mingzuozhibi.support.JsonArg;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ import java.util.Optional;
 
 import static com.mingzuozhibi.commons.utils.ChecksUtils.*;
 import static com.mingzuozhibi.commons.utils.SecurityUtils.*;
-import static com.mingzuozhibi.modules.auth.session.SessionUtils.*;
+import static com.mingzuozhibi.modules.session.SessionUtils.*;
 
 @Slf4j
 @RestController

@@ -1,4 +1,4 @@
-package com.mingzuozhibi.modules.core.record;
+package com.mingzuozhibi.modules.record;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

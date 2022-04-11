@@ -1,8 +1,8 @@
-package com.mingzuozhibi.modules.core.record;
+package com.mingzuozhibi.modules.record;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.mingzuozhibi.modules.core.disc.Disc;
+import com.mingzuozhibi.modules.disc.Disc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +12,7 @@ import java.util.Optional;
 import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 
 @Service
-public class DiscRecordService {
+public class BaseRecordService {
 
     @Autowired
     private HourRecordRepository hourRecordRepository;
@@ -29,7 +29,7 @@ public class DiscRecordService {
         return array;
     }
 
-    private JsonObject buildRecord(DiscRecord record) {
+    private JsonObject buildRecord(BaseRecord record) {
         JsonObject object = new JsonObject();
         object.addProperty("id", record.getId());
         object.add("date", GSON.toJsonTree(record.getDate()));

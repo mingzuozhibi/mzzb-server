@@ -1,7 +1,7 @@
-package com.mingzuozhibi.modules.core.disc;
+package com.mingzuozhibi.modules.disc;
 
 import com.mingzuozhibi.commons.gson.adapter.AdapterUtils;
-import com.mingzuozhibi.modules.core.group.DiscGroupRepository;
+import com.mingzuozhibi.modules.group.DiscGroupRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

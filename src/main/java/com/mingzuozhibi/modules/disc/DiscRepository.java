@@ -1,4 +1,4 @@
-package com.mingzuozhibi.modules.core.disc;
+package com.mingzuozhibi.modules.disc;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

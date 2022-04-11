@@ -1,4 +1,4 @@
-package com.mingzuozhibi.modules.auth.session;
+package com.mingzuozhibi.modules.session;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,7 +1,7 @@
-package com.mingzuozhibi.modules.auth.user;
+package com.mingzuozhibi.modules.user;
 
 import com.mingzuozhibi.commons.base.BaseController2;
-import com.mingzuozhibi.modules.auth.remember.RememberRepository;
+import com.mingzuozhibi.modules.remember.RememberRepository;
 import com.mingzuozhibi.support.JsonArg;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
