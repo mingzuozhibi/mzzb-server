@@ -50,7 +50,7 @@ public class AdminController extends BaseController {
     @GetMapping(value = "/admin/sendNeedUpdateAsins", produces = MEDIA_TYPE)
     public void sendNeedUpdateAsins() {
         Set<String> asins = discGroupService.findNeedUpdateAsins();
-        jmsService.sendJson("need.update.asins", gson.toJson(asins));
+        jmsService.convertAndSend("need.update.asins", gson.toJson(asins));
         jmsMessage.notify("JMS -> need.update.asins size=" + asins.size());
     }
 
