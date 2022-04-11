@@ -36,7 +36,12 @@ public class RecordService extends BaseService {
 
     @Transactional
     public DateRecord getDateRecord(Disc disc, LocalDate date) {
-        return dateRecordRepository.findByDiscAndDate(disc, date);
+        return dateRecordRepository.getByDiscAndDate(disc, date);
+    }
+
+    @Transactional
+    public DateRecord getLastDateRecord(Disc disc, LocalDate date) {
+        return dateRecordRepository.getLastDateRecord(disc, date);
     }
 
     @Transactional

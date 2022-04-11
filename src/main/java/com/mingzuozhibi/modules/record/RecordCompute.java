@@ -28,7 +28,8 @@ public class RecordCompute extends BaseService {
             LocalDate date = record0.getDate();
             DateRecord record1 = recordService.getDateRecord(disc, date.minusDays(1));
             DateRecord record7 = recordService.getDateRecord(disc, date.minusDays(7));
-            computePt(disc, date, record0, record1, record7);
+            DateRecord record$ = recordService.getLastDateRecord(disc, date);
+            computePt(disc, date, record0, record1, record7, record$);
         });
         LocalDateTime now = LocalDateTime.now();
         LocalDate date = now.toLocalDate();
@@ -47,7 +48,7 @@ public class RecordCompute extends BaseService {
             Disc disc = record0.getDisc();
             DateRecord record1 = recordService.getDateRecord(disc, date.minusDays(1));
             DateRecord record7 = recordService.getDateRecord(disc, date.minusDays(7));
-            computePt(disc, date, record0, record1, record7);
+            computePt(disc, date, record0, record1, record7, null);
         });
     }
 
@@ -56,9 +57,10 @@ public class RecordCompute extends BaseService {
         HourRecord record0 = recordService.getOrCreateHourRecord(disc, date);
         DateRecord record1 = recordService.getDateRecord(disc, date.minusDays(1));
         DateRecord record7 = recordService.getDateRecord(disc, date.minusDays(7));
+        DateRecord record$ = recordService.getLastDateRecord(disc, date);
 
         record0.setRank(hour, disc.getThisRank());
-        computePt(disc, date, record0, record1, record7);
+        computePt(disc, date, record0, record1, record7, record$);
         updateDiscPt(disc, record0);
     }
 
@@ -68,7 +70,7 @@ public class RecordCompute extends BaseService {
         disc.setGuessPt(safeIntValue(record.getGuessPt()));
     }
 
-    public static void computePt(Disc disc, LocalDate date, Record record0, Record record1, Record record7) {
+    public static void computePt(Disc disc, LocalDate date, Record record0, Record record1, Record record7, DateRecord record$) {
         if (date.isBefore(disc.getReleaseDate())) {
             computeTodayPt(record0);
             computeTotalPt(record0, record1);
@@ -77,6 +79,10 @@ public class RecordCompute extends BaseService {
             record0.setTodayPt(null);
             record0.setTotalPt(record1.getTotalPt());
             record0.setGuessPt(record1.getGuessPt());
+        } else if (record$ != null) {
+            record0.setTodayPt(null);
+            record0.setTotalPt(record$.getTotalPt());
+            record0.setGuessPt(record$.getGuessPt());
         }
     }
 

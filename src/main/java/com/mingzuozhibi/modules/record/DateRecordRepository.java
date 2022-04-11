@@ -12,10 +12,15 @@ public interface DateRecordRepository extends JpaRepository<DateRecord, Long> {
     @Query("from DateRecord where disc = ?1 and date < ?2 order by date desc")
     List<DateRecord> findDateRecords(Disc disc, LocalDate date);
 
-    DateRecord findByDiscAndDate(Disc disc, LocalDate date);
+    DateRecord getByDiscAndDate(Disc disc, LocalDate date);
 
     List<DateRecord> findByDiscOrderByDate(Disc disc);
 
     List<DateRecord> findByDate(LocalDate date);
+
+    @Query(value = "select * from date_record " +
+        "where disc_id = ?1 and date < ?2 " +
+        "order by date desc limit 1", nativeQuery = true)
+    DateRecord getLastDateRecord(Disc disc, LocalDate date);
 
 }
