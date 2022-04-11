@@ -1,11 +1,12 @@
 package com.mingzuozhibi.commons.utils;
 
-import com.mingzuozhibi.commons.gson.GsonFactory;
 import com.mingzuozhibi.commons.result.BaseResult;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
 import java.util.Optional;
+
+import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 
 public abstract class ChecksUtils {
 
@@ -69,7 +70,7 @@ public abstract class ChecksUtils {
     }
 
     private static String errorResult(String message) {
-        return GsonFactory.GSON.toJson(new BaseResult(message));
+        return GSON.toJson(new BaseResult(message));
     }
 
 }

@@ -2,7 +2,6 @@ package com.mingzuozhibi.modules.disc;
 
 import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseModel2;
-import com.mingzuozhibi.commons.gson.GsonFactory;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,6 +14,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.Objects;
+
+import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 
 @Entity
 @Getter
@@ -112,7 +113,7 @@ public class Disc extends BaseModel2 implements Comparable<Disc> {
     }
 
     public JsonObject toJson() {
-        JsonObject object = GsonFactory.GSON.toJsonTree(this).getAsJsonObject();
+        JsonObject object = GSON.toJsonTree(this).getAsJsonObject();
         object.addProperty("surplusDays", this.getSurplusDays());
         return object;
     }

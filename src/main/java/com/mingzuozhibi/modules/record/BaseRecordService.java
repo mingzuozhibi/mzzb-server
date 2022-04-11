@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
+import static com.mingzuozhibi.commons.utils.FormatUtils.DATE_FORMATTER;
 
 @Service
 public class BaseRecordService {
@@ -32,7 +32,7 @@ public class BaseRecordService {
     private JsonObject buildRecord(BaseRecord record) {
         JsonObject object = new JsonObject();
         object.addProperty("id", record.getId());
-        object.add("date", GSON.toJsonTree(record.getDate()));
+        object.addProperty("date", record.getDate().format(DATE_FORMATTER));
         Optional.ofNullable(record.getAverRank()).ifPresent(rank -> {
             addDouble(object, "averRank", rank);
         });
