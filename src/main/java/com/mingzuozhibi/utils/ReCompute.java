@@ -1,6 +1,7 @@
 package com.mingzuozhibi.utils;
 
 import com.mingzuozhibi.modules.disc.Disc;
+import com.mingzuozhibi.modules.record.BaseRecordService;
 import com.mingzuozhibi.modules.record.DateRecord;
 import com.mingzuozhibi.support.Dao;
 import org.hibernate.criterion.Order;
@@ -14,8 +15,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static com.mingzuozhibi.utils.RecordUtils.findDateRecord;
-
 @Service
 public class ReCompute {
 
@@ -23,6 +22,9 @@ public class ReCompute {
 
     @Autowired
     private Dao dao;
+
+    @Autowired
+    private BaseRecordService baseRecordService;
 
     public void reComputeDateRecords(Disc disc) {
         dao.execute(session -> {
@@ -65,10 +67,10 @@ public class ReCompute {
     private void reCompute(Disc disc, LocalDate date, DateRecord dateRecord) {
         if (date.isBefore(disc.getReleaseDate())) {
             computeTodayPt(dateRecord);
-            computeTotalPt(dateRecord, findDateRecord(dao, disc, date.minusDays(1)));
-            computeGuessPt(dateRecord, findDateRecord(dao, disc, date.minusDays(7)));
+            computeTotalPt(dateRecord, baseRecordService.findDateRecord(disc, date.minusDays(1)));
+            computeGuessPt(dateRecord, baseRecordService.findDateRecord(disc, date.minusDays(7)));
         } else {
-            DateRecord dateRecord1 = findDateRecord(dao, disc, date.minusDays(1));
+            DateRecord dateRecord1 = baseRecordService.findDateRecord(disc, date.minusDays(1));
             dateRecord.setTodayPt(null);
             dateRecord.setTotalPt(dateRecord1.getTotalPt());
             dateRecord.setGuessPt(dateRecord1.getGuessPt());

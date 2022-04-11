@@ -23,4 +23,10 @@ public interface BaseRecord {
 
     JsonObject toJson();
 
+    void setTodayPt(Double pt);
+
+    void setTotalPt(Double pt);
+
+    void setGuessPt(Double pt);
+
 }

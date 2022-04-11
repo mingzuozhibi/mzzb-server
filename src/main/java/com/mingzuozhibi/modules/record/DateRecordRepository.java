@@ -12,4 +12,6 @@ public interface DateRecordRepository extends JpaRepository<DateRecord, Long> {
     @Query("from DateRecord where disc = ?1 and date < ?2 order by date desc")
     List<DateRecord> findDateRecords(Disc disc, LocalDate date);
 
+    DateRecord findByDiscAndDate(Disc disc, LocalDate date);
+
 }

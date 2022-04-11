@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 
-import static com.mingzuozhibi.commons.utils.SecurityUtils.getLoginName;
+import static com.mingzuozhibi.commons.utils.SessionUtils.getLoginName;
 
 public class BaseController extends ServletUtils {
 

@@ -18,7 +18,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.mingzuozhibi.commons.utils.ChecksUtils.*;
-import static com.mingzuozhibi.commons.utils.SecurityUtils.*;
+import static com.mingzuozhibi.commons.utils.SessionUtils.*;
 import static com.mingzuozhibi.modules.session.SessionUtils.*;
 
 @Slf4j

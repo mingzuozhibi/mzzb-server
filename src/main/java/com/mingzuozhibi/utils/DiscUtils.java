@@ -28,16 +28,6 @@ public abstract class DiscUtils {
         return discs;
     }
 
-    public static Set<String> needUpdateAsins(Session session) {
-        Set<String> asins = new LinkedHashSet<>();
-        findActiveDiscGroups(session).forEach(discGroup -> {
-            for (Disc disc : discGroup.getDiscs()) {
-                asins.add(disc.getAsin());
-            }
-        });
-        return asins;
-    }
-
     @SuppressWarnings("unchecked")
     private static List<DiscGroup> findActiveDiscGroups(Session session) {
         return session.createCriteria(DiscGroup.class)

@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 import static com.mingzuozhibi.commons.utils.ServletUtils.getHttpRequest;
 
-public abstract class SecurityUtils {
+public abstract class SessionUtils {
 
     public static final Set<GrantedAuthority> GUEST_AUTHORITIES = Stream.of("NONE")
         .map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
