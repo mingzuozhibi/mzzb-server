@@ -2,9 +2,9 @@ package com.mingzuozhibi.modules.admin;
 
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsService;
-import com.mingzuozhibi.commons.utils.ThreadUtils;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.group.DiscGroupService;
+import com.mingzuozhibi.utils.ThreadUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 import java.util.Set;
 
-import static com.mingzuozhibi.commons.utils.FormatUtils.DATE_FORMATTER;
+import static com.mingzuozhibi.utils.FormatUtils.DATE_FORMATTER;
 
 @RestController
 public class AdminController extends BaseController {

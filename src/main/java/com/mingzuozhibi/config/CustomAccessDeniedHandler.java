@@ -1,4 +1,4 @@
-package com.mingzuozhibi.security;
+package com.mingzuozhibi.config;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import static com.mingzuozhibi.commons.result.ResultSupport.errorResult;
-import static com.mingzuozhibi.commons.utils.ServletUtils.responseText;
+import static com.mingzuozhibi.utils.ServletUtils.responseText;
 
 @Component
 public class CustomAccessDeniedHandler implements AuthenticationEntryPoint, AccessDeniedHandler {

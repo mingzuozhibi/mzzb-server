@@ -1,6 +1,6 @@
-package com.mingzuozhibi.commons.utils;
+package com.mingzuozhibi.utils;
 
-import static com.mingzuozhibi.commons.utils.SessionUtils.getLoginName;
+import static com.mingzuozhibi.utils.SessionUtils.getLoginName;
 
 public abstract class ModifyUtils {
 

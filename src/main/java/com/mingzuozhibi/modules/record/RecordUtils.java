@@ -6,7 +6,7 @@ import com.mingzuozhibi.modules.disc.Disc;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import static com.mingzuozhibi.commons.utils.FormatUtils.DATE_FORMATTER;
+import static com.mingzuozhibi.utils.FormatUtils.DATE_FORMATTER;
 
 public abstract class RecordUtils {
 

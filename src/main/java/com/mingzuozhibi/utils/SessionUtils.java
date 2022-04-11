@@ -1,7 +1,7 @@
-package com.mingzuozhibi.commons.utils;
+package com.mingzuozhibi.utils;
 
+import com.mingzuozhibi.config.UserDetailsImpl;
 import com.mingzuozhibi.modules.user.User;
-import com.mingzuozhibi.security.UserDetailsImpl;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -18,7 +18,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.mingzuozhibi.commons.utils.ServletUtils.getHttpRequest;
+import static com.mingzuozhibi.utils.ServletUtils.getHttpRequest;
 
 public abstract class SessionUtils {
 

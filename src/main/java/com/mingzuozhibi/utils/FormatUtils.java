@@ -1,4 +1,4 @@
-package com.mingzuozhibi.commons.utils;
+package com.mingzuozhibi.utils;
 
 import java.time.format.DateTimeFormatter;
 

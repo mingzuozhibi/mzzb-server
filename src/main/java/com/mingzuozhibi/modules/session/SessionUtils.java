@@ -1,6 +1,6 @@
 package com.mingzuozhibi.modules.session;
 
-import com.mingzuozhibi.commons.utils.ServletUtils;
+import com.mingzuozhibi.utils.ServletUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 

@@ -3,7 +3,7 @@ package com.mingzuozhibi.modules.spider;
 import com.google.gson.reflect.TypeToken;
 import com.mingzuozhibi.commons.mylog.JmsService;
 import com.mingzuozhibi.commons.result.ResultSupport;
-import com.mingzuozhibi.commons.utils.ThreadUtils;
+import com.mingzuozhibi.utils.ThreadUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;

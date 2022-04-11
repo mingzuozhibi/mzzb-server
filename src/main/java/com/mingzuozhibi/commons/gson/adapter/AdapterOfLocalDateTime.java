@@ -4,7 +4,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-import com.mingzuozhibi.commons.utils.MyTimeUtils;
+import com.mingzuozhibi.utils.MyTimeUtils;
 
 import java.io.IOException;
 import java.time.LocalDateTime;

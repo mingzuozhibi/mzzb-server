@@ -2,7 +2,6 @@ package com.mingzuozhibi.config;
 
 import com.allanditzel.springframework.security.web.csrf.CsrfTokenResponseHeaderBindingFilter;
 import com.mingzuozhibi.modules.user.UserService;
-import com.mingzuozhibi.security.CustomAccessDeniedHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,7 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.csrf.CsrfFilter;
 
-import static com.mingzuozhibi.commons.utils.EncodeUtils.encodePassword;
+import static com.mingzuozhibi.utils.EncodeUtils.encodePassword;
 
 @Slf4j
 @EnableWebSecurity

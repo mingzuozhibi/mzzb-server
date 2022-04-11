@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.mingzuozhibi.commons.utils.ChecksUtils.*;
-import static com.mingzuozhibi.commons.utils.ModifyUtils.logCreate;
-import static com.mingzuozhibi.commons.utils.ModifyUtils.logUpdate;
+import static com.mingzuozhibi.utils.ChecksUtils.*;
+import static com.mingzuozhibi.utils.ModifyUtils.logCreate;
+import static com.mingzuozhibi.utils.ModifyUtils.logUpdate;
 
 @RestController
 public class UserController extends BaseController {
