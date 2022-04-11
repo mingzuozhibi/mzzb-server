@@ -12,18 +12,16 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Optional;
 
 import static com.mingzuozhibi.commons.utils.ChecksUtils.*;
+import static com.mingzuozhibi.commons.utils.FormatUtils.DATE_FORMATTER;
 import static com.mingzuozhibi.commons.utils.ModifyUtils.logCreate;
 import static com.mingzuozhibi.commons.utils.ModifyUtils.logUpdate;
 
 @RestController
 public class DiscController extends BaseController2 {
-
-    public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy/M/d");
 
     @Autowired
     private DiscRepository discRepository;
@@ -66,7 +64,7 @@ public class DiscController extends BaseController2 {
         if (checks.isPresent()) {
             return errorResult(checks.get());
         }
-        LocalDate localDate = LocalDate.parse(releaseDate, FORMATTER);
+        LocalDate localDate = LocalDate.parse(releaseDate, DATE_FORMATTER);
         Disc disc = new Disc(asin, title, discType, localDate);
         discRepository.save(disc);
         jmsMessage.success(logCreate("碟片", disc.getLogName(), gson.toJson(disc)));
@@ -88,7 +86,7 @@ public class DiscController extends BaseController2 {
         if (checks.isPresent()) {
             return errorResult(checks.get());
         }
-        LocalDate localDate = LocalDate.parse(releaseDate, FORMATTER);
+        LocalDate localDate = LocalDate.parse(releaseDate, DATE_FORMATTER);
         Optional<Disc> byId = discRepository.findById(id);
         if (!byId.isPresent()) {
             return paramNotExists("碟片ID");

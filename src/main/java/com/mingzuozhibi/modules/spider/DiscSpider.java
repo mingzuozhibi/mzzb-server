@@ -17,8 +17,9 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
+
+import static com.mingzuozhibi.commons.utils.FormatUtils.DATE_FORMATTER;
 
 @Slf4j
 @Component
@@ -128,14 +129,12 @@ public class DiscSpider {
         }
     }
 
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
     private void updateDate(Disc disc, DiscUpdate discUpdate) {
         if (!StringUtils.hasLength(discUpdate.getDate())) {
             jmsMessage.info("[发售时间为空][当前设置为%s][%s]", disc.getReleaseDate(), disc.getAsin());
             return;
         }
-        LocalDate date = LocalDate.parse(discUpdate.getDate(), formatter);
+        LocalDate date = LocalDate.parse(discUpdate.getDate(), DATE_FORMATTER);
         boolean buyset = discUpdate.isBuyset();
         if (date.isAfter(disc.getReleaseDate()) && !buyset) {
             jmsMessage.info("[发售时间更新][%s => %s][%s]", disc.getReleaseDate(), date, disc.getAsin());

@@ -17,12 +17,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.mingzuozhibi.commons.utils.FormatUtils.DATE_FORMATTER;
 import static com.mingzuozhibi.commons.utils.ModifyUtils.logCreate;
 
 @RestController
@@ -100,13 +100,11 @@ public class DiscSpiderController extends BaseController2 {
         return dataResult(disc);
     }
 
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
     private Disc createDisc(@PathVariable String asin, DiscUpdate discUpdate) {
         String title = discUpdate.getTitle();
         DiscType discType = DiscType.valueOf(discUpdate.getType());
         LocalDate releaseDate = Optional.ofNullable(discUpdate.getDate())
-            .map(date -> LocalDate.parse(date, formatter))
+            .map(date -> LocalDate.parse(date, DATE_FORMATTER))
             .orElseGet(LocalDate::now);
         Disc disc = new Disc(asin, title, discType, releaseDate);
         if (releaseDate.equals(LocalDate.now()))
