@@ -14,8 +14,4 @@ public interface RememberRepository extends JpaRepository<Remember, Long> {
 
     long deleteByExpiredBefore(Instant instant);
 
-    default long deleteExpiredRemembers() {
-        return deleteByExpiredBefore(Instant.now());
-    }
-
 }

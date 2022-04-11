@@ -4,6 +4,7 @@ import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsService;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.group.DiscGroupService;
+import com.mingzuozhibi.modules.record.RecordCompute;
 import com.mingzuozhibi.utils.ThreadUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -31,7 +32,7 @@ public class AdminController extends BaseController {
     private AdminService adminService;
 
     @Autowired
-    private ComputeService computeService;
+    private RecordCompute recordCompute;
 
     @Autowired
     private DiscRepository discRepository;
@@ -73,15 +74,14 @@ public class AdminController extends BaseController {
     @Transactional
     @GetMapping(value = "/admin/computeDate/{date}", produces = MEDIA_TYPE)
     public void computeDate(@PathVariable String date) {
-        LocalDate localDate = LocalDate.parse(date, DATE_FORMATTER);
-        computeService.computeDate(localDate);
+        recordCompute.computeDate(LocalDate.parse(date, DATE_FORMATTER));
     }
 
     @Transactional
     @GetMapping(value = "/admin/computeDisc/{id}", produces = MEDIA_TYPE)
     public void computeDisc(@PathVariable Long id) {
         discRepository.findById(id).ifPresent(disc -> {
-            computeService.computeDisc(disc);
+            recordCompute.computeDisc(disc);
         });
     }
 

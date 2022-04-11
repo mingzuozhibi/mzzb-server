@@ -58,7 +58,7 @@ public class DiscController extends BaseController {
         }
         Disc disc = byId.get();
         JsonObject object = gson.toJsonTree(disc).getAsJsonObject();
-        object.add("records", recordService.buildBaseRecords(disc));
+        object.add("records", recordService.buildRecords(disc));
         return dataResult(object);
     }
 

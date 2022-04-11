@@ -18,9 +18,9 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.mingzuozhibi.modules.session.Authentications.*;
 import static com.mingzuozhibi.modules.session.SessionUtils.*;
 import static com.mingzuozhibi.utils.ChecksUtils.*;
-import static com.mingzuozhibi.utils.SessionUtils.*;
 
 @Slf4j
 @RestController

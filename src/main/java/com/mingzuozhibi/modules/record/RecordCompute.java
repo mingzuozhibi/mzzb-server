@@ -1,32 +1,71 @@
 package com.mingzuozhibi.modules.record;
 
-import com.google.gson.JsonObject;
+import com.mingzuozhibi.commons.base.BaseService;
 import com.mingzuozhibi.modules.disc.Disc;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
-import static com.mingzuozhibi.utils.FormatUtils.DATE_FORMATTER;
+@Slf4j
+@Service
+public class RecordCompute extends BaseService {
 
-public abstract class RecordUtils {
+    @Autowired
+    private RecordService recordService;
 
-    public static JsonObject buildRecord(Record record) {
-        JsonObject object = new JsonObject();
-        object.addProperty("id", record.getId());
-        object.addProperty("date", record.getDate().format(DATE_FORMATTER));
-        Optional.ofNullable(record.getAverRank()).ifPresent(rank -> {
-            object.addProperty("averRank", rank.intValue());
+    @Transactional
+    public void computeDisc(Disc disc) {
+        List<DateRecord> records = recordService.findDateRecords(disc);
+        int size = records.size();
+        log.debug("[计算碟片][共{}个][{}]", size, disc.getLogName());
+        records.forEach(record0 -> {
+            LocalDate date = record0.getDate();
+            DateRecord record1 = recordService.getDateRecord(disc, date.minusDays(1));
+            DateRecord record7 = recordService.getDateRecord(disc, date.minusDays(7));
+            computePt(disc, date, record0, record1, record7);
         });
-        Optional.ofNullable(record.getTodayPt()).ifPresent(todayPt -> {
-            object.addProperty("todayPt", todayPt.intValue());
+        LocalDateTime now = LocalDateTime.now();
+        LocalDate date = now.toLocalDate();
+        if (date.isBefore(disc.getReleaseDate())) {
+            computePtNow(disc, date, now.getHour());
+        } else if (size > 0) {
+            updateDiscPt(disc, records.get(size - 1));
+        }
+    }
+
+    @Transactional
+    public void computeDate(LocalDate date) {
+        List<DateRecord> records = recordService.findDateRecords(date);
+        log.debug("[计算碟片][共{}个]", records.size());
+        records.forEach(record0 -> {
+            Disc disc = record0.getDisc();
+            DateRecord record1 = recordService.getDateRecord(disc, date.minusDays(1));
+            DateRecord record7 = recordService.getDateRecord(disc, date.minusDays(7));
+            computePt(disc, date, record0, record1, record7);
         });
-        Optional.ofNullable(record.getTotalPt()).ifPresent(totalPt -> {
-            object.addProperty("totalPt", totalPt.intValue());
-        });
-        Optional.ofNullable(record.getGuessPt()).ifPresent(guessPt -> {
-            object.addProperty("guessPt", guessPt.intValue());
-        });
-        return object;
+    }
+
+    @Transactional
+    public void computePtNow(Disc disc, LocalDate date, int hour) {
+        HourRecord record0 = recordService.getOrCreateHourRecord(disc, date);
+        DateRecord record1 = recordService.getDateRecord(disc, date.minusDays(1));
+        DateRecord record7 = recordService.getDateRecord(disc, date.minusDays(7));
+
+        record0.setRank(hour, disc.getThisRank());
+        computePt(disc, date, record0, record1, record7);
+        updateDiscPt(disc, record0);
+    }
+
+    private static void updateDiscPt(Disc disc, Record record) {
+        disc.setTodayPt(safeIntValue(record.getTodayPt()));
+        disc.setTotalPt(safeIntValue(record.getTotalPt()));
+        disc.setGuessPt(safeIntValue(record.getGuessPt()));
     }
 
     public static void computePt(Disc disc, LocalDate date, Record record0, Record record1, Record record7) {
@@ -70,7 +109,7 @@ public abstract class RecordUtils {
         }
     }
 
-    public static double computeHourPt(Disc disc, double rank) {
+    private static double computeHourPt(Disc disc, double rank) {
         switch (disc.getDiscType()) {
             case Cd:
                 return computeHourPt(150, 5.25, rank);
@@ -104,7 +143,8 @@ public abstract class RecordUtils {
         return div / Math.exp(Math.log(rank) / Math.log(base));
     }
 
-    public static Integer safeIntValue(Double value) {
+    private static Integer safeIntValue(Double value) {
         return Optional.ofNullable(value).map(Double::intValue).orElse(null);
     }
+
 }
