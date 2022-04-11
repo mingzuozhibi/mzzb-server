@@ -2,7 +2,7 @@ package com.mingzuozhibi.action;
 
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsService;
-import com.mingzuozhibi.modules.core.disc.Disc;
+import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.utils.ReCompute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,7 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+
+import static com.mingzuozhibi.commons.utils.FormatUtils.DATE_FORMATTER;
 
 @RestController
 public class AdminController extends BaseController {
@@ -37,7 +38,7 @@ public class AdminController extends BaseController {
     @GetMapping(value = "/admin/reCompute/date/{date}", produces = MEDIA_TYPE)
     public String localCompute(@PathVariable String date) {
         try {
-            LocalDate localDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            LocalDate localDate = LocalDate.parse(date, DATE_FORMATTER);
             reCompute.reComputeDateRecords(localDate);
             return objectResult("done");
         } catch (RuntimeException e) {

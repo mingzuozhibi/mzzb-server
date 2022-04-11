@@ -1,8 +1,8 @@
 package com.mingzuozhibi.config;
 
 import com.allanditzel.springframework.security.web.csrf.CsrfTokenResponseHeaderBindingFilter;
-import com.mingzuozhibi.modules.auth.user.User;
-import com.mingzuozhibi.modules.auth.user.UserUitls;
+import com.mingzuozhibi.modules.user.User;
+import com.mingzuozhibi.modules.user.UserUitls;
 import com.mingzuozhibi.security.CustomAccessDeniedHandler;
 import com.mingzuozhibi.support.Dao;
 import org.slf4j.Logger;

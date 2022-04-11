@@ -7,16 +7,15 @@ import com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+
+import static com.mingzuozhibi.commons.utils.FormatUtils.DATE_FORMATTER;
 
 public class AdapterOfLocalDate extends TypeAdapter<LocalDate> {
-
-    public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy/M/d");
 
     @Override
     public void write(JsonWriter out, LocalDate value) throws IOException {
         if (value != null) {
-            out.value(value.format(FORMATTER));
+            out.value(value.format(DATE_FORMATTER));
         } else {
             out.nullValue();
         }
@@ -28,7 +27,7 @@ public class AdapterOfLocalDate extends TypeAdapter<LocalDate> {
             in.nextNull();
             return null;
         } else {
-            return LocalDate.parse(in.nextString(), FORMATTER);
+            return LocalDate.parse(in.nextString(), DATE_FORMATTER);
         }
     }
 

@@ -1,7 +1,7 @@
 package com.mingzuozhibi.utils;
 
-import com.mingzuozhibi.modules.core.disc.Disc;
-import com.mingzuozhibi.modules.core.group.DiscGroup;
+import com.mingzuozhibi.modules.disc.Disc;
+import com.mingzuozhibi.modules.group.DiscGroup;
 import org.hibernate.Session;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
@@ -26,16 +26,6 @@ public abstract class DiscUtils {
         });
 
         return discs;
-    }
-
-    public static Set<String> needUpdateAsins(Session session) {
-        Set<String> asins = new LinkedHashSet<>();
-        findActiveDiscGroups(session).forEach(discGroup -> {
-            for (Disc disc : discGroup.getDiscs()) {
-                asins.add(disc.getAsin());
-            }
-        });
-        return asins;
     }
 
     @SuppressWarnings("unchecked")

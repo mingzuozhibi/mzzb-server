@@ -33,4 +33,5 @@ public class SearchTask<T> {
         setData(data);
         return this;
     }
+
 }
