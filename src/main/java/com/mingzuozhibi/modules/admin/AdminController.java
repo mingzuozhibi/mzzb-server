@@ -101,7 +101,7 @@ public class AdminController extends BaseController {
         Integer pt1 = disc.getTotalPt();
         recordCompute.computeDisc(disc);
         Integer pt2 = disc.getTotalPt();
-        jmsMessage.notify(logUpdate("碟片PT", pt1, pt2));
+        jmsMessage.notify(logUpdate("碟片PT", pt1, pt2, disc.getLogName()));
         return dataResult("compute: " + pt1 + "->" + pt2);
     }
 
