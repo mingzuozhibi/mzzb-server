@@ -8,14 +8,14 @@ import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 
-import static com.mingzuozhibi.utils.FormatUtils.DATE_FORMATTER;
+import static com.mingzuozhibi.utils.FormatUtils.fmtDate;
 
 public class AdapterOfLocalDate extends TypeAdapter<LocalDate> {
 
     @Override
     public void write(JsonWriter out, LocalDate value) throws IOException {
         if (value != null) {
-            out.value(value.format(DATE_FORMATTER));
+            out.value(value.format(fmtDate));
         } else {
             out.nullValue();
         }
@@ -27,7 +27,7 @@ public class AdapterOfLocalDate extends TypeAdapter<LocalDate> {
             in.nextNull();
             return null;
         } else {
-            return LocalDate.parse(in.nextString(), DATE_FORMATTER);
+            return LocalDate.parse(in.nextString(), fmtDate);
         }
     }
 

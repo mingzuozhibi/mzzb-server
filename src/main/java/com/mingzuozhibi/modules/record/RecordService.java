@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static com.mingzuozhibi.utils.FormatUtils.DATE_FORMATTER;
+import static com.mingzuozhibi.utils.FormatUtils.fmtDate;
 
 @Service
 public class RecordService extends BaseService {
@@ -73,7 +73,7 @@ public class RecordService extends BaseService {
     public static JsonObject buildRecord(Record record) {
         JsonObject object = new JsonObject();
         object.addProperty("id", record.getId());
-        object.addProperty("date", record.getDate().format(DATE_FORMATTER));
+        object.addProperty("date", record.getDate().format(fmtDate));
         Optional.ofNullable(record.getAverRank()).ifPresent(rank -> {
             object.addProperty("averRank", rank.intValue());
         });

@@ -21,7 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static com.mingzuozhibi.utils.ChecksUtils.paramNotExists;
-import static com.mingzuozhibi.utils.FormatUtils.DATE_FORMATTER;
+import static com.mingzuozhibi.utils.FormatUtils.fmtDate;
 import static com.mingzuozhibi.utils.ModifyUtils.logUpdate;
 
 @RestController
@@ -79,7 +79,7 @@ public class AdminController extends BaseController {
     @Transactional
     @GetMapping(value = "/admin/reComputeDate/{date}", produces = MEDIA_TYPE)
     public void reComputeDate(@PathVariable String date) {
-        recordCompute.computeDate(LocalDate.parse(date, DATE_FORMATTER));
+        recordCompute.computeDate(LocalDate.parse(date, fmtDate));
     }
 
     @Transactional
