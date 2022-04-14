@@ -47,11 +47,4 @@ public class JmsService {
         return root.toString();
     }
 
-    public void sendDiscTrack(String asin, String title) {
-        JsonObject object = new JsonObject();
-        object.addProperty("name", title);
-        object.addProperty("asin", asin);
-        sendJson("disc.track", object.toString());
-    }
-
 }

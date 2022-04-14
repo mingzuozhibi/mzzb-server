@@ -8,7 +8,6 @@ import com.mingzuozhibi.modules.group.DiscGroupService;
 import com.mingzuozhibi.modules.record.RecordCompute;
 import com.mingzuozhibi.utils.ThreadUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,9 +28,6 @@ public class AdminController extends BaseController {
 
     @Autowired
     private JmsService jmsService;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
 
     @Autowired
     private AdminService adminService;
@@ -63,16 +59,6 @@ public class AdminController extends BaseController {
             adminService.deleteExpiredRemembers();
             adminService.moveExpiredHourRecords();
             adminService.recordRankAndComputePt();
-        });
-    }
-
-    @Transactional
-    @GetMapping(value = "/admin/sendAllDiscTrack", produces = MEDIA_TYPE)
-    public void sendAllDiscTrack() {
-        jdbcTemplate.query("SELECT asin, title FROM disc", rs -> {
-            while (rs.next()) {
-                jmsService.sendDiscTrack(rs.getString("asin"), rs.getString("title"));
-            }
         });
     }
 
