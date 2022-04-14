@@ -1,6 +1,6 @@
 package com.mingzuozhibi.modules.session;
 
-import com.mingzuozhibi.config.UserDetailsImpl;
+import com.mingzuozhibi.configs.UserDetailsImpl;
 import com.mingzuozhibi.modules.user.User;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

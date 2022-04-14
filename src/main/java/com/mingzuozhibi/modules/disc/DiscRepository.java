@@ -8,6 +8,8 @@ import java.util.Optional;
 
 public interface DiscRepository extends JpaRepository<Disc, Long> {
 
+    boolean existsByAsin(String asin);
+
     Optional<Disc> findByAsin(String asin);
 
     @Query(value = "select count(*) from disc_group_discs where disc_group_id = ?1", nativeQuery = true)

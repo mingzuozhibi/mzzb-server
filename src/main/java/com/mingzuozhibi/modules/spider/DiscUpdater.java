@@ -17,7 +17,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.mingzuozhibi.utils.FormatUtils.DATE_FORMATTER;
+import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
+import static com.mingzuozhibi.utils.FormatUtils.fmtDate;
 
 @Slf4j
 @Component
@@ -33,17 +34,15 @@ public class DiscUpdater {
     private DiscGroupService discGroupService;
 
     @Transactional
-    public void updateDiscs(List<DiscInfo> discInfos) {
+    public void updateDiscs(List<DiscInfo> discInfos, LocalDateTime time) {
         try {
             jmsMessage.notify("开始更新日亚排名");
             for (DiscInfo discInfo : discInfos) {
-                for (int i = 0; i < 3; i++) {
-                    try {
-                        updateDisc(discInfo, LocalDateTime.now());
-                        break;
-                    } catch (Exception e) {
-                        jmsMessage.warning("未能更新日亚排名(%d/3)：%s", i + 1, e.getMessage());
-                    }
+                try {
+                    updateDisc(discInfo, time);
+                } catch (Exception e) {
+                    jmsMessage.warning("更新碟片遇到错误：%s, json=%s",
+                        e.toString(), GSON.toJson(discInfo));
                 }
             }
 
@@ -99,7 +98,7 @@ public class DiscUpdater {
             jmsMessage.info("[发售时间为空][当前设置为%s][%s]", disc.getReleaseDate(), disc.getAsin());
             return;
         }
-        LocalDate date = LocalDate.parse(discInfo.getDate(), DATE_FORMATTER);
+        LocalDate date = LocalDate.parse(discInfo.getDate(), fmtDate);
         boolean buyset = discInfo.isBuyset();
         if (date.isAfter(disc.getReleaseDate()) && !buyset) {
             jmsMessage.info("[发售时间更新][%s => %s][%s]", disc.getReleaseDate(), date, disc.getAsin());

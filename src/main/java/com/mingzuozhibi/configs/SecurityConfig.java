@@ -1,4 +1,4 @@
-package com.mingzuozhibi.config;
+package com.mingzuozhibi.configs;
 
 import com.allanditzel.springframework.security.web.csrf.CsrfTokenResponseHeaderBindingFilter;
 import com.mingzuozhibi.modules.user.UserService;

@@ -1,5 +1,6 @@
 package com.mingzuozhibi.modules.spider;
 
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsService;
@@ -15,11 +16,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.mingzuozhibi.utils.FormatUtils.DATE_FORMATTER;
+import static com.mingzuozhibi.utils.FormatUtils.fmtDate;
+import static com.mingzuozhibi.utils.FormatUtils.fmtDateTime;
 import static com.mingzuozhibi.utils.ModifyUtils.logCreate;
 
 @RestController
@@ -41,19 +44,22 @@ public class DiscSpiderController extends BaseController {
     private DiscGroupService discGroupService;
 
     @JmsListener(destination = "prev.update.discs")
-    public void discSpiderUpdate(String json) {
+    public void listenPrevUpdateDiscs(String json) {
         TypeToken<?> typeToken = TypeToken.getParameterized(ArrayList.class, DiscInfo.class);
         List<DiscInfo> discInfos = gson.fromJson(json, typeToken.getType());
         jmsMessage.notify("JMS <- prev.update.discs size=" + discInfos.size());
-        discUpdater.updateDiscs(discInfos);
+        discUpdater.updateDiscs(discInfos, LocalDateTime.now());
     }
 
-    @JmsListener(destination = "done.update.discs")
-    public void discSpiderUpdate2(String json) {
+    @JmsListener(destination = "last.update.discs")
+    public void listenLastUpdateDiscs(String json) {
+        JsonObject object = gson.fromJson(json, JsonObject.class);
+        LocalDateTime date = gson.fromJson(object.get("date"), LocalDateTime.class);
         TypeToken<?> typeToken = TypeToken.getParameterized(ArrayList.class, DiscInfo.class);
-        List<DiscInfo> discInfos = gson.fromJson(json, typeToken.getType());
-        jmsMessage.notify("JMS <- done.update.discs size=" + discInfos.size());
-        discUpdater.updateDiscs(discInfos);
+        List<DiscInfo> discInfos = gson.fromJson(object.get("updatedDiscs"), typeToken.getType());
+        jmsMessage.notify("JMS <- last.update.discs time=%s, size=%d",
+            date.format(fmtDateTime), discInfos.size());
+        discUpdater.updateDiscs(discInfos, date);
     }
 
     @Transactional
@@ -90,7 +96,7 @@ public class DiscSpiderController extends BaseController {
         String title = discInfo.getTitle();
         Disc.DiscType discType = Disc.DiscType.valueOf(discInfo.getType());
         LocalDate releaseDate = Optional.ofNullable(discInfo.getDate())
-            .map(date -> LocalDate.parse(date, DATE_FORMATTER))
+            .map(date -> LocalDate.parse(date, fmtDate))
             .orElseGet(LocalDate::now);
         Disc disc = new Disc(asin, title, discType, releaseDate);
         if (releaseDate.equals(LocalDate.now()))

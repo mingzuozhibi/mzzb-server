@@ -21,7 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static com.mingzuozhibi.utils.ChecksUtils.paramNotExists;
-import static com.mingzuozhibi.utils.FormatUtils.DATE_FORMATTER;
+import static com.mingzuozhibi.utils.FormatUtils.fmtDate;
 import static com.mingzuozhibi.utils.ModifyUtils.logUpdate;
 
 @RestController
@@ -50,7 +50,7 @@ public class AdminController extends BaseController {
     @GetMapping(value = "/admin/sendNeedUpdateAsins", produces = MEDIA_TYPE)
     public void sendNeedUpdateAsins() {
         Set<String> asins = discGroupService.findNeedUpdateAsins();
-        jmsService.sendJson("need.update.asins", gson.toJson(asins));
+        jmsService.convertAndSend("need.update.asins", gson.toJson(asins));
         jmsMessage.notify("JMS -> need.update.asins size=" + asins.size());
     }
 
@@ -79,7 +79,7 @@ public class AdminController extends BaseController {
     @Transactional
     @GetMapping(value = "/admin/reComputeDate/{date}", produces = MEDIA_TYPE)
     public void reComputeDate(@PathVariable String date) {
-        recordCompute.computeDate(LocalDate.parse(date, DATE_FORMATTER));
+        recordCompute.computeDate(LocalDate.parse(date, fmtDate));
     }
 
     @Transactional
@@ -101,7 +101,7 @@ public class AdminController extends BaseController {
         Integer pt1 = disc.getTotalPt();
         recordCompute.computeDisc(disc);
         Integer pt2 = disc.getTotalPt();
-        jmsMessage.notify(logUpdate("碟片PT", pt1, pt2));
+        jmsMessage.notify(logUpdate("碟片PT", pt1, pt2, disc.getLogName()));
         return dataResult("compute: " + pt1 + "->" + pt2);
     }
 

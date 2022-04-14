@@ -1,4 +1,4 @@
-package com.mingzuozhibi.config;
+package com.mingzuozhibi.configs;
 
 import com.mingzuozhibi.support.JsonArgumentResolver;
 import lombok.extern.slf4j.Slf4j;

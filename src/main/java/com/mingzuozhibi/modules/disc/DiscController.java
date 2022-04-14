@@ -16,7 +16,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.mingzuozhibi.utils.ChecksUtils.*;
-import static com.mingzuozhibi.utils.FormatUtils.DATE_FORMATTER;
+import static com.mingzuozhibi.utils.FormatUtils.fmtDate;
 import static com.mingzuozhibi.utils.ModifyUtils.logCreate;
 import static com.mingzuozhibi.utils.ModifyUtils.logUpdate;
 
@@ -77,7 +77,7 @@ public class DiscController extends BaseController {
         if (checks.isPresent()) {
             return errorResult(checks.get());
         }
-        LocalDate localDate = LocalDate.parse(releaseDate, DATE_FORMATTER);
+        LocalDate localDate = LocalDate.parse(releaseDate, fmtDate);
         Disc disc = new Disc(asin, title, discType, localDate);
         discRepository.save(disc);
         jmsMessage.success(logCreate("碟片", disc.getLogName(), gson.toJson(disc)));
@@ -99,7 +99,7 @@ public class DiscController extends BaseController {
         if (checks.isPresent()) {
             return errorResult(checks.get());
         }
-        LocalDate localDate = LocalDate.parse(releaseDate, DATE_FORMATTER);
+        LocalDate localDate = LocalDate.parse(releaseDate, fmtDate);
         Optional<Disc> byId = discRepository.findById(id);
         if (!byId.isPresent()) {
             return paramNotExists("碟片ID");
