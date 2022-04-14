@@ -1,4 +1,4 @@
-package com.mingzuozhibi.gateway.connect;
+package com.mingzuozhibi.modules.connect;
 
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;

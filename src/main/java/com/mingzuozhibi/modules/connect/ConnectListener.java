@@ -1,4 +1,4 @@
-package com.mingzuozhibi.gateway.connect;
+package com.mingzuozhibi.modules.connect;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;

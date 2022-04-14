@@ -1,16 +1,16 @@
-package com.mingzuozhibi.gateway.modules;
+package com.mingzuozhibi.modules.connect;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-@AllArgsConstructor
 @Getter
+@AllArgsConstructor
 public enum Module {
 
     DISC_SHELFS("mzzb-disc-shelfs"),
     DISC_SPIDER("mzzb-disc-spider"),
     USER_SERVER("mzzb-user-server");
 
-    private String moduleName;
+    private final String moduleName;
 
 }

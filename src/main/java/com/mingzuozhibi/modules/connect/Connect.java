@@ -1,7 +1,6 @@
-package com.mingzuozhibi.gateway.connect;
+package com.mingzuozhibi.modules.connect;
 
 import com.mingzuozhibi.commons.model.Result;
-import com.mingzuozhibi.gateway.modules.Module;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

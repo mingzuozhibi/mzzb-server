@@ -1,4 +1,4 @@
-package com.mingzuozhibi.gateway.message;
+package com.mingzuozhibi.modules.message;
 
 import com.google.gson.JsonObject;
 import org.springframework.data.redis.core.ListOperations;

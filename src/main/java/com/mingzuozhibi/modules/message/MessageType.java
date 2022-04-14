@@ -1,4 +1,4 @@
-package com.mingzuozhibi.gateway.message;
+package com.mingzuozhibi.modules.message;
 
 import lombok.extern.slf4j.Slf4j;
 

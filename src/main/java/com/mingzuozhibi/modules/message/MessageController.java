@@ -1,4 +1,4 @@
-package com.mingzuozhibi.gateway.message;
+package com.mingzuozhibi.modules.message;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -17,7 +17,7 @@ public class MessageController extends BaseController {
     @Autowired
     private MessageService messageService;
 
-    @GetMapping("/gateway/messages/{moduleName}")
+    @GetMapping(value = "/api/messages/{moduleName}", produces = MEDIA_TYPE)
     public String findMessages(
         @PathVariable String moduleName,
         @RequestParam(defaultValue = "info") MessageType type,
