@@ -1,17 +1,14 @@
----
 server:
   port: 9090
 spring:
   application:
     name: "@pom.artifactId@"
-  activemq:
-    broker-url: tcp://localhost:61616
-    password: ${activemq.password}
-    user: admin
+  config:
+    import: 'file:etc/app.properties'
   datasource:
-    url: jdbc:mysql://localhost:3306/mzzb_dev?useUnicode=true&characterEncoding=utf-8&useSSL=false
-    username: mzzb_dev
-    password: mzzb_dev
+    url: jdbc:mysql://localhost:3306/mzzb_server
+    username: mzzb_server
+    password: mzzb_server
   jpa:
     open-in-view: true
     hibernate:
@@ -19,15 +16,16 @@ spring:
     show-sql: true
     properties:
       hibernate.format_sql: true
-      hibernate.current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
+
 ---
+
 spring:
   config:
     activate:
       on-profile: pro
-  datasource:
-    url: jdbc:mysql://localhost:3306/mzzb_pro?useUnicode=true&characterEncoding=utf-8&useSSL=false
-    username: mzzb_pro
-    password: mzzb_pro
+  activemq:
+    broker-url: tcp://localhost:61616
+    password: ${activemq.password}
+    user: admin
   jpa:
     show-sql: false

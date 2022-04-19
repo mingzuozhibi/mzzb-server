@@ -1,7 +1,7 @@
 <configuration scan="true" scanPeriod="10 seconds">
 
     <appender name="LOG" class="ch.qos.logback.core.FileAppender">
-        <file>target/log.log</file>
+        <file>var/app.log</file>
         <append>false</append>
         <encoder>
             <pattern>
@@ -34,7 +34,7 @@
         </encoder>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>record/%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>var/log/%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxFileSize>10MB</maxFileSize>
             <maxHistory>100</maxHistory>
         </rollingPolicy>
@@ -54,6 +54,5 @@
     <logger name="com.mingzuozhibi" level="DEBUG"/>
     <logger name="cdp4j.flow" level="WARN"/>
     <logger name="org.springframework" level="WARN"/>
-    <logger name="org.hibernate.orm.deprecation" level="OFF"/>
 
 </configuration>

@@ -59,10 +59,6 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.jayway.jsonpath</groupId>
-            <artifactId>json-path</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -81,23 +77,21 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Spider And Parser -->
+        <dependency>
+            <groupId>com.allanditzel</groupId>
+            <artifactId>spring-security-csrf-token-filter</artifactId>
+            <version>1.1</version>
+        </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>1.14.3</version>
         </dependency>
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20220320</version>
-        </dependency>
 
         <!-- @JsonArg Support -->
         <dependency>
-            <groupId>com.allanditzel</groupId>
-            <artifactId>spring-security-csrf-token-filter</artifactId>
-            <version>1.1</version>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -111,6 +105,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${project.parent.version}</version>
                 <configuration>
                     <excludes>
                         <exclude>

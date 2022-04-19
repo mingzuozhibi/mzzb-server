@@ -1,0 +1,4 @@
+# environment configuration
+
+admin.password=<your password>
+activemq.password=<your password>
