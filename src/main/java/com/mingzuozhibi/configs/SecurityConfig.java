@@ -1,7 +1,7 @@
 package com.mingzuozhibi.configs;
 
-import com.allanditzel.springframework.security.web.csrf.CsrfTokenResponseHeaderBindingFilter;
 import com.mingzuozhibi.modules.user.UserService;
+import com.mingzuozhibi.support.CsrfBindingFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,7 +48,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .ignoringAntMatchers("/api/session/**")
             .ignoringAntMatchers("/management/**")
 
-            .and().addFilterAfter(new CsrfTokenResponseHeaderBindingFilter(), CsrfFilter.class);
+            .and().addFilterAfter(new CsrfBindingFilter(), CsrfFilter.class);
 
         log.info("已成功配置安全策略");
 
