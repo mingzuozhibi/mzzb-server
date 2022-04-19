@@ -20,6 +20,7 @@
 
     <properties>
         <java.version>1.8</java.version>
+        <app.profiles>dev</app.profiles>
     </properties>
 
     <dependencies>
@@ -102,6 +103,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${project.parent.version}</version>
                 <configuration>
+                    <profiles>${app.profiles}</profiles>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
