@@ -19,7 +19,7 @@ public class MzzbServerApplication {
         ConfigurableApplicationContext context =
             SpringApplication.run(MzzbServerApplication.class, args);
         JmsMessage jmsMessage = context.getBean(JmsMessage.class);
-        jmsMessage.info("MzzbServerApplication已启动");
+        jmsMessage.notify("MzzbServerApplication已启动");
     }
 
     @Bean
