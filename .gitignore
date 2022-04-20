@@ -1,7 +1,7 @@
 ### Project ###
-config/application.properties
-record/
 *.log
+/var/
+/etc/app.properties
 
 ### Spring Boot ###
 HELP.md
