@@ -48,7 +48,7 @@ public class DiscGroupService {
     }
 
     private Function<Disc, String> updateBeforeTarget() {
-        LocalDateTime target = LocalDateTime.now().minusHours(15);
+        LocalDateTime target = LocalDateTime.now().minusHours(9);
         return disc -> disc.getUpdateTime() != null && disc.getUpdateTime().isAfter(target)
             ? "before"
             : "normal";
