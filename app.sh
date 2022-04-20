@@ -32,7 +32,7 @@ build_if() {
     JarNums=$(find target -name '*.jar' -print | wc -l)
     if [[ "$1" == "-f" || "$JarNums" -eq 0 ]]; then
         echo mvn clean package
-        bash ./mvnw clean package >"$StdFile" 2>&1
+        bash ./mvnw clean package
     fi
 }
 
@@ -43,11 +43,8 @@ java_jar() {
         nohup java -Xms64m -Xmx256m -jar "$JarFile" --spring.profiles.active=prod >"$StdFile" 2>&1 &
         echo $! >"$PidFile"
         echo "The server is starting : $!"
-    elif [[ -f "$StdFile" ]]; then
-        echo "Can't find jar file, std output : "
-        cat "$StdFile"
     else
-        echo "Can't find jar file and no error log"
+        echo "Could not start, jar file not found"
     fi
 }
 
