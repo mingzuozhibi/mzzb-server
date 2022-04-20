@@ -3,6 +3,7 @@ DROP USER IF EXISTS 'mzzb_server'@'localhost';
 
 CREATE DATABASE mzzb_server CHARSET utf8;
 CREATE USER 'mzzb_server'@'localhost' IDENTIFIED BY 'mzzb_server';
+SET GLOBAL validate_password_policy=LOW
 GRANT ALL PRIVILEGES ON mzzb_server.* TO 'mzzb_server'@'localhost';
 FLUSH PRIVILEGES;
 
