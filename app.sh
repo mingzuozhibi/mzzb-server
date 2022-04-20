@@ -32,7 +32,7 @@ build_if() {
     JarNums=$(find target -name '*.jar' -print | wc -l)
     if [[ "$1" == "-f" || "$JarNums" -eq 0 ]]; then
         echo mvn clean package
-        bash ./mvnw clean package >"$StdFile" 2>&1
+        bash ./mvnw clean package
     fi
 }
 
@@ -43,11 +43,8 @@ java_jar() {
         nohup java -Xms64m -Xmx256m -jar "$JarFile" --spring.profiles.active=prod >"$StdFile" 2>&1 &
         echo $! >"$PidFile"
         echo "The server is starting : $!"
-    elif [[ -f "$StdFile" ]]; then
-        echo "Can't find jar file, std output : "
-        cat "$StdFile"
     else
-        echo "Can't find jar file and no error log"
+        echo "Could not start, jar file not found"
     fi
 }
 
@@ -118,6 +115,18 @@ std)
         tail -f "$StdFile"
     fi
     ;;
+fed)
+    echo git fetch origin develop
+    git fetch origin develop
+    echo git reset --hard origin/develop
+    git reset --hard origin/develop
+    ;;
+fem)
+    echo git fetch origin master
+    git fetch origin master
+    echo git reset --hard origin/master
+    git reset --hard origin/master
+    ;;
 *)
     echo "usage: bash app.sh [d|dd|dev]"
     echo "usage: bash app.sh [st|start] [-f]"
@@ -126,5 +135,7 @@ std)
     echo "usage: bash app.sh [vt|status]"
     echo "usage: bash app.sh log [-a]"
     echo "usage: bash app.sh std [-a]"
+    echo "usage: bash app.sh fed"
+    echo "usage: bash app.sh fem"
     ;;
 esac

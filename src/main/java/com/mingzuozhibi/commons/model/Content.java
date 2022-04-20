@@ -1,10 +1,10 @@
 package com.mingzuozhibi.commons.model;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.mingzuozhibi.commons.gson.GsonFactory;
+
+import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 
 public class Content {
 
@@ -19,8 +19,6 @@ public class Content {
         }
     }
 
-    private static Gson gson = GsonFactory.createGson();
-
     private JsonObject root;
 
     public Content(String content) {
@@ -28,7 +26,7 @@ public class Content {
     }
 
     private void parseContent(String content) {
-        root = gson.fromJson(content, JsonObject.class);
+        root = GSON.fromJson(content, JsonObject.class);
     }
 
     public boolean isSuccess() {
@@ -51,20 +49,8 @@ public class Content {
         return root.get("data");
     }
 
-    public JsonObject getPage() {
-        return root.get("page").getAsJsonObject();
-    }
-
     public JsonObject getRoot() {
         return root;
-    }
-
-    public Page parsePage() {
-        return gson.fromJson(getPage(), Page.class);
-    }
-
-    public <T> T parseData(Class<T> dataType) {
-        return gson.fromJson(getData(), dataType);
     }
 
 }

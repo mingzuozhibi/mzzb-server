@@ -45,7 +45,7 @@ public class AdminController extends BaseController {
     @Scheduled(cron = "0 59 * * * ?")
     @GetMapping(value = "/admin/sendNeedUpdateAsins", produces = MEDIA_TYPE)
     public void sendNeedUpdateAsins() {
-        Set<String> asins = discGroupService.findNeedUpdateAsins();
+        Set<String> asins = discGroupService.findNeedUpdateAsinsSorted();
         jmsService.convertAndSend("need.update.asins", gson.toJson(asins));
         jmsMessage.notify("JMS -> need.update.asins size=" + asins.size());
     }

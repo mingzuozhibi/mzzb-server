@@ -1,13 +1,13 @@
 package com.mingzuozhibi.modules.spider;
 
-import com.mingzuozhibi.commons.mylog.JmsMessage;
+import com.mingzuozhibi.commons.base.BaseService;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.group.DiscGroupService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
@@ -21,11 +21,8 @@ import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 import static com.mingzuozhibi.utils.FormatUtils.fmtDate;
 
 @Slf4j
-@Component
-public class DiscUpdater {
-
-    @Autowired
-    private JmsMessage jmsMessage;
+@Service
+public class DiscUpdater extends BaseService {
 
     @Autowired
     private DiscRepository discRepository;

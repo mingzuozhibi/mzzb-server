@@ -6,13 +6,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static com.mingzuozhibi.utils.MyTimeUtils.toInstant;
+import static java.util.Collections.emptyList;
 import static java.util.Comparator.*;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toCollection;
 
 @Service
 public class DiscGroupService {
@@ -22,18 +25,41 @@ public class DiscGroupService {
 
     @Transactional
     public Set<String> findNeedUpdateAsins() {
+        return findNeedUpdateDiscs()
+            .map(Disc::getAsin)
+            .collect(toCollection(LinkedHashSet::new));
+    }
+
+    private Stream<Disc> findNeedUpdateDiscs() {
         return discGroupRepository.findActiveDiscGroups().stream()
-            .flatMap(discGroup -> discGroup.getDiscs().stream().map(Disc::getAsin))
-            .collect(Collectors.toCollection(LinkedHashSet::new));
+            .flatMap(discGroup -> discGroup.getDiscs().stream());
+    }
+
+    @Transactional
+    public Set<String> findNeedUpdateAsinsSorted() {
+        Map<String, List<Disc>> map = findNeedUpdateDiscs()
+            .collect(groupingBy(updateBeforeTarget()));
+        Stream<Disc> before = map.getOrDefault("before", emptyList()).stream()
+            .sorted(comparing(Disc::getUpdateTime, nullsLast(naturalOrder())));
+        Stream<Disc> normal = map.getOrDefault("normal", emptyList()).stream();
+        return Stream.concat(before, normal)
+            .map(Disc::getAsin)
+            .collect(toCollection(LinkedHashSet::new));
+    }
+
+    private Function<Disc, String> updateBeforeTarget() {
+        LocalDateTime target = LocalDateTime.now().minusHours(15);
+        return disc -> disc.getUpdateTime() != null && disc.getUpdateTime().isAfter(target)
+            ? "before"
+            : "normal";
     }
 
     @Transactional
     public Set<Disc> findNeedRecordDiscs() {
-        LocalDate expirationDate = LocalDate.now().minusDays(7);
-        return discGroupRepository.findActiveDiscGroups().stream()
-            .flatMap(discGroup -> discGroup.getDiscs().stream())
-            .filter(disc -> disc.getReleaseDate().isAfter(expirationDate))
-            .collect(Collectors.toCollection(LinkedHashSet::new));
+        LocalDate target = LocalDate.now().minusDays(7);
+        return findNeedUpdateDiscs()
+            .filter(disc -> disc.getReleaseDate().isAfter(target))
+            .collect(toCollection(LinkedHashSet::new));
     }
 
     @Transactional
