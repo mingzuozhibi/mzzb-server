@@ -12,6 +12,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static com.mingzuozhibi.utils.MyTimeUtils.toInstant;
+import static java.util.Collections.emptyList;
 import static java.util.Comparator.*;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toCollection;
@@ -38,9 +39,9 @@ public class DiscGroupService {
     public Set<String> findNeedUpdateAsinsSorted() {
         Map<String, List<Disc>> map = findNeedUpdateDiscs()
             .collect(groupingBy(updateBeforeTarget()));
-        Stream<Disc> before = map.get("before").stream()
+        Stream<Disc> before = map.getOrDefault("before", emptyList()).stream()
             .sorted(comparing(Disc::getUpdateTime, nullsLast(naturalOrder())));
-        Stream<Disc> normal = map.get("normal").stream();
+        Stream<Disc> normal = map.getOrDefault("normal", emptyList()).stream();
         return Stream.concat(before, normal)
             .map(Disc::getAsin)
             .collect(toCollection(LinkedHashSet::new));
