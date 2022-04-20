@@ -13,14 +13,16 @@ Param2="$2"
 mkdir -p "$RunHome"
 cd "$AppHome" || exit
 
-if [[ -f "$PidFile" && -n $(cat "$PidFile") ]]; then
-    PidText=$(cat "$PidFile")
-    if [[ $(ps -p "$PidText" | wc -l) -eq 2 ]]; then
-        Running="true"
-    fi
-fi
-
 # 函数定义
+test_run() {
+    if [[ -f "$PidFile" && -n $(cat "$PidFile") ]]; then
+        PidText=$(cat "$PidFile")
+        if [[ $(ps -p "$PidText" | wc -l) -eq 2 ]]; then
+            Running="true"
+        fi
+    fi
+}
+
 boot_run() {
     echo mvn clean spring-boot:run -Dspring-boot.run.profiles=dev
     nohup bash ./mvnw clean spring-boot:run -Dspring-boot.run.profiles=dev >"$StdFile" 2>&1 &
@@ -52,32 +54,45 @@ kill_app() {
     if [[ "$1" == "-f" ]]; then
         echo kill -9 "$PidText"
         kill -9 "$PidText"
+        sleep 1
     else
         echo kill "$PidText"
         kill "$PidText"
+        while /bin/true; do
+            sleep 1
+            [[ $(ps -p "$PidText" | wc -l) -lt 2 ]] && break
+        done
     fi
-    echo "The server is stopping"
     rm "$PidFile"
+    echo "The server is stopped"
 }
+
+try_stop() {
+    if [[ "$Running" == "true" ]]; then
+        if [[ "$1" == "-f" ]]; then
+            kill_app
+            sleep 1
+        else
+            echo "The server cannot be started, it has already started : $PidText"
+            exit 0
+        fi
+    fi
+}
+
+test_run
 
 # 参数解析
 case "$Param1" in
 d | dd | dev)
-    if [[ "$Running" == "true" ]]; then
-        kill_app
-        sleep 1
-    fi
+    try_stop -f
     boot_run
     sleep 1
     tail -f "$StdFile"
     ;;
 st | start)
-    if [[ "$Running" == "true" ]]; then
-        echo "The server cannot be started, it has already started : $PidText"
-    else
-        build_if "$Param2"
-        java_jar
-    fi
+    build_if "$Param2"
+    try_stop "$Param2"
+    java_jar
     ;;
 qt | stop)
     if [[ "$Running" == "true" ]]; then
@@ -87,11 +102,8 @@ qt | stop)
     fi
     ;;
 rt | restart)
-    if [[ "$Running" == "true" ]]; then
-        kill_app
-        sleep 1
-    fi
     build_if -f
+    try_stop -f
     java_jar
     ;;
 vt | status)
