@@ -118,6 +118,18 @@ std)
         tail -f "$StdFile"
     fi
     ;;
+fed)
+    echo git fetch origin develop
+    git fetch origin develop
+    echo git reset --hard origin/develop
+    git reset --hard origin/develop
+    ;;
+fem)
+    echo git fetch origin master
+    git fetch origin master
+    echo git reset --hard origin/master
+    git reset --hard origin/master
+    ;;
 *)
     echo "usage: bash app.sh [d|dd|dev]"
     echo "usage: bash app.sh [st|start] [-f]"
@@ -126,5 +138,7 @@ std)
     echo "usage: bash app.sh [vt|status]"
     echo "usage: bash app.sh log [-a]"
     echo "usage: bash app.sh std [-a]"
+    echo "usage: bash app.sh fed"
+    echo "usage: bash app.sh fem"
     ;;
 esac
