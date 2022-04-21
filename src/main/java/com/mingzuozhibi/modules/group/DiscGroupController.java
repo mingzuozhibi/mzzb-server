@@ -7,6 +7,7 @@ import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.group.DiscGroup.ViewType;
 import com.mingzuozhibi.support.JsonArg;
+import com.mingzuozhibi.utils.ChecksUtils;
 import com.mingzuozhibi.utils.ModifyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -63,8 +64,8 @@ public class DiscGroupController extends BaseController {
         Optional<String> checks = runChecks(
             checkNotEmpty(key, "列表索引"),
             checkNotEmpty(title, "列表标题"),
-            checkSelected(enabled, "是否更新"),
-            checkSelected(viewType, "列表类型")
+            checkNotEmpty(enabled, "是否更新"),
+            checkNotEmpty(viewType, "列表类型")
         );
         if (checks.isPresent()) {
             return errorResult(checks.get());
@@ -89,8 +90,8 @@ public class DiscGroupController extends BaseController {
         Optional<String> checks = runChecks(
             checkNotEmpty(key, "列表索引"),
             checkNotEmpty(title, "列表标题"),
-            checkSelected(enabled, "是否更新"),
-            checkSelected(viewType, "列表类型")
+            checkNotEmpty(enabled, "是否更新"),
+            checkNotEmpty(viewType, "列表类型")
         );
         if (checks.isPresent()) {
             return errorResult(checks.get());

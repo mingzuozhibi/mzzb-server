@@ -5,6 +5,8 @@ import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import com.mingzuozhibi.modules.record.RecordService;
 import com.mingzuozhibi.support.JsonArg;
+import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,23 +64,36 @@ public class DiscController extends BaseController {
         return dataResult(object);
     }
 
+    @Setter
+    private static class CreateForm {
+        String asin;
+        String title;
+        DiscType discType;
+        String releaseDate;
+    }
+
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/api/discs", produces = MEDIA_TYPE)
-    public String doCreate(@JsonArg String asin,
-                           @JsonArg String title,
-                           @JsonArg DiscType discType,
-                           @JsonArg String releaseDate) {
+    public String doCreate(@RequestBody CreateForm form) {
         Optional<String> checks = runChecks(
-            checkSelected(discType, "碟片类型"),
-            checkNotEmpty(releaseDate, "发售日期"),
-            checkDateText(releaseDate, "发售日期", "\\d{4}/\\d{1,2}/\\d{1,2}")
+            checkNotEmpty(form.asin, "ASIN"),
+            checkMatches(form.asin, "[A-Z0-9]{10}", "你输入的ASIN格式不符"),
+            checkNotEmpty(form.discType, "碟片类型"),
+            checkNotEmpty(form.releaseDate, "发售日期"),
+            checkMatches(form.releaseDate, "\\d{4}/\\d{1,2}/\\d{1,2}", "发售日期格式必须为yyyy/m/d")
         );
         if (checks.isPresent()) {
             return errorResult(checks.get());
         }
-        LocalDate localDate = LocalDate.parse(releaseDate, fmtDate);
-        Disc disc = new Disc(asin, title, discType, localDate);
+        if (StringUtils.isEmpty(form.title)) {
+            form.title = form.asin;
+        }
+        if (discRepository.existsByAsin(form.asin)) {
+            return paramExists("ASIN");
+        }
+        LocalDate localDate = LocalDate.parse(form.releaseDate, fmtDate);
+        Disc disc = new Disc(form.asin, form.title, form.discType, localDate);
         discRepository.save(disc);
         jmsMessage.success(logCreate("碟片", disc.getLogName(), gson.toJson(disc)));
         return dataResult(disc.toJson());
@@ -92,9 +107,9 @@ public class DiscController extends BaseController {
                            @JsonArg DiscType discType,
                            @JsonArg String releaseDate) {
         Optional<String> checks = runChecks(
-            checkSelected(discType, "碟片类型"),
+            checkNotEmpty(discType, "碟片类型"),
             checkNotEmpty(releaseDate, "发售日期"),
-            checkDateText(releaseDate, "发售日期", "\\d{4}/\\d{1,2}/\\d{1,2}")
+            checkMatches(releaseDate, "\\d{4}/\\d{1,2}/\\d{1,2}", "发售日期格式必须为yyyy/m/d")
         );
         if (checks.isPresent()) {
             return errorResult(checks.get());

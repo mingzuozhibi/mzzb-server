@@ -21,14 +21,14 @@ public abstract class ChecksUtils {
         if (StringUtils.isNotEmpty(value)) {
             return Optional.empty();
         }
-        return Optional.of(paramName + "必须输入");
+        return Optional.of(paramName + "不能为空");
     }
 
-    public static Optional<String> checkSelected(Object value, String paramName) {
+    public static Optional<String> checkNotEmpty(Object value, String paramName) {
         if (!Objects.isNull(value)) {
             return Optional.empty();
         }
-        return Optional.of(paramName + "必须选择");
+        return Optional.of(paramName + "不能为空");
     }
 
     public static Optional<String> checkIdentifier(String value, String paramName, int min, int max) {
@@ -39,10 +39,6 @@ public abstract class ChecksUtils {
     public static Optional<String> checkMd5Encode(String encode, String paramName, int length) {
         return checkMatches(encode, "[0-9a-f]{" + length + "}",
             paramName + "不是标准的" + length + "位Md5编码");
-    }
-
-    public static Optional<String> checkDateText(String dateText, String paramName, String pattern) {
-        return checkMatches(dateText, pattern, paramName + "的格式必须为" + pattern);
     }
 
     public static Optional<String> checkMatches(String text, String regex, String error) {
