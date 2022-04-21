@@ -5,6 +5,8 @@ import com.mingzuozhibi.support.CsrfBindingFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,6 +18,7 @@ import static com.mingzuozhibi.utils.EncodeUtils.encodePassword;
 
 @Slf4j
 @EnableWebSecurity
+@EnableAutoConfiguration(exclude = UserDetailsServiceAutoConfiguration.class)
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
