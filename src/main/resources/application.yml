@@ -29,5 +29,5 @@ spring:
       on-profile: prod
   activemq:
     broker-url: tcp://localhost:61616
-    password: ${activemq.password}
+    password: ${activemq.password:admin}
     user: admin
