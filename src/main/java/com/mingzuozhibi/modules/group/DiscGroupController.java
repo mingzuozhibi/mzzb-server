@@ -6,8 +6,8 @@ import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.group.DiscGroup.ViewType;
-import com.mingzuozhibi.support.JsonArg;
 import com.mingzuozhibi.utils.ModifyUtils;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,26 +53,31 @@ public class DiscGroupController extends BaseController {
         return dataResult(byKey.get());
     }
 
+    @Setter
+    private static class EntityForm {
+        private String key;
+        private String title;
+        private Boolean enabled;
+        private ViewType viewType;
+    }
+
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/api/discGroups", produces = MEDIA_TYPE)
-    public String doCreate(@JsonArg("$.key") String key,
-                           @JsonArg("$.title") String title,
-                           @JsonArg("$.enabled") Boolean enabled,
-                           @JsonArg("$.viewType") ViewType viewType) {
+    public String doCreate(@RequestBody EntityForm form) {
         Optional<String> checks = runChecks(
-            checkNotEmpty(key, "列表索引"),
-            checkNotEmpty(title, "列表标题"),
-            checkSelected(enabled, "是否更新"),
-            checkSelected(viewType, "列表类型")
+            checkNotEmpty(form.key, "列表索引"),
+            checkNotEmpty(form.title, "列表标题"),
+            checkNotEmpty(form.enabled, "是否更新"),
+            checkNotEmpty(form.viewType, "列表类型")
         );
         if (checks.isPresent()) {
             return errorResult(checks.get());
         }
-        if (discGroupRepository.findByKey(key).isPresent()) {
+        if (discGroupRepository.findByKey(form.key).isPresent()) {
             return paramExists("列表索引");
         }
-        DiscGroup discGroup = new DiscGroup(key, title, enabled, viewType);
+        DiscGroup discGroup = new DiscGroup(form.key, form.title, form.enabled, form.viewType);
         discGroupRepository.save(discGroup);
         jmsMessage.notify(logCreate("列表", discGroup.getTitle(), gson.toJson(discGroup)));
         return dataResult(discGroup);
@@ -82,15 +87,12 @@ public class DiscGroupController extends BaseController {
     @PreAuthorize("hasRole('BASIC')")
     @PutMapping(value = "/api/discGroups/{id}", produces = MEDIA_TYPE)
     public String doUpdate(@PathVariable("id") Long id,
-                           @JsonArg("$.key") String key,
-                           @JsonArg("$.title") String title,
-                           @JsonArg("$.enabled") Boolean enabled,
-                           @JsonArg("$.viewType") ViewType viewType) {
+                           @RequestBody EntityForm form) {
         Optional<String> checks = runChecks(
-            checkNotEmpty(key, "列表索引"),
-            checkNotEmpty(title, "列表标题"),
-            checkSelected(enabled, "是否更新"),
-            checkSelected(viewType, "列表类型")
+            checkNotEmpty(form.key, "列表索引"),
+            checkNotEmpty(form.title, "列表标题"),
+            checkNotEmpty(form.enabled, "是否更新"),
+            checkNotEmpty(form.viewType, "列表类型")
         );
         if (checks.isPresent()) {
             return errorResult(checks.get());
@@ -100,21 +102,21 @@ public class DiscGroupController extends BaseController {
             return paramNotExists("列表ID");
         }
         DiscGroup discGroup = byId.get();
-        if (!Objects.equals(discGroup.getKey(), key)) {
-            jmsMessage.info(logUpdate("列表索引", discGroup.getKey(), key));
-            discGroup.setKey(key);
+        if (!Objects.equals(discGroup.getKey(), form.key)) {
+            jmsMessage.info(logUpdate("列表索引", discGroup.getKey(), form.key));
+            discGroup.setKey(form.key);
         }
-        if (!Objects.equals(discGroup.getTitle(), title)) {
-            jmsMessage.info(logUpdate("列表标题", discGroup.getTitle(), title));
-            discGroup.setTitle(title);
+        if (!Objects.equals(discGroup.getTitle(), form.title)) {
+            jmsMessage.info(logUpdate("列表标题", discGroup.getTitle(), form.title));
+            discGroup.setTitle(form.title);
         }
-        if (!Objects.equals(discGroup.getViewType(), viewType)) {
-            jmsMessage.info(logUpdate("列表类型", discGroup.getViewType(), viewType));
-            discGroup.setViewType(viewType);
+        if (!Objects.equals(discGroup.getViewType(), form.viewType)) {
+            jmsMessage.info(logUpdate("列表类型", discGroup.getViewType(), form.viewType));
+            discGroup.setViewType(form.viewType);
         }
-        if (!Objects.equals(discGroup.isEnabled(), enabled)) {
-            jmsMessage.info(logUpdate("是否更新", discGroup.isEnabled(), enabled));
-            discGroup.setEnabled(enabled);
+        if (!Objects.equals(discGroup.isEnabled(), form.enabled)) {
+            jmsMessage.info(logUpdate("是否更新", discGroup.isEnabled(), form.enabled));
+            discGroup.setEnabled(form.enabled);
         }
         return dataResult(discGroup);
     }
@@ -155,19 +157,20 @@ public class DiscGroupController extends BaseController {
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
-    @PostMapping(value = "/api/discGroups/{id}/discs/{discId}", produces = MEDIA_TYPE)
-    public synchronized String pushDiscs(@PathVariable Long id, @PathVariable Long discId) {
-        Optional<DiscGroup> byId = discGroupRepository.findById(id);
-        if (!byId.isPresent()) {
+    @PostMapping(value = "/api/discGroups/{gid}/discs/{did}", produces = MEDIA_TYPE)
+    public synchronized String pushDiscs(@PathVariable Long gid,
+                                         @PathVariable Long did) {
+        Optional<DiscGroup> byGid = discGroupRepository.findById(gid);
+        if (!byGid.isPresent()) {
             return paramNotExists("列表ID");
         }
-        DiscGroup discGroup = byId.get();
+        DiscGroup discGroup = byGid.get();
 
-        Optional<Disc> byId2 = discRepository.findById(discId);
-        if (!byId2.isPresent()) {
+        Optional<Disc> byDid = discRepository.findById(did);
+        if (!byDid.isPresent()) {
             return paramNotExists("碟片ID");
         }
-        Disc disc = byId2.get();
+        Disc disc = byDid.get();
 
         if (discRepository.existsDiscInGroup(discGroup, disc)) {
             return itemsExists("碟片");
@@ -180,19 +183,20 @@ public class DiscGroupController extends BaseController {
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
-    @DeleteMapping(value = "/api/discGroups/{id}/discs/{discId}", produces = MEDIA_TYPE)
-    public synchronized String dropDiscs(@PathVariable("id") Long id, @PathVariable("discId") Long discId) {
-        Optional<DiscGroup> byId = discGroupRepository.findById(id);
-        if (!byId.isPresent()) {
+    @DeleteMapping(value = "/api/discGroups/{gid}/discs/{did}", produces = MEDIA_TYPE)
+    public synchronized String dropDiscs(@PathVariable("gid") Long gid,
+                                         @PathVariable("did") Long did) {
+        Optional<DiscGroup> byGid = discGroupRepository.findById(gid);
+        if (!byGid.isPresent()) {
             return paramNotExists("列表ID");
         }
-        DiscGroup discGroup = byId.get();
+        DiscGroup discGroup = byGid.get();
 
-        Optional<Disc> byId2 = discRepository.findById(discId);
-        if (!byId2.isPresent()) {
+        Optional<Disc> byDid = discRepository.findById(did);
+        if (!byDid.isPresent()) {
             return paramNotExists("碟片ID");
         }
-        Disc disc = byId2.get();
+        Disc disc = byDid.get();
 
         if (!discRepository.existsDiscInGroup(discGroup, disc)) {
             return itemsNotExists("碟片");

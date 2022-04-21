@@ -19,7 +19,7 @@ import static com.mingzuozhibi.utils.EncodeUtils.encodePassword;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Value("${admin.password:unset}")
+    @Value("${security.password:unset}")
     private String adminPassword;
 
     @Autowired

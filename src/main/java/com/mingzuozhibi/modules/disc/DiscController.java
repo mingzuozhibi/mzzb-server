@@ -4,7 +4,8 @@ import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import com.mingzuozhibi.modules.record.RecordService;
-import com.mingzuozhibi.support.JsonArg;
+import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,56 +63,74 @@ public class DiscController extends BaseController {
         return dataResult(object);
     }
 
+    @Setter
+    private static class CreateForm {
+        private String asin;
+        private String title;
+        private DiscType discType;
+        private String releaseDate;
+    }
+
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/api/discs", produces = MEDIA_TYPE)
-    public String doCreate(@JsonArg String asin,
-                           @JsonArg String title,
-                           @JsonArg DiscType discType,
-                           @JsonArg String releaseDate) {
+    public String doCreate(@RequestBody CreateForm form) {
         Optional<String> checks = runChecks(
-            checkSelected(discType, "碟片类型"),
-            checkNotEmpty(releaseDate, "发售日期"),
-            checkDateText(releaseDate, "发售日期", "\\d{4}/\\d{1,2}/\\d{1,2}")
+            checkNotEmpty(form.asin, "ASIN"),
+            checkMatches(form.asin, "[A-Z0-9]{10}", "你输入的ASIN格式不符"),
+            checkNotEmpty(form.discType, "碟片类型"),
+            checkNotEmpty(form.releaseDate, "发售日期"),
+            checkMatches(form.releaseDate, "\\d{4}/\\d{1,2}/\\d{1,2}", "发售日期格式必须为yyyy/m/d")
         );
         if (checks.isPresent()) {
             return errorResult(checks.get());
         }
-        LocalDate localDate = LocalDate.parse(releaseDate, fmtDate);
-        Disc disc = new Disc(asin, title, discType, localDate);
+        if (StringUtils.isEmpty(form.title)) {
+            form.title = form.asin;
+        }
+        if (discRepository.existsByAsin(form.asin)) {
+            return paramExists("ASIN");
+        }
+        LocalDate localDate = LocalDate.parse(form.releaseDate, fmtDate);
+        Disc disc = new Disc(form.asin, form.title, form.discType, localDate);
         discRepository.save(disc);
         jmsMessage.success(logCreate("碟片", disc.getLogName(), gson.toJson(disc)));
         return dataResult(disc.toJson());
+    }
+
+    @Setter
+    private static class UpdateForm {
+        private String titlePc;
+        private DiscType discType;
+        private String releaseDate;
     }
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PutMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
     public String doUpdate(@PathVariable Long id,
-                           @JsonArg String titlePc,
-                           @JsonArg DiscType discType,
-                           @JsonArg String releaseDate) {
+                           @RequestBody UpdateForm form) {
         Optional<String> checks = runChecks(
-            checkSelected(discType, "碟片类型"),
-            checkNotEmpty(releaseDate, "发售日期"),
-            checkDateText(releaseDate, "发售日期", "\\d{4}/\\d{1,2}/\\d{1,2}")
+            checkNotEmpty(form.discType, "碟片类型"),
+            checkNotEmpty(form.releaseDate, "发售日期"),
+            checkMatches(form.releaseDate, "\\d{4}/\\d{1,2}/\\d{1,2}", "发售日期格式必须为yyyy/m/d")
         );
         if (checks.isPresent()) {
             return errorResult(checks.get());
         }
-        LocalDate localDate = LocalDate.parse(releaseDate, fmtDate);
+        LocalDate localDate = LocalDate.parse(form.releaseDate, fmtDate);
         Optional<Disc> byId = discRepository.findById(id);
         if (!byId.isPresent()) {
             return paramNotExists("碟片ID");
         }
         Disc disc = byId.get();
-        if (!Objects.equals(disc.getTitlePc(), titlePc)) {
-            disc.setTitlePc(titlePc);
-            jmsMessage.info(logUpdate("碟片标题", disc.getTitlePc(), titlePc));
+        if (!Objects.equals(disc.getTitlePc(), form.titlePc)) {
+            disc.setTitlePc(form.titlePc);
+            jmsMessage.info(logUpdate("碟片标题", disc.getTitlePc(), form.titlePc));
         }
-        if (!Objects.equals(disc.getDiscType(), discType)) {
-            disc.setDiscType(discType);
-            jmsMessage.info(logUpdate("碟片类型", disc.getDiscType(), discType));
+        if (!Objects.equals(disc.getDiscType(), form.discType)) {
+            disc.setDiscType(form.discType);
+            jmsMessage.info(logUpdate("碟片类型", disc.getDiscType(), form.discType));
         }
         if (!Objects.equals(disc.getReleaseDate(), localDate)) {
             disc.setReleaseDate(localDate);
