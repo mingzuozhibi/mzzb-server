@@ -89,12 +89,12 @@ public class SessionController extends BaseController {
     }
 
     private String buildSessionAndCount() {
-        int userCount = sessionService.countSession();
+        Long count = sessionService.countSession();
         Optional<Authentication> optional = getAuthentication();
         if (optional.isPresent()) {
-            return dataResult(new SessionAndCount(optional.get(), userCount));
+            return dataResult(new SessionAndCount(optional.get(), count));
         } else {
-            return dataResult(new SessionAndCount(buildGuestAuthentication(), userCount));
+            return dataResult(new SessionAndCount(buildGuestAuthentication(), count));
         }
     }
 
