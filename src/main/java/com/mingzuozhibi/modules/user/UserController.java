@@ -63,7 +63,7 @@ public class UserController extends BaseController {
         if (checks.isPresent()) {
             return errorResult(checks.get());
         }
-        if (!userRepository.existsByUsername(form.username)) {
+        if (userRepository.existsByUsername(form.username)) {
             return paramExists("用户名称");
         }
         User user = new User(form.username, form.password, form.enabled);
