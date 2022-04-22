@@ -20,7 +20,7 @@ public class ConnectService {
         return Optional.ofNullable(valueOps.get(keyOfAddr(moduleName)));
     }
 
-    public Optional<String> getHttpPrefix(String moduleName) {
+    public Optional<String> getHost(String moduleName) {
         return getModuleAddr(moduleName).map("http://"::concat);
     }
 

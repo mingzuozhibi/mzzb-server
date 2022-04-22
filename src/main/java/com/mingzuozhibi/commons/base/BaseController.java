@@ -2,7 +2,6 @@ package com.mingzuozhibi.commons.base;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.mingzuozhibi.commons.model.Result;
 import com.mingzuozhibi.commons.result.ResultSupport;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,7 +16,7 @@ public abstract class BaseController extends ResultSupport {
     @ResponseBody
     @ExceptionHandler
     public String errorHandler(Exception e) {
-        return errorResult(Result.formatErrorCause(e));
+        return errorResult(e.toString());
     }
 
     public String objectResult(JsonElement data, JsonElement page) {
