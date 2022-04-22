@@ -1,7 +1,6 @@
-package com.mingzuozhibi.configs;
+package com.mingzuozhibi.support;
 
 import com.mingzuozhibi.modules.user.UserService;
-import com.mingzuozhibi.support.CsrfBindingFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,9 +31,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private CustomAccessDeniedHandler customAccessDeniedHandler;
 
     protected void configure(HttpSecurity http) throws Exception {
-        http
-
-            .authorizeRequests()
+        http.authorizeRequests()
             .antMatchers("/api/session/**").permitAll()
             .antMatchers(HttpMethod.GET).permitAll()
             .antMatchers("/api/**").hasRole("BASIC")
@@ -52,7 +49,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .ignoringAntMatchers("/management/**")
 
             .and().addFilterAfter(new CsrfBindingFilter(), CsrfFilter.class);
-
         log.info("已成功配置安全策略");
 
         userService.initAdminUser(encodePassword("admin", adminPassword));
