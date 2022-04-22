@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -62,14 +61,14 @@ public class SessionService {
     }
 
     @Transactional
-    public int countSession() {
+    public Long countSession() {
         String sql = "SELECT COUNT(*) FROM SPRING_SESSION";
         try {
-            return Objects.requireNonNull(jdbcTemplate.query(sql, rs -> rs.next() ? rs.getInt(1) : -1));
+            return jdbcTemplate.query(sql, rs -> rs.next() ? rs.getLong(1) : -1L);
         } catch (DataAccessException e) {
-            return -2;
+            return -2L;
         } catch (RuntimeException e) {
-            return -3;
+            return -3L;
         }
     }
 

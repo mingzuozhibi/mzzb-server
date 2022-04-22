@@ -4,16 +4,12 @@ import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.modules.remember.Remember;
 import com.mingzuozhibi.modules.user.User;
 import com.mingzuozhibi.modules.user.UserRepository;
-import com.mingzuozhibi.support.JsonArg;
-import com.mingzuozhibi.utils.ChecksUtils;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -49,25 +45,30 @@ public class SessionController extends BaseController {
         return buildSessionAndCount();
     }
 
+    @Setter
+    private static class LoginForm {
+        private String username;
+        private String password;
+    }
+
     @Transactional
     @PostMapping(value = "/api/session", produces = MEDIA_TYPE)
-    public String sessionLogin(@JsonArg("$.username") String username,
-                               @JsonArg("$.password") String password) {
+    public String sessionLogin(@RequestBody LoginForm form) {
         Optional<String> checks = runChecks(
-            checkNotEmpty(username, "用户名称"),
-            checkIdentifier(username, "用户名称", 4, 20),
-            checkNotEmpty(password, "用户密码"),
-            checkMd5Encode(password, "用户密码", 32)
+            checkNotEmpty(form.username, "用户名称"),
+            checkStrMatch(form.username, "用户名称", "[A-Za-z0-9_]{4,20}"),
+            checkNotEmpty(form.password, "用户密码"),
+            checkStrMatch(form.password, "用户密码", "[0-9a-f]{32}")
         );
         if (checks.isPresent()) {
             return errorResult(checks.get());
         }
-        Optional<User> byUsername = userRepository.findByUsername(username);
+        Optional<User> byUsername = userRepository.findByUsername(form.username);
         if (!byUsername.isPresent()) {
             return paramNotExists("用户名称");
         }
         User user = byUsername.get();
-        if (!Objects.equals(user.getPassword(), password)) {
+        if (!Objects.equals(user.getPassword(), form.password)) {
             return errorResult("用户密码错误");
         }
         if (!user.isEnabled()) {
@@ -88,12 +89,12 @@ public class SessionController extends BaseController {
     }
 
     private String buildSessionAndCount() {
-        int userCount = sessionService.countSession();
+        Long count = sessionService.countSession();
         Optional<Authentication> optional = getAuthentication();
         if (optional.isPresent()) {
-            return dataResult(new SessionAndCount(optional.get(), userCount));
+            return dataResult(new SessionAndCount(optional.get(), count));
         } else {
-            return dataResult(new SessionAndCount(buildGuestAuthentication(), userCount));
+            return dataResult(new SessionAndCount(buildGuestAuthentication(), count));
         }
     }
 

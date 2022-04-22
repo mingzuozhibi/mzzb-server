@@ -1,4 +1,4 @@
-package com.mingzuozhibi.configs;
+package com.mingzuozhibi.support;
 
 import com.mingzuozhibi.modules.user.User;
 import org.springframework.security.core.GrantedAuthority;

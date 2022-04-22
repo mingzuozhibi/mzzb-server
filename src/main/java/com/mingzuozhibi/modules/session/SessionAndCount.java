@@ -16,11 +16,11 @@ public class SessionAndCount {
 
     private String userName;
     private Set<String> userRoles;
-    private int userCount;
+    private long userCount;
     private boolean hasBasic;
     private boolean hasAdmin;
 
-    public SessionAndCount(Authentication authentication, int userCount) {
+    public SessionAndCount(Authentication authentication, long userCount) {
         this.userName = authentication.getName();
         this.userRoles = getUserRoles(authentication);
         this.userCount = userCount;

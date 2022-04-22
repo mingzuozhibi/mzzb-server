@@ -1,4 +1,4 @@
-package com.mingzuozhibi.configs;
+package com.mingzuozhibi.support;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;

@@ -31,21 +31,11 @@ public abstract class ChecksUtils {
         return Optional.of(paramName + "不能为空");
     }
 
-    public static Optional<String> checkIdentifier(String value, String paramName, int min, int max) {
-        return checkMatches(value, "[A-Za-z0-9_]{" + min + "," + max + "}",
-            paramName + "必须由英文、数字、下划线组成，且长度必须为" + min + "-" + max);
-    }
-
-    public static Optional<String> checkMd5Encode(String encode, String paramName, int length) {
-        return checkMatches(encode, "[0-9a-f]{" + length + "}",
-            paramName + "不是标准的" + length + "位Md5编码");
-    }
-
-    public static Optional<String> checkMatches(String text, String regex, String error) {
+    public static Optional<String> checkStrMatch(String text, String paramName, String regex) {
         if (text == null || text.matches(regex)) {
             return Optional.empty();
         }
-        return Optional.of(error);
+        return Optional.of(paramName + "必须符合格式" + regex);
     }
 
     public static String paramExists(String paramName) {
