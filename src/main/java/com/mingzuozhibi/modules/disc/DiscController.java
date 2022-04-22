@@ -77,10 +77,10 @@ public class DiscController extends BaseController {
     public String doCreate(@RequestBody CreateForm form) {
         Optional<String> checks = runChecks(
             checkNotEmpty(form.asin, "ASIN"),
-            checkMatches(form.asin, "[A-Z0-9]{10}", "你输入的ASIN格式不符"),
+            checkStrMatch(form.asin, "ASIN", "[A-Z0-9]{10}"),
             checkNotEmpty(form.discType, "碟片类型"),
             checkNotEmpty(form.releaseDate, "发售日期"),
-            checkMatches(form.releaseDate, "\\d{4}/\\d{1,2}/\\d{1,2}", "发售日期格式必须为yyyy/m/d")
+            checkStrMatch(form.releaseDate, "发售日期", "\\d{4}/\\d{1,2}/\\d{1,2}")
         );
         if (checks.isPresent()) {
             return errorResult(checks.get());
@@ -113,7 +113,7 @@ public class DiscController extends BaseController {
         Optional<String> checks = runChecks(
             checkNotEmpty(form.discType, "碟片类型"),
             checkNotEmpty(form.releaseDate, "发售日期"),
-            checkMatches(form.releaseDate, "\\d{4}/\\d{1,2}/\\d{1,2}", "发售日期格式必须为yyyy/m/d")
+            checkStrMatch(form.releaseDate, "发售日期", "\\d{4}/\\d{1,2}/\\d{1,2}")
         );
         if (checks.isPresent()) {
             return errorResult(checks.get());

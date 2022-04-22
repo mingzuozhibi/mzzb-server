@@ -2,7 +2,7 @@ package com.mingzuozhibi.modules.user;
 
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.modules.remember.RememberRepository;
-import com.mingzuozhibi.support.JsonArg;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,25 +43,30 @@ public class UserController extends BaseController {
         return dataResult(byId.get());
     }
 
+    @Setter
+    private static class EntityForm {
+        private String username;
+        private String password;
+        private Boolean enabled;
+    }
+
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/api/users", produces = MEDIA_TYPE)
-    public String createUser(@JsonArg("$.username") String username,
-                             @JsonArg("$.password") String password,
-                             @JsonArg(value = "$.enabled", defaults = "true") Boolean enabled) {
+    public String createUser(@RequestBody EntityForm form) {
         Optional<String> checks = runChecks(
-            checkNotEmpty(username, "用户名称"),
-            checkIdentifier(username, "用户名称", 4, 20),
-            checkNotEmpty(password, "用户密码"),
-            checkMd5Encode(username, "用户密码", 32)
+            checkNotEmpty(form.username, "用户名称"),
+            checkStrMatch(form.username, "用户名称", "[A-Za-z0-9_]{4,20}"),
+            checkNotEmpty(form.password, "用户密码"),
+            checkStrMatch(form.password, "用户密码", "[0-9a-f]{32}")
         );
         if (checks.isPresent()) {
             return errorResult(checks.get());
         }
-        if (!userRepository.existsByUsername(username)) {
+        if (!userRepository.existsByUsername(form.username)) {
             return paramExists("用户名称");
         }
-        User user = new User(username, password, enabled);
+        User user = new User(form.username, form.password, form.enabled);
         userRepository.save(user);
         jmsMessage.info(logCreate("创建用户", user.getUsername(), gson.toJson(user)));
         return dataResult(user);
@@ -71,14 +76,12 @@ public class UserController extends BaseController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/api/users/{id}", produces = MEDIA_TYPE)
     public String updateUser(@PathVariable Long id,
-                             @JsonArg("$.username") String username,
-                             @JsonArg("$.password") String password,
-                             @JsonArg("$.enabled") Boolean enabled) {
+                             @RequestBody EntityForm form) {
         Optional<String> checks = runChecks(
-            checkNotEmpty(username, "用户名称"),
-            checkIdentifier(username, "用户名称", 4, 20),
-            checkMd5Encode(username, "用户密码", 32),
-            checkNotEmpty(enabled, "用户启用状态")
+            checkNotEmpty(form.username, "用户名称"),
+            checkStrMatch(form.username, "用户名称", "[A-Za-z0-9_]{4,20}"),
+            checkStrMatch(form.username, "用户密码", "[0-9a-f]{32}"),
+            checkNotEmpty(form.enabled, "启用状态")
         );
         if (checks.isPresent()) {
             return errorResult(checks.get());
@@ -88,18 +91,18 @@ public class UserController extends BaseController {
             return paramNotExists("用户ID");
         }
         User user = byId.get();
-        if (!Objects.equals(user.getUsername(), username)) {
-            user.setUsername(username);
-            jmsMessage.info(logUpdate("用户名称", user.getUsername(), username));
+        if (!Objects.equals(user.getUsername(), form.username)) {
+            user.setUsername(form.username);
+            jmsMessage.info(logUpdate("用户名称", user.getUsername(), form.username));
         }
-        if (StringUtils.isNotEmpty(password) && !Objects.equals(user.getPassword(), password)) {
-            user.setPassword(password);
+        if (StringUtils.isNotEmpty(form.password) && !Objects.equals(user.getPassword(), form.password)) {
+            user.setPassword(form.password);
             onChangePassword(user);
             jmsMessage.info(logUpdate("用户密码", "******", "******"));
         }
-        if (user.isEnabled() != enabled) {
-            user.setEnabled(enabled);
-            jmsMessage.info(logUpdate("用户启用状态", user.isEnabled(), enabled));
+        if (user.isEnabled() != form.enabled) {
+            user.setEnabled(form.enabled);
+            jmsMessage.info(logUpdate("启用状态", user.isEnabled(), form.enabled));
         }
         return dataResult(user);
     }
