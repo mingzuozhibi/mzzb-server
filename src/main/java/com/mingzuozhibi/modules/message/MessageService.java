@@ -14,30 +14,32 @@ public class MessageService {
     @Resource(name = "redisTemplate")
     private ListOperations<String, String> listOps;
 
-    public void pushModuleMsg(String moduleName, JsonObject data) {
-        data.addProperty("acceptOn", Instant.now().toEpochMilli());
-        String message = data.toString();
-        MessageType msgType = MessageType.parse(data.get("type").getAsString());
-        for (MessageType logType : MessageType.values()) {
-            if (logType.match(msgType)) {
-                listOps.leftPush(keyOfMsgs(moduleName, logType), message);
-                listOps.trim(keyOfMsgs(moduleName, logType), 0, 7999);
+    public void saveMessage(String name, JsonObject object) {
+        object.addProperty("acceptOn", Instant.now().toEpochMilli());
+        String mJson = object.toString();
+        String mType = object.get("type").getAsString();
+        MessageType toMatch = MessageType.parse(mType);
+        for (MessageType type : MessageType.values()) {
+            if (type.match(toMatch)) {
+                String key = keyOfMsgs(name, type);
+                listOps.leftPush(key, mJson);
+                listOps.trim(key, 0, 7999);
             }
         }
     }
 
-    public List<String> findModuleMsg(String moduleName, MessageType messageType, int page, int pageSize) {
-        int start = (page - 1) * pageSize;
-        int end = page * pageSize - 1;
-        return listOps.range(keyOfMsgs(moduleName, messageType), start, end);
+    public List<String> findMessages(String name, MessageType type, int page, int size) {
+        int start = (page - 1) * size;
+        int end = page * size - 1;
+        return listOps.range(keyOfMsgs(name, type), start, end);
     }
 
-    public Long countModuleMsg(String moduleName, MessageType messageType) {
-        return listOps.size(keyOfMsgs(moduleName, messageType));
+    public Long countMessage(String name, MessageType type) {
+        return listOps.size(keyOfMsgs(name, type));
     }
 
-    private String keyOfMsgs(String moduleName, MessageType messageType) {
-        return String.format("%s.msgs.%s", moduleName, messageType.name());
+    private String keyOfMsgs(String name, MessageType type) {
+        return String.format("%s.msgs.%s", name, type.name());
     }
 
 }

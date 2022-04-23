@@ -19,7 +19,7 @@ public class MessageListener {
         JsonObject root = new Gson().fromJson(json, JsonObject.class);
         String name = root.get("name").getAsString();
         JsonObject data = root.get("data").getAsJsonObject();
-        messageService.pushModuleMsg(name, data);
+        messageService.saveMessage(name, data);
         log.debug("JMS <- module.message [name={}, data={}]", name, data);
     }
 

@@ -70,7 +70,7 @@ public class RecordService extends BaseService {
         return array;
     }
 
-    public static JsonObject buildRecord(Record record) {
+    private static JsonObject buildRecord(Record record) {
         JsonObject object = new JsonObject();
         object.addProperty("id", record.getId());
         object.addProperty("date", record.getDate().format(fmtDate));

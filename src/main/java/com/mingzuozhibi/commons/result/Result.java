@@ -1,32 +1,25 @@
 package com.mingzuozhibi.commons.result;
 
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.google.gson.reflect.TypeToken;
+import lombok.Value;
+import org.springframework.data.domain.Page;
 
-@Getter
-@Setter
-@NoArgsConstructor
+import java.lang.reflect.Type;
+import java.util.List;
+
+import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
+
+@Value
 public class Result<T> {
 
-    public static <T> Result<T> ofError(String error) {
-        Result<T> result = new Result<>();
-        result.setSuccess(false);
-        result.setError(error);
-        return result;
-    }
+    boolean success;
 
-    public static <T> Result<T> ofData(T data) {
-        Result<T> result = new Result<>();
-        result.setSuccess(true);
-        result.setData(data);
-        return result;
-    }
+    String error;
 
-    private boolean success;
-    private String error;
-    private T data;
+    T data;
+
+    ResultPage page;
 
     public boolean hasError() {
         return error != null;
@@ -34,6 +27,30 @@ public class Result<T> {
 
     public boolean hasData() {
         return data != null;
+    }
+
+    public boolean hasPage() {
+        return page != null;
+    }
+
+    public static <T> Result<T> ofError(String error) {
+        return new Result<>(false, error, null, null);
+    }
+
+    public static <T> Result<T> ofData(T data) {
+        return new Result<>(true, null, data, null);
+    }
+
+    public static <T> Result<List<T>> ofPage(Page<T> page) {
+        return new Result<>(true, null, page.getContent(), new ResultPage(page));
+    }
+
+    public static <T> Result<T> ofJson(String json, Type... typeArguments) {
+        return GSON.fromJson(json, getParameterizedType(typeArguments));
+    }
+
+    public static Type getParameterizedType(Type... typeArguments) {
+        return TypeToken.getParameterized(Result.class, typeArguments).getType();
     }
 
 }
