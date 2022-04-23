@@ -8,7 +8,7 @@ import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 
-import static com.mingzuozhibi.utils.FormatUtils.fmtDate;
+import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 
 public class AdapterOfLocalDate extends TypeAdapter<LocalDate> {
 

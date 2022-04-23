@@ -1,25 +1,31 @@
-package com.mingzuozhibi.commons.result;
+package com.mingzuozhibi.commons.domain;
 
-
-import com.google.gson.reflect.TypeToken;
-import lombok.Value;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.domain.Page;
 
-import java.lang.reflect.Type;
 import java.util.List;
 
-import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
-
-@Value
+@Getter
+@Setter
+@NoArgsConstructor
 public class Result<T> {
 
-    boolean success;
+    public Result(boolean success, String error, T data, ResultPage page) {
+        this.success = success;
+        this.error = error;
+        this.data = data;
+        this.page = page;
+    }
 
-    String error;
+    private boolean success;
 
-    T data;
+    private String error;
 
-    ResultPage page;
+    private T data;
+
+    private ResultPage page;
 
     public boolean hasError() {
         return error != null;
@@ -43,14 +49,6 @@ public class Result<T> {
 
     public static <T> Result<List<T>> ofPage(Page<T> page) {
         return new Result<>(true, null, page.getContent(), new ResultPage(page));
-    }
-
-    public static <T> Result<T> ofJson(String json, Type... typeArguments) {
-        return GSON.fromJson(json, getParameterizedType(typeArguments));
-    }
-
-    public static Type getParameterizedType(Type... typeArguments) {
-        return TypeToken.getParameterized(Result.class, typeArguments).getType();
     }
 
 }

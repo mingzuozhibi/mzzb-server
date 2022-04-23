@@ -12,10 +12,8 @@ import java.nio.charset.StandardCharsets;
 
 public abstract class ServletUtils {
 
-    public static final String MEDIA_TYPE = MediaType.APPLICATION_JSON_VALUE;
-
     public static void responseText(HttpServletResponse response, String content) throws IOException {
-        response.setContentType(MEDIA_TYPE);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
         response.setContentLength(bytes.length);
         response.getOutputStream().write(bytes);

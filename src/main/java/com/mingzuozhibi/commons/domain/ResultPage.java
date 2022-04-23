@@ -1,4 +1,4 @@
-package com.mingzuozhibi.commons.result;
+package com.mingzuozhibi.commons.domain;
 
 import lombok.Getter;
 import org.springframework.data.domain.Page;

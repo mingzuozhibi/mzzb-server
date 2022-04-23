@@ -1,8 +1,8 @@
 package com.mingzuozhibi.modules.spider;
 
-import com.google.gson.reflect.TypeToken;
+import com.mingzuozhibi.commons.base.BaseSupport;
+import com.mingzuozhibi.commons.domain.SearchTask;
 import com.mingzuozhibi.commons.mylog.JmsService;
-import com.mingzuozhibi.commons.result.ResultSupport;
 import com.mingzuozhibi.utils.ThreadUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class DiscSpider extends ResultSupport {
+public class DiscSpider extends BaseSupport {
 
     @Autowired
     private JmsService jmsService;
@@ -33,14 +33,11 @@ public class DiscSpider extends ResultSupport {
 
     @JmsListener(destination = "back.disc.update")
     public void listenDiscUpdate(String json) {
-        TypeToken<?> typeToken = TypeToken.getParameterized(SearchTask.class, DiscInfo.class);
-        SearchTask<DiscInfo> task = gson.fromJson(json, typeToken.getType());
-        String uuid = task.getUuid();
-
-        SearchTask<DiscInfo> remove = waitMap.remove(uuid);
-        if (remove != null) {
-            waitMap.put(uuid, task);
-            ThreadUtils.notifyAll(remove);
+        SearchTask<DiscInfo> task = SearchTask.fromJson(json, DiscInfo.class);
+        SearchTask<DiscInfo> lock = waitMap.remove(task.getUuid());
+        if (lock != null) {
+            waitMap.put(task.getUuid(), task);
+            ThreadUtils.notifyAll(lock);
         }
     }
 

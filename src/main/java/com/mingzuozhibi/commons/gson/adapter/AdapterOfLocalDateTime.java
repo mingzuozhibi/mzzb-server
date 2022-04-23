@@ -8,8 +8,8 @@ import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
-import static com.mingzuozhibi.utils.MyTimeUtils.ofEpochMilli;
-import static com.mingzuozhibi.utils.MyTimeUtils.toEpochMilli;
+import static com.mingzuozhibi.commons.utils.MyTimeUtils.ofEpochMilli;
+import static com.mingzuozhibi.commons.utils.MyTimeUtils.toEpochMilli;
 
 public class AdapterOfLocalDateTime extends TypeAdapter<LocalDateTime> {
 

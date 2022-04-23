@@ -12,11 +12,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static com.mingzuozhibi.commons.result.ResultSupport.errorResult;
+import static com.mingzuozhibi.commons.base.BaseSupport.errorResult;
 import static com.mingzuozhibi.utils.ServletUtils.responseText;
 
 @Component
-public class CustomAccessDeniedHandler implements AuthenticationEntryPoint, AccessDeniedHandler {
+public class SecurityHandler implements AuthenticationEntryPoint, AccessDeniedHandler {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {

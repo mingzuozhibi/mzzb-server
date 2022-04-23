@@ -1,7 +1,7 @@
 package com.mingzuozhibi.modules.disc;
 
 import com.google.gson.JsonObject;
-import com.mingzuozhibi.commons.base.BaseModel;
+import com.mingzuozhibi.commons.base.BaseEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,7 +21,7 @@ import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Disc extends BaseModel implements Comparable<Disc> {
+public class Disc extends BaseEntity implements Comparable<Disc> {
 
     public enum DiscType {
         Cd, Dvd, Bluray, Auto, Other

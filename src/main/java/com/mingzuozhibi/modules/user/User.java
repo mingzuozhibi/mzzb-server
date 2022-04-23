@@ -1,6 +1,6 @@
 package com.mingzuozhibi.modules.user;
 
-import com.mingzuozhibi.commons.base.BaseModel;
+import com.mingzuozhibi.commons.base.BaseEntity;
 import com.mingzuozhibi.commons.gson.GsonIgnored;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +17,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class User extends BaseModel implements Serializable {
+public class User extends BaseEntity implements Serializable {
 
     public User(String username, String password, boolean enabled) {
         this.username = username;

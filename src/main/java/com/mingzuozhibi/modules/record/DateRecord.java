@@ -1,7 +1,7 @@
 package com.mingzuozhibi.modules.record;
 
 import com.google.gson.JsonObject;
-import com.mingzuozhibi.commons.base.BaseModel;
+import com.mingzuozhibi.commons.base.BaseEntity;
 import com.mingzuozhibi.commons.gson.GsonIgnored;
 import com.mingzuozhibi.modules.disc.Disc;
 import lombok.Getter;
@@ -17,7 +17,7 @@ import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 @Getter
 @Setter
 @NoArgsConstructor
-public class DateRecord extends BaseModel implements Record {
+public class DateRecord extends BaseEntity implements Record {
 
     public DateRecord(Disc disc, LocalDate date) {
         this.disc = disc;

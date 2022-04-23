@@ -1,6 +1,6 @@
 package com.mingzuozhibi.modules.group;
 
-import com.mingzuozhibi.commons.base.BaseModel;
+import com.mingzuozhibi.commons.base.BaseEntity;
 import com.mingzuozhibi.commons.gson.GsonIgnored;
 import com.mingzuozhibi.modules.disc.Disc;
 import lombok.Getter;
@@ -18,7 +18,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class DiscGroup extends BaseModel implements Comparable<DiscGroup> {
+public class DiscGroup extends BaseEntity implements Comparable<DiscGroup> {
 
     public enum ViewType {
         SakuraList, PublicList, PrivateList

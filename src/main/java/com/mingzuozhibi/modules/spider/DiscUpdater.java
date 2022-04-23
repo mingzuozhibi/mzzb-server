@@ -1,6 +1,6 @@
 package com.mingzuozhibi.modules.spider;
 
-import com.mingzuozhibi.commons.base.BaseService;
+import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import com.mingzuozhibi.modules.disc.DiscRepository;
@@ -18,11 +18,11 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
-import static com.mingzuozhibi.utils.FormatUtils.fmtDate;
+import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 
 @Slf4j
 @Service
-public class DiscUpdater extends BaseService {
+public class DiscUpdater extends BaseSupport {
 
     @Autowired
     private DiscRepository discRepository;

@@ -3,7 +3,7 @@ package com.mingzuozhibi.modules.shelfs;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseController;
-import com.mingzuozhibi.commons.result.Result;
+import com.mingzuozhibi.commons.domain.Result;
 import com.mingzuozhibi.modules.connect.Connect;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import lombok.extern.slf4j.Slf4j;

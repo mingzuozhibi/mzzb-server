@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static com.mingzuozhibi.utils.MyTimeUtils.toInstant;
+import static com.mingzuozhibi.commons.utils.MyTimeUtils.toInstant;
 import static java.util.Collections.emptyList;
 import static java.util.Comparator.*;
 import static java.util.stream.Collectors.groupingBy;

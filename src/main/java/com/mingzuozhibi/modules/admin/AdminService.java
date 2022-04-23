@@ -1,6 +1,6 @@
 package com.mingzuozhibi.modules.admin;
 
-import com.mingzuozhibi.commons.base.BaseService;
+import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.group.DiscGroupService;
 import com.mingzuozhibi.modules.record.DateRecord;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-public class AdminService extends BaseService {
+public class AdminService extends BaseSupport {
 
     @Autowired
     private RecordService recordService;
