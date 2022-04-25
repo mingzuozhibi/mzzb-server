@@ -1,15 +1,12 @@
 package com.mingzuozhibi.commons.gson.adapter;
 
 import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
-import com.google.gson.stream.JsonWriter;
+import com.google.gson.stream.*;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 
-import static com.mingzuozhibi.commons.utils.MyTimeUtils.ofEpochMilli;
-import static com.mingzuozhibi.commons.utils.MyTimeUtils.toEpochMilli;
+import static com.mingzuozhibi.commons.utils.MyTimeUtils.*;
 
 public class AdapterOfLocalDateTime extends TypeAdapter<LocalDateTime> {
 

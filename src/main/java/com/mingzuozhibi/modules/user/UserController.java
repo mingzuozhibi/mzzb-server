@@ -13,8 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.mingzuozhibi.utils.ChecksUtils.*;
-import static com.mingzuozhibi.utils.ModifyUtils.logCreate;
-import static com.mingzuozhibi.utils.ModifyUtils.logUpdate;
+import static com.mingzuozhibi.utils.ModifyUtils.*;
 
 @RestController
 public class UserController extends BaseController {

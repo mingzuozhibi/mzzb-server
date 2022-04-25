@@ -1,9 +1,7 @@
 package com.mingzuozhibi.commons.domain;
 
 import com.mingzuozhibi.commons.gson.GsonFactory;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.lang.reflect.Type;
 import java.util.UUID;

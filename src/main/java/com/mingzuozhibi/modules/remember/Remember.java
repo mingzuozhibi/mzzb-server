@@ -2,13 +2,9 @@ package com.mingzuozhibi.modules.remember;
 
 import com.mingzuozhibi.commons.base.BaseEntity;
 import com.mingzuozhibi.modules.user.User;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
 
