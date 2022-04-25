@@ -5,5 +5,5 @@ DirName=$(dirname "$0")
 AppHome=$(realpath "$DirName"/..)
 
 echo "Setup mysql database and user"
-mysql -uroot -p"$DBPASS" <"$AppHome"/bin/init_mysql.sql
+mysql -uroot -p"$DBPASS" <"$AppHome"/etc/init_mysql.sql
 echo "Setup done"
