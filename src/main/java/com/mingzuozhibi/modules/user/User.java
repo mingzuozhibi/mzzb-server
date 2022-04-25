@@ -38,10 +38,10 @@ public class User extends BaseEntity implements Serializable {
     private Set<String> roles = new HashSet<>();
 
     @Column(nullable = false)
-    public Instant registerDate;
+    private Instant registerDate;
 
     @Column
-    public Instant lastLoggedIn;
+    private Instant lastLoggedIn;
 
     @Override
     public boolean equals(Object o) {

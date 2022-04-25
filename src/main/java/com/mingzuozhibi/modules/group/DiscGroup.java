@@ -7,13 +7,14 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.Instant;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
-public class DiscGroup extends BaseEntity implements Comparable<DiscGroup> {
+public class DiscGroup extends BaseEntity {
 
     public enum ViewType {
         SakuraList, PublicList, PrivateList
@@ -47,11 +48,5 @@ public class DiscGroup extends BaseEntity implements Comparable<DiscGroup> {
         joinColumns = {@JoinColumn(name = "disc_group_id")},
         inverseJoinColumns = {@JoinColumn(name = "disc_id")})
     private Set<Disc> discs = new HashSet<>();
-
-    @Override
-    public int compareTo(DiscGroup discGroup) {
-        Objects.requireNonNull(discGroup);
-        return Comparator.comparing(DiscGroup::getKey).compare(this, discGroup);
-    }
 
 }

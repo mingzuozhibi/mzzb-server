@@ -8,7 +8,6 @@ import org.apache.commons.lang3.StringUtils;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.Objects;
 
 import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
@@ -17,7 +16,7 @@ import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Disc extends BaseEntity implements Comparable<Disc> {
+public class Disc extends BaseEntity {
 
     public enum DiscType {
         Cd, Dvd, Bluray, Auto, Other
@@ -98,14 +97,6 @@ public class Disc extends BaseEntity implements Comparable<Disc> {
     @Override
     public int hashCode() {
         return Objects.hash(asin);
-    }
-
-    @Override
-    public int compareTo(Disc disc) {
-        Objects.requireNonNull(disc);
-        Comparator<Integer> keyComparator = Comparator.nullsLast(Comparator.naturalOrder());
-        Comparator<Disc> comparator = Comparator.comparing(Disc::getThisRank, keyComparator);
-        return comparator.compare(this, disc);
     }
 
     public JsonObject toJson() {
