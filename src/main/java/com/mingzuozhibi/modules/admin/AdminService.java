@@ -1,25 +1,20 @@
 package com.mingzuozhibi.modules.admin;
 
-import com.mingzuozhibi.commons.base.BaseService;
+import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.group.DiscGroupService;
-import com.mingzuozhibi.modules.record.DateRecord;
-import com.mingzuozhibi.modules.record.HourRecord;
-import com.mingzuozhibi.modules.record.RecordCompute;
-import com.mingzuozhibi.modules.record.RecordService;
+import com.mingzuozhibi.modules.record.*;
 import com.mingzuozhibi.modules.remember.RememberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.List;
 import java.util.Set;
 
 @Service
-public class AdminService extends BaseService {
+public class AdminService extends BaseSupport {
 
     @Autowired
     private RecordService recordService;

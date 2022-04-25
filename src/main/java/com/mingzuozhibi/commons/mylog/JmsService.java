@@ -35,7 +35,8 @@ public class JmsService {
                 template.convertAndSend(destination, json);
                 break;
             } catch (JmsException e) {
-                log.debug(String.format("convertAndSend(destination=%s, json=%s)", destination, json), e);
+                String format = "convertAndSend(destination=%s, json=%s)";
+                log.debug(String.format(format, destination, json), e);
             }
         }
     }

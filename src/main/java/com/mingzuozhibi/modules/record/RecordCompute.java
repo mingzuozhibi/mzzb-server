@@ -1,6 +1,6 @@
 package com.mingzuozhibi.modules.record;
 
-import com.mingzuozhibi.commons.base.BaseService;
+import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.modules.disc.Disc;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-public class RecordCompute extends BaseService {
+public class RecordCompute extends BaseSupport {
 
     @Autowired
     private RecordService recordService;

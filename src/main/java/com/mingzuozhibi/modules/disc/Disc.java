@@ -1,18 +1,14 @@
 package com.mingzuozhibi.modules.disc;
 
 import com.google.gson.JsonObject;
-import com.mingzuozhibi.commons.base.BaseModel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.mingzuozhibi.commons.base.BaseEntity;
+import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Transient;
+import javax.persistence.*;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Comparator;
+import java.time.temporal.ChronoField;
 import java.util.Objects;
 
 import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
@@ -21,7 +17,7 @@ import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Disc extends BaseModel implements Comparable<Disc> {
+public class Disc extends BaseEntity {
 
     public enum DiscType {
         Cd, Dvd, Bluray, Auto, Other
@@ -32,7 +28,7 @@ public class Disc extends BaseModel implements Comparable<Disc> {
         this.title = title;
         this.discType = discType;
         this.releaseDate = releaseDate;
-        this.createTime = LocalDateTime.now().withNano(0);
+        this.createTime = Instant.now().with(ChronoField.NANO_OF_SECOND, 0L);
     }
 
     @Column(length = 20, nullable = false, unique = true)
@@ -69,13 +65,13 @@ public class Disc extends BaseModel implements Comparable<Disc> {
     private LocalDate releaseDate;
 
     @Column(nullable = false)
-    private LocalDateTime createTime;
+    private Instant createTime;
 
     @Column
-    private LocalDateTime updateTime;
+    private Instant updateTime;
 
     @Column
-    private LocalDateTime modifyTime;
+    private Instant modifyTime;
 
     @Transient
     public String getLogName() {
@@ -102,14 +98,6 @@ public class Disc extends BaseModel implements Comparable<Disc> {
     @Override
     public int hashCode() {
         return Objects.hash(asin);
-    }
-
-    @Override
-    public int compareTo(Disc disc) {
-        Objects.requireNonNull(disc);
-        Comparator<Integer> keyComparator = Comparator.nullsLast(Comparator.naturalOrder());
-        Comparator<Disc> comparator = Comparator.comparing(Disc::getThisRank, keyComparator);
-        return comparator.compare(this, disc);
     }
 
     public JsonObject toJson() {

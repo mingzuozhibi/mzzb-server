@@ -2,27 +2,31 @@ package com.mingzuozhibi.commons.base;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.mingzuozhibi.commons.model.Result;
-import com.mingzuozhibi.commons.result.ResultSupport;
+import com.mingzuozhibi.commons.domain.Result;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.Objects;
-
-public abstract class BaseController extends ResultSupport {
+public abstract class BaseController extends BaseSupport {
 
     protected static final String MEDIA_TYPE = MediaType.APPLICATION_JSON_VALUE;
 
     @ResponseBody
     @ExceptionHandler
     public String errorHandler(Exception e) {
-        return errorResult(Result.formatErrorCause(e));
+        return errorResult(e.toString());
     }
 
-    public String objectResult(JsonElement data, JsonElement page) {
-        Objects.requireNonNull(data);
-        Objects.requireNonNull(page);
+    protected <T> String dataResult(T data) {
+        return gson.toJson(Result.ofData(data));
+    }
+
+    protected <T> String pageResult(Page<T> page) {
+        return gson.toJson(Result.ofPage(page));
+    }
+
+    protected String gsonResult(JsonElement data, JsonElement page) {
         JsonObject root = new JsonObject();
         root.addProperty("success", true);
         root.add("data", data);
@@ -30,7 +34,7 @@ public abstract class BaseController extends ResultSupport {
         return root.toString();
     }
 
-    public JsonElement buildPage(long currentPage, long pageSize, long totalElements) {
+    protected JsonElement gsonPage(long currentPage, long pageSize, long totalElements) {
         JsonObject object = new JsonObject();
         object.addProperty("pageSize", pageSize);
         object.addProperty("currentPage", currentPage);

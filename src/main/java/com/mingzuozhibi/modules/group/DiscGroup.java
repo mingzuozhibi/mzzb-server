@@ -1,24 +1,20 @@
 package com.mingzuozhibi.modules.group;
 
-import com.mingzuozhibi.commons.base.BaseModel;
+import com.mingzuozhibi.commons.base.BaseEntity;
 import com.mingzuozhibi.commons.gson.GsonIgnored;
 import com.mingzuozhibi.modules.disc.Disc;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.Instant;
-import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
-public class DiscGroup extends BaseModel implements Comparable<DiscGroup> {
+public class DiscGroup extends BaseEntity {
 
     public enum ViewType {
         SakuraList, PublicList, PrivateList
@@ -52,11 +48,5 @@ public class DiscGroup extends BaseModel implements Comparable<DiscGroup> {
         joinColumns = {@JoinColumn(name = "disc_group_id")},
         inverseJoinColumns = {@JoinColumn(name = "disc_id")})
     private Set<Disc> discs = new HashSet<>();
-
-    @Override
-    public int compareTo(DiscGroup discGroup) {
-        Objects.requireNonNull(discGroup);
-        return Comparator.comparing(DiscGroup::getKey).compare(this, discGroup);
-    }
 
 }

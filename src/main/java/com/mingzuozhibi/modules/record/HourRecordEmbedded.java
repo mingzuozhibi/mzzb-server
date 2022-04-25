@@ -1,8 +1,6 @@
 package com.mingzuozhibi.modules.record;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.Embeddable;
 import javax.persistence.Transient;

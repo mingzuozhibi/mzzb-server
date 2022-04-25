@@ -2,8 +2,6 @@ package com.mingzuozhibi.modules.message;
 
 import lombok.extern.slf4j.Slf4j;
 
-import static com.mingzuozhibi.commons.model.Result.formatErrorCause;
-
 @Slf4j
 enum MessageType {
 
@@ -17,7 +15,7 @@ enum MessageType {
         try {
             return MessageType.valueOf(type);
         } catch (IllegalArgumentException e) {
-            log.warn("parse error: " + formatErrorCause(e));
+            log.warn("parse error: " + e);
             return MessageType.info;
         }
     }

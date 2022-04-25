@@ -4,10 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -24,12 +21,14 @@ public class MessageController extends BaseController {
         @RequestParam(defaultValue = "1") int page,
         @RequestParam(defaultValue = "50") int pageSize) {
 
-        List<String> moduleMsg = messageService.findModuleMsg(moduleName, type, page, pageSize);
-        Long count = messageService.countModuleMsg(moduleName, type);
+        List<String> moduleMsg = messageService.findMessages(moduleName, type, page, pageSize);
+        Long count = messageService.countMessage(moduleName, type);
 
-        JsonArray root = new JsonArray();
-        moduleMsg.forEach(msg -> root.add(gson.fromJson(msg, JsonObject.class)));
-        return objectResult(root, buildPage(page, pageSize, count));
+        JsonArray array = new JsonArray();
+        for (String msg : moduleMsg) {
+            array.add(gson.fromJson(msg, JsonObject.class));
+        }
+        return gsonResult(array, gsonPage(page, pageSize, count));
     }
 
 }

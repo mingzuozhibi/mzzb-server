@@ -1,6 +1,6 @@
 package com.mingzuozhibi.modules.spider;
 
-import com.mingzuozhibi.commons.base.BaseService;
+import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import com.mingzuozhibi.modules.disc.DiscRepository;
@@ -11,18 +11,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
-import static com.mingzuozhibi.utils.FormatUtils.fmtDate;
+import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 
 @Slf4j
 @Service
-public class DiscUpdater extends BaseService {
+public class SpiderUpdater extends BaseSupport {
 
     @Autowired
     private DiscRepository discRepository;
@@ -31,21 +29,21 @@ public class DiscUpdater extends BaseService {
     private DiscGroupService discGroupService;
 
     @Transactional
-    public void updateDiscs(List<DiscInfo> discInfos, LocalDateTime time) {
+    public void updateDiscs(List<DiscUpdate> discUpdates, Instant updateOn) {
         try {
             jmsMessage.notify("开始更新日亚排名");
-            for (DiscInfo discInfo : discInfos) {
+            for (DiscUpdate discUpdate : discUpdates) {
                 try {
-                    updateDisc(discInfo, time);
+                    updateDisc(discUpdate, updateOn);
                 } catch (Exception e) {
                     jmsMessage.warning("更新碟片遇到错误：%s, json=%s",
-                        e.toString(), GSON.toJson(discInfo));
+                        e.toString(), GSON.toJson(discUpdate));
                 }
             }
 
-            if (discInfos.size() > 0) {
+            if (discUpdates.size() > 0) {
                 discGroupService.updateGroupModifyTime();
-                jmsMessage.notify("成功更新日亚排名：共%d个", discInfos.size());
+                jmsMessage.notify("成功更新日亚排名：共%d个", discUpdates.size());
             } else {
                 jmsMessage.notify("未能更新日亚排名：无数据");
             }
@@ -54,34 +52,34 @@ public class DiscUpdater extends BaseService {
         }
     }
 
-    private void updateDisc(DiscInfo discInfo, LocalDateTime updateOn) {
-        String asin = discInfo.getAsin();
+    private void updateDisc(DiscUpdate discUpdate, Instant updateOn) {
+        String asin = discUpdate.getAsin();
         Optional<Disc> byAsin = discRepository.findByAsin(asin);
         if (!byAsin.isPresent()) {
             jmsMessage.warning("[应用碟片更新时，发现未知碟片][%s]", asin);
             return;
         }
         Disc disc = byAsin.get();
-        if (discInfo.isOffTheShelf()) {
+        if (discUpdate.isOffTheShelf()) {
             jmsMessage.warning("[碟片可能已下架][%s]", asin);
             return;
         }
-        updateTitle(disc, discInfo);
-        updateType(disc, discInfo);
-        updateDate(disc, discInfo);
-        updateRank(disc, discInfo, updateOn);
+        updateTitle(disc, discUpdate);
+        updateType(disc, discUpdate);
+        updateDate(disc, discUpdate);
+        updateRank(disc, discUpdate, updateOn);
     }
 
-    private void updateTitle(Disc disc, DiscInfo discInfo) {
-        String title = discInfo.getTitle();
+    private void updateTitle(Disc disc, DiscUpdate discUpdate) {
+        String title = discUpdate.getTitle();
         if (!Objects.equals(title, disc.getTitle())) {
             jmsMessage.info("[碟片标题更新][%s => %s][%s]", disc.getTitle(), title, disc.getAsin());
             disc.setTitle(title);
         }
     }
 
-    private void updateType(Disc disc, DiscInfo discInfo) {
-        DiscType type = DiscType.valueOf(discInfo.getType());
+    private void updateType(Disc disc, DiscUpdate discUpdate) {
+        DiscType type = DiscType.valueOf(discUpdate.getType());
         if (disc.getDiscType() == DiscType.Auto || disc.getDiscType() == DiscType.Other) {
             disc.setDiscType(type);
         }
@@ -90,13 +88,13 @@ public class DiscUpdater extends BaseService {
         }
     }
 
-    private void updateDate(Disc disc, DiscInfo discInfo) {
-        if (!StringUtils.hasLength(discInfo.getDate())) {
+    private void updateDate(Disc disc, DiscUpdate discUpdate) {
+        if (!StringUtils.hasLength(discUpdate.getDate())) {
             jmsMessage.info("[发售时间为空][当前设置为%s][%s]", disc.getReleaseDate(), disc.getAsin());
             return;
         }
-        LocalDate date = LocalDate.parse(discInfo.getDate(), fmtDate);
-        boolean buyset = discInfo.isBuyset();
+        LocalDate date = LocalDate.parse(discUpdate.getDate(), fmtDate);
+        boolean buyset = discUpdate.isBuyset();
         if (date.isAfter(disc.getReleaseDate()) && !buyset) {
             jmsMessage.info("[发售时间更新][%s => %s][%s]", disc.getReleaseDate(), date, disc.getAsin());
             disc.setReleaseDate(date);
@@ -110,14 +108,18 @@ public class DiscUpdater extends BaseService {
         }
     }
 
-    private void updateRank(Disc disc, DiscInfo discInfo, LocalDateTime updateOn) {
+    private void updateRank(Disc disc, DiscUpdate discUpdate, Instant updateOn) {
         if (disc.getModifyTime() == null || updateOn.isAfter(disc.getModifyTime())) {
-            disc.setPrevRank(disc.getThisRank());
-            disc.setThisRank(discInfo.getRank());
-            if (!Objects.equals(disc.getThisRank(), disc.getPrevRank())) {
-                disc.setModifyTime(updateOn);
-            }
-            disc.setUpdateTime(updateOn);
+            updateRank(disc, discUpdate.getRank(), updateOn);
+        }
+    }
+
+    public static void updateRank(Disc disc, Integer rank, Instant updateOn) {
+        disc.setPrevRank(disc.getThisRank());
+        disc.setThisRank(rank);
+        disc.setUpdateTime(updateOn);
+        if (!Objects.equals(disc.getThisRank(), disc.getPrevRank())) {
+            disc.setModifyTime(updateOn);
         }
     }
 

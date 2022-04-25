@@ -2,7 +2,7 @@ package com.mingzuozhibi.modules.record;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.mingzuozhibi.commons.base.BaseService;
+import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.modules.disc.Disc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,10 +12,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static com.mingzuozhibi.utils.FormatUtils.fmtDate;
+import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 
 @Service
-public class RecordService extends BaseService {
+public class RecordService extends BaseSupport {
 
     @Autowired
     private HourRecordRepository hourRecordRepository;
@@ -70,7 +70,7 @@ public class RecordService extends BaseService {
         return array;
     }
 
-    public static JsonObject buildRecord(Record record) {
+    private static JsonObject buildRecord(Record record) {
         JsonObject object = new JsonObject();
         object.addProperty("id", record.getId());
         object.addProperty("date", record.getDate().format(fmtDate));

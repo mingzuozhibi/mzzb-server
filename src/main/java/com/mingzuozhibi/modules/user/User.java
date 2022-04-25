@@ -1,23 +1,19 @@
 package com.mingzuozhibi.modules.user;
 
-import com.mingzuozhibi.commons.base.BaseModel;
+import com.mingzuozhibi.commons.base.BaseEntity;
 import com.mingzuozhibi.commons.gson.GsonIgnored;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
-public class User extends BaseModel implements Serializable {
+public class User extends BaseEntity implements Serializable {
 
     public User(String username, String password, boolean enabled) {
         this.username = username;
@@ -42,10 +38,10 @@ public class User extends BaseModel implements Serializable {
     private Set<String> roles = new HashSet<>();
 
     @Column(nullable = false)
-    public Instant registerDate;
+    private Instant registerDate;
 
     @Column
-    public Instant lastLoggedIn;
+    private Instant lastLoggedIn;
 
     @Override
     public boolean equals(Object o) {

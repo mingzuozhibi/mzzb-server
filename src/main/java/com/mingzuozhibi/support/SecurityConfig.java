@@ -28,7 +28,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private UserService userService;
 
     @Autowired
-    private CustomAccessDeniedHandler customAccessDeniedHandler;
+    private SecurityHandler securityHandler;
 
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
@@ -41,8 +41,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .authorities("NONE")
 
             .and().exceptionHandling()
-            .accessDeniedHandler(customAccessDeniedHandler)
-            .authenticationEntryPoint(customAccessDeniedHandler)
+            .accessDeniedHandler(securityHandler)
+            .authenticationEntryPoint(securityHandler)
 
             .and().csrf()
             .ignoringAntMatchers("/api/session/**")

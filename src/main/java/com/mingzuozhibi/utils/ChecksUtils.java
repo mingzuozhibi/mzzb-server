@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.mingzuozhibi.commons.result.ResultSupport.errorResult;
+import static com.mingzuozhibi.commons.base.BaseSupport.errorResult;
 
 public abstract class ChecksUtils {
 
