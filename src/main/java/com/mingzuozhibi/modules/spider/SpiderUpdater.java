@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
@@ -29,12 +29,12 @@ public class SpiderUpdater extends BaseSupport {
     private DiscGroupService discGroupService;
 
     @Transactional
-    public void updateDiscs(List<DiscUpdate> discUpdates, LocalDateTime time) {
+    public void updateDiscs(List<DiscUpdate> discUpdates, Instant updateOn) {
         try {
             jmsMessage.notify("开始更新日亚排名");
             for (DiscUpdate discUpdate : discUpdates) {
                 try {
-                    updateDisc(discUpdate, time);
+                    updateDisc(discUpdate, updateOn);
                 } catch (Exception e) {
                     jmsMessage.warning("更新碟片遇到错误：%s, json=%s",
                         e.toString(), GSON.toJson(discUpdate));
@@ -52,7 +52,7 @@ public class SpiderUpdater extends BaseSupport {
         }
     }
 
-    private void updateDisc(DiscUpdate discUpdate, LocalDateTime updateOn) {
+    private void updateDisc(DiscUpdate discUpdate, Instant updateOn) {
         String asin = discUpdate.getAsin();
         Optional<Disc> byAsin = discRepository.findByAsin(asin);
         if (!byAsin.isPresent()) {
@@ -108,14 +108,18 @@ public class SpiderUpdater extends BaseSupport {
         }
     }
 
-    private void updateRank(Disc disc, DiscUpdate discUpdate, LocalDateTime updateOn) {
+    private void updateRank(Disc disc, DiscUpdate discUpdate, Instant updateOn) {
         if (disc.getModifyTime() == null || updateOn.isAfter(disc.getModifyTime())) {
-            disc.setPrevRank(disc.getThisRank());
-            disc.setThisRank(discUpdate.getRank());
-            if (!Objects.equals(disc.getThisRank(), disc.getPrevRank())) {
-                disc.setModifyTime(updateOn);
-            }
-            disc.setUpdateTime(updateOn);
+            updateRank(disc, discUpdate.getRank(), updateOn);
+        }
+    }
+
+    public static void updateRank(Disc disc, Integer rank, Instant updateOn) {
+        disc.setPrevRank(disc.getThisRank());
+        disc.setThisRank(rank);
+        disc.setUpdateTime(updateOn);
+        if (!Objects.equals(disc.getThisRank(), disc.getPrevRank())) {
+            disc.setModifyTime(updateOn);
         }
     }
 

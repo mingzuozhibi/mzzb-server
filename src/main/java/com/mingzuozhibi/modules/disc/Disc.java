@@ -6,8 +6,9 @@ import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.*;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.temporal.ChronoField;
 import java.util.Objects;
 
 import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
@@ -27,7 +28,7 @@ public class Disc extends BaseEntity {
         this.title = title;
         this.discType = discType;
         this.releaseDate = releaseDate;
-        this.createTime = LocalDateTime.now().withNano(0);
+        this.createTime = Instant.now().with(ChronoField.NANO_OF_SECOND, 0L);
     }
 
     @Column(length = 20, nullable = false, unique = true)
@@ -64,13 +65,13 @@ public class Disc extends BaseEntity {
     private LocalDate releaseDate;
 
     @Column(nullable = false)
-    private LocalDateTime createTime;
+    private Instant createTime;
 
     @Column
-    private LocalDateTime updateTime;
+    private Instant updateTime;
 
     @Column
-    private LocalDateTime modifyTime;
+    private Instant modifyTime;
 
     @Transient
     public String getLogName() {

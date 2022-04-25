@@ -11,12 +11,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
+import static com.mingzuozhibi.modules.spider.SpiderUpdater.updateRank;
 import static com.mingzuozhibi.utils.ChecksUtils.*;
 import static com.mingzuozhibi.utils.ModifyUtils.*;
 
@@ -148,11 +149,7 @@ public class DiscController extends BaseController {
             return paramNotExists("碟片ASIN");
         }
         Disc disc = byAsin.get();
-        disc.setPrevRank(disc.getThisRank());
-        disc.setThisRank(rank);
-        LocalDateTime now = LocalDateTime.now();
-        disc.setModifyTime(now);
-        disc.setUpdateTime(now);
+        updateRank(disc, rank, Instant.now());
         jmsMessage.info(logUpdate("碟片排名", disc.getPrevRank(), disc.getThisRank(), disc.getLogName()));
         return dataResult(disc.toJson());
     }

@@ -5,13 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static com.mingzuozhibi.commons.utils.MyTimeUtils.toInstant;
 import static java.util.Collections.emptyList;
 import static java.util.Comparator.*;
 import static java.util.stream.Collectors.*;
@@ -49,8 +49,8 @@ public class DiscGroupService {
     }
 
     private Map<String, List<Disc>> groupBy(Stream<Disc> discs) {
-        LocalDateTime list_1 = LocalDateTime.now().minusHours(12);
-        LocalDateTime list_2 = LocalDateTime.now().minusHours(8);
+        Instant list_1 = Instant.now().minus(12, ChronoUnit.HOURS);
+        Instant list_2 = Instant.now().minus(8, ChronoUnit.HOURS);
         Function<Disc, String> function = disc -> {
             if (disc.getUpdateTime() == null)
                 return "list_1";
@@ -76,12 +76,15 @@ public class DiscGroupService {
     @Transactional
     public void updateGroupModifyTime() {
         discGroupRepository.findByEnabled(true).forEach(group -> {
-            group.getDiscs().stream()
-                .max(comparing(Disc::getUpdateTime, nullsFirst(naturalOrder())))
-                .ifPresent(disc -> {
-                    group.setModifyTime(toInstant(disc.getUpdateTime()));
-                });
+            findLastUpdate(group).ifPresent(disc -> {
+                group.setModifyTime(disc.getUpdateTime());
+            });
         });
+    }
+
+    private Optional<Disc> findLastUpdate(DiscGroup group) {
+        return group.getDiscs().stream()
+            .max(comparing(Disc::getUpdateTime, nullsFirst(naturalOrder())));
     }
 
 }
