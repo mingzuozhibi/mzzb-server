@@ -19,6 +19,8 @@ import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 @NoArgsConstructor
 public class Disc extends BaseEntity {
 
+    private static final long serialVersionUID = 100L;
+
     public enum DiscType {
         Cd, Dvd, Bluray, Auto, Other
     }
