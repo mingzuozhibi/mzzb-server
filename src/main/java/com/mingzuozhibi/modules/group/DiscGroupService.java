@@ -7,7 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -37,21 +40,33 @@ public class DiscGroupService {
 
     @Transactional
     public Set<String> findNeedUpdateAsinsSorted() {
-        Map<String, List<Disc>> map = findNeedUpdateDiscs()
-            .collect(groupingBy(updateBeforeTarget()));
-        Stream<Disc> before = map.getOrDefault("before", emptyList()).stream()
-            .sorted(comparing(Disc::getUpdateTime, nullsLast(naturalOrder())));
-        Stream<Disc> normal = map.getOrDefault("normal", emptyList()).stream();
-        return Stream.concat(before, normal)
-            .map(Disc::getAsin)
-            .collect(toCollection(LinkedHashSet::new));
+        Map<String, List<Disc>> map = groupBy(findNeedUpdateDiscs());
+        Set<String> asins = new LinkedHashSet<>();
+        map.getOrDefault("list_1", emptyList()).stream()
+            .sorted(comparing(Disc::getUpdateTime, nullsLast(naturalOrder())))
+            .forEach(disc -> asins.add(disc.getAsin()));
+        map.getOrDefault("list_2", emptyList())
+            .forEach(disc -> asins.add(disc.getAsin()));
+        map.getOrDefault("list_3", emptyList())
+            .forEach(disc -> asins.add(disc.getAsin()));
+        return asins;
     }
 
-    private Function<Disc, String> updateBeforeTarget() {
-        LocalDateTime target = LocalDateTime.now().minusHours(9);
-        return disc -> disc.getUpdateTime() == null || disc.getUpdateTime().isBefore(target)
-            ? "before"
-            : "normal";
+    private Map<String, List<Disc>> groupBy(Stream<Disc> discs) {
+        LocalDateTime list_1 = LocalDateTime.now().minusHours(12);
+        LocalDateTime list_2 = LocalDateTime.now().minusHours(8);
+        Function<Disc, String> function = disc -> {
+            if (disc.getUpdateTime() == null)
+                return "list_1";
+            if (disc.getUpdateTime().isBefore(list_1))
+                return "list_1";
+            if (disc.getUpdateTime().isBefore(list_2)) {
+                return "list_2";
+            } else {
+                return "list_3";
+            }
+        };
+        return discs.collect(groupingBy(function));
     }
 
     @Transactional
@@ -64,11 +79,12 @@ public class DiscGroupService {
 
     @Transactional
     public void updateGroupModifyTime() {
-        Comparator<Disc> comparator = comparing(Disc::getUpdateTime, nullsFirst(naturalOrder()));
-        discGroupRepository.findByEnabled(true).forEach(discGroup -> {
-            discGroup.getDiscs().stream().max(comparator).ifPresent(disc -> {
-                discGroup.setModifyTime(toInstant(disc.getUpdateTime()));
-            });
+        discGroupRepository.findByEnabled(true).forEach(group -> {
+            group.getDiscs().stream()
+                .max(comparing(Disc::getUpdateTime, nullsFirst(naturalOrder())))
+                .ifPresent(disc -> {
+                    group.setModifyTime(toInstant(disc.getUpdateTime()));
+                });
         });
     }
 
