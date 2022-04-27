@@ -10,13 +10,13 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>mingzuozhibi</groupId>
+    <groupId>com.mingzuozhibi</groupId>
     <artifactId>mzzb-server</artifactId>
     <version>1.6.6</version>
     <packaging>jar</packaging>
 
     <name>mzzb-server</name>
-    <description>server for mingzuozhibi</description>
+    <description>Server for mingzuozhibi.com</description>
 
     <properties>
         <java.version>1.8</java.version>
