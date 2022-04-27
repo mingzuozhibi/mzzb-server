@@ -10,23 +10,23 @@ import java.util.List;
 @NoArgsConstructor
 public class Result<T> {
 
-    public Result(boolean success, String error, T data, ResultPage page) {
+    public Result(boolean success, String message, T data, ResultPage page) {
         this.success = success;
-        this.error = error;
+        this.message = message;
         this.data = data;
         this.page = page;
     }
 
     private boolean success;
 
-    private String error;
+    private String message;
 
     private T data;
 
     private ResultPage page;
 
     public boolean hasError() {
-        return error != null;
+        return message != null;
     }
 
     public boolean hasData() {

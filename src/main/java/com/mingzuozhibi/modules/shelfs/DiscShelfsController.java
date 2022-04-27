@@ -33,7 +33,7 @@ public class DiscShelfsController extends BaseController {
         String uri = String.format("/discShelfs?page=%d&pageSize=%d", page, pageSize);
         Result<String> bodyResult = connect.waitResult(DISC_SHELFS, uri);
         if (bodyResult.hasError()) {
-            return errorResult(bodyResult.getError());
+            return errorResult(bodyResult.getMessage());
         }
         JsonObject object = gson.fromJson(bodyResult.getData(), JsonObject.class);
         if (object.get("success").getAsBoolean()) {

@@ -46,7 +46,7 @@ public class SpiderController extends BaseController {
         Result<DiscUpdate> result = discUpdateApi.doGet(asin);
         if (result.hasError()) {
             // 查询失败
-            return errorResult(result.getError());
+            return errorResult(result.getMessage());
         }
         Disc disc = discUpdateApi.createWith(result.getData());
         if (disc.getReleaseDate() == null) {
