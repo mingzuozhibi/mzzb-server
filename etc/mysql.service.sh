@@ -45,7 +45,7 @@ echo_is_not_running() {
 }
 
 echo_failed_to_start() {
-    echo "$NAME failed to start"
+    echo "$NAME no need to start"
 }
 
 echo_failed_to_stop() {
