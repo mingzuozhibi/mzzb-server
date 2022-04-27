@@ -36,7 +36,7 @@ public class SessionController extends BaseController {
         if (!optional.isPresent()) {
             log.debug("sessionQuery: Authentication is null");
             setAuthentication(buildGuestAuthentication());
-        } else if (!isLogged(optional.get())) {
+        } else if (!optional.get().isAuthenticated()) {
             String token = getTokenFromHeader();
             sessionService.vaildSession(token).ifPresent(remember -> {
                 onSessionLogin(remember.getUser(), false);
