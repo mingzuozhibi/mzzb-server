@@ -2,7 +2,7 @@ package com.mingzuozhibi.utils;
 
 import java.security.Principal;
 
-import static com.mingzuozhibi.modules.session.Authentications.getAuthentication;
+import static com.mingzuozhibi.modules.session.SessionUtils.getAuthentication;
 
 public abstract class ModifyUtils {
 
