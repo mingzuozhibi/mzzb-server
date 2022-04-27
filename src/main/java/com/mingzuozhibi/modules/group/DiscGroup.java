@@ -16,6 +16,8 @@ import java.util.Set;
 @NoArgsConstructor
 public class DiscGroup extends BaseEntity {
 
+    private static final long serialVersionUID = 100L;
+
     public enum ViewType {
         SakuraList, PublicList, PrivateList
     }

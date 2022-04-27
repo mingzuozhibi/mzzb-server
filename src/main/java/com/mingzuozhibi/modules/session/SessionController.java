@@ -15,7 +15,6 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.mingzuozhibi.modules.session.Authentications.*;
 import static com.mingzuozhibi.modules.session.SessionUtils.*;
 import static com.mingzuozhibi.utils.ChecksUtils.*;
 
@@ -36,8 +35,8 @@ public class SessionController extends BaseController {
         if (!optional.isPresent()) {
             log.debug("sessionQuery: Authentication is null");
             setAuthentication(buildGuestAuthentication());
-        } else if (!isLogged(optional.get())) {
-            String token = getTokenFromHeader();
+        } else if (!optional.get().isAuthenticated()) {
+            String token = getSessionTokenFromHeader();
             sessionService.vaildSession(token).ifPresent(remember -> {
                 onSessionLogin(remember.getUser(), false);
             });
@@ -81,9 +80,9 @@ public class SessionController extends BaseController {
     @Transactional
     @DeleteMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionLogout() {
-        Long sessionId = getSessionId();
+        Long sessionId = getSessionIdFromHttpSession();
         sessionService.cleanSession(sessionId);
-        setTokenToHeader("");
+        setSessionTokenToHeader("");
         setAuthentication(buildGuestAuthentication());
         return buildSessionAndCount();
     }
@@ -101,8 +100,8 @@ public class SessionController extends BaseController {
     private void onSessionLogin(User user, boolean buildNew) {
         if (buildNew) {
             Remember remember = sessionService.buildSession(user);
-            setSessionId(remember.getId());
-            setTokenToHeader(remember.getToken());
+            setSessionIdToHttpSession(remember.getId());
+            setSessionTokenToHeader(remember.getToken());
         }
         setAuthentication(buildUserAuthentication(user));
         user.setLastLoggedIn(Instant.now());

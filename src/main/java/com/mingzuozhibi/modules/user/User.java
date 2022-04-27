@@ -15,6 +15,8 @@ import java.util.*;
 @NoArgsConstructor
 public class User extends BaseEntity implements Serializable {
 
+    private static final long serialVersionUID = 100L;
+
     public User(String username, String password, boolean enabled) {
         this.username = username;
         this.password = password;

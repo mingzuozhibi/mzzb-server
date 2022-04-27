@@ -20,6 +20,8 @@ import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 @NoArgsConstructor
 public class HourRecord extends BaseEntity implements Record {
 
+    private static final long serialVersionUID = 100L;
+
     public HourRecord(Disc disc, LocalDate date) {
         this.disc = disc;
         this.date = date;

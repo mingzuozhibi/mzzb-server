@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 
 public class UserDetailsImpl implements UserDetails {
 
+    private static final long serialVersionUID = 100L;
+
     private final User user;
 
     public UserDetailsImpl(User user) {

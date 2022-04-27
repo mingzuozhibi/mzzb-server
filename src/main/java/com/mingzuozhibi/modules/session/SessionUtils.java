@@ -1,40 +1,66 @@
 package com.mingzuozhibi.modules.session;
 
-import com.mingzuozhibi.utils.ServletUtils;
+import com.mingzuozhibi.modules.user.User;
+import com.mingzuozhibi.support.UserDetailsImpl;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.security.Principal;
-import java.util.function.Predicate;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static com.mingzuozhibi.modules.session.Authentications.getAuthentication;
+public abstract class SessionUtils {
 
-public abstract class SessionUtils extends ServletUtils {
+    public static final Set<GrantedAuthority> GUEST_AUTHORITIES = Stream.of("NONE")
+        .map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
 
-    public static String getTokenFromHeader() {
-        return getHttpRequest().getHeader("session-token");
+    public static Optional<Authentication> getAuthentication() {
+        return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication());
     }
 
-    public static void setTokenToHeader(String token) {
-        getHttpResponse().addHeader("session-token", token);
+    public static void setAuthentication(Authentication authentication) {
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-    public static Long getSessionId() {
-        return (Long) getHttpSession().getAttribute("session-id");
+    public static Authentication buildGuestAuthentication() {
+        return new AnonymousAuthenticationToken(UUID.randomUUID().toString(), "Guest", GUEST_AUTHORITIES);
     }
 
-    public static void setSessionId(Long sessionId) {
-        getHttpSession().setAttribute("session-id", sessionId);
+    public static Authentication buildUserAuthentication(User user) {
+        UserDetails userDetails = new UserDetailsImpl(user);
+        WebAuthenticationDetails details = new WebAuthenticationDetails(getAttributes().getRequest());
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
+            userDetails, userDetails.getPassword(), userDetails.getAuthorities());
+        token.setDetails(details);
+        return token;
     }
 
-    public static boolean isLogged(Authentication authentication) {
-        return authentication.getAuthorities().stream()
-            .map(GrantedAuthority::getAuthority)
-            .anyMatch(Predicate.isEqual("ROLE_BASIC"));
+    public static String getSessionTokenFromHeader() {
+        return getAttributes().getRequest().getHeader("session-token");
     }
 
-    public static String getLoginName() {
-        return getAuthentication().map(Principal::getName).orElse("*system*");
+    public static void setSessionTokenToHeader(String token) {
+        Objects.requireNonNull(getAttributes().getResponse()).addHeader("session-token", token);
+    }
+
+    public static Long getSessionIdFromHttpSession() {
+        return (Long) getAttributes().getRequest().getSession().getAttribute("session-id");
+    }
+
+    public static void setSessionIdToHttpSession(Long sessionId) {
+        getAttributes().getRequest().getSession().setAttribute("session-id", sessionId);
+    }
+
+    private static ServletRequestAttributes getAttributes() {
+        return ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes());
     }
 
 }

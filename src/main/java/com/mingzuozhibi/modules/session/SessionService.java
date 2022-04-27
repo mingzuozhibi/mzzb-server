@@ -14,6 +14,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static com.mingzuozhibi.modules.session.SessionUtils.setSessionTokenToHeader;
+
 @Service
 public class SessionService {
 
@@ -30,7 +32,7 @@ public class SessionService {
         }
         Optional<Remember> byToken = rememberRepository.findByToken(token);
         if (!byToken.isPresent()) {
-            SessionUtils.setTokenToHeader("");
+            setSessionTokenToHeader("");
             return Optional.empty();
         }
         Remember remember = byToken.get();
