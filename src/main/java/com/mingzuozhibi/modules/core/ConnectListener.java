@@ -1,4 +1,4 @@
-package com.mingzuozhibi.modules.message;
+package com.mingzuozhibi.modules.core;
 
 import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
@@ -10,18 +10,18 @@ import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 
 @Slf4j
 @Component
-public class MessageListener {
+public class ConnectListener {
 
     @Autowired
-    private MessageService messageService;
+    private ConnectService connectService;
 
-    @JmsListener(destination = "module.message")
-    public void moduleMessage(String json) {
+    @JmsListener(destination = "module.connect")
+    public void moduleConnect(String json) {
         JsonObject root = GSON.fromJson(json, JsonObject.class);
         String name = root.get("name").getAsString();
-        JsonObject data = root.get("data").getAsJsonObject();
-        messageService.saveMessage(name, data);
-        log.debug("JMS <- module.message [name={}, data={}]", name, data);
+        String addr = root.get("addr").getAsString();
+        connectService.setModuleAddr(name, addr);
+        log.info("JMS <- module.connect [name={}, addr={}]", name, addr);
     }
 
 }

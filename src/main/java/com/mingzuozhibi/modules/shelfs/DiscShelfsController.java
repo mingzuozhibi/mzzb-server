@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.domain.Result;
-import com.mingzuozhibi.modules.connect.Connect;
+import com.mingzuozhibi.modules.core.Connect;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
-import static com.mingzuozhibi.modules.connect.Module.DISC_SHELFS;
+import static com.mingzuozhibi.modules.core.Connect.Module.DISC_SHELFS;
 
 @Slf4j
 @RestController
