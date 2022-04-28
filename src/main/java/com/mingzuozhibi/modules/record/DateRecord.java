@@ -1,6 +1,5 @@
 package com.mingzuozhibi.modules.record;
 
-import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseEntity;
 import com.mingzuozhibi.commons.gson.GsonIgnored;
 import com.mingzuozhibi.modules.disc.Disc;
@@ -8,8 +7,6 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-
-import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 
 @Entity
 @Getter
@@ -31,6 +28,7 @@ public class DateRecord extends BaseEntity implements Record {
     @Column(nullable = false)
     private LocalDate date;
 
+    @GsonIgnored
     @Column(name = "`rank`")
     private Double rank;
 
@@ -46,10 +44,6 @@ public class DateRecord extends BaseEntity implements Record {
     @Transient
     public Double getAverRank() {
         return rank;
-    }
-
-    public JsonObject toJson() {
-        return GSON.toJsonTree(this).getAsJsonObject();
     }
 
 }
