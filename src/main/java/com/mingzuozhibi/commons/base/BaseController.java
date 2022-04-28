@@ -8,6 +8,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
+
 public abstract class BaseController extends BaseSupport {
 
     protected static final String MEDIA_TYPE = MediaType.APPLICATION_JSON_VALUE;
@@ -19,11 +21,11 @@ public abstract class BaseController extends BaseSupport {
     }
 
     protected <T> String dataResult(T data) {
-        return gson.toJson(Result.ofData(data));
+        return GSON.toJson(Result.ofData(data));
     }
 
     protected <T> String pageResult(Page<T> page) {
-        return gson.toJson(Result.ofPage(page));
+        return GSON.toJson(Result.ofPage(page));
     }
 
     protected String gsonResult(JsonElement data, JsonElement page) {

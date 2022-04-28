@@ -1,9 +1,7 @@
 package com.mingzuozhibi.commons.domain;
 
-import com.mingzuozhibi.commons.gson.GsonFactory;
 import lombok.*;
 
-import java.lang.reflect.Type;
 import java.util.UUID;
 
 @Getter
@@ -37,10 +35,6 @@ public class SearchTask<T> {
         setSuccess(true);
         setData(data);
         return this;
-    }
-
-    public static <T> SearchTask<T> fromJson(String json, Type... typeArguments) {
-        return GsonFactory.fromJson(json, SearchTask.class, typeArguments);
     }
 
 }

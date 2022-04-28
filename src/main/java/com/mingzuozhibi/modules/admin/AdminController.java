@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 import static com.mingzuozhibi.utils.ChecksUtils.paramNotExists;
 import static com.mingzuozhibi.utils.ModifyUtils.logUpdate;
@@ -43,7 +44,7 @@ public class AdminController extends BaseController {
     @GetMapping(value = "/admin/sendNeedUpdateAsins", produces = MEDIA_TYPE)
     public void sendNeedUpdateAsins() {
         Set<String> asins = discGroupService.findNeedUpdateAsinsSorted();
-        jmsService.convertAndSend("need.update.asins", gson.toJson(asins));
+        jmsService.convertAndSend("need.update.asins", GSON.toJson(asins));
         jmsMessage.notify("JMS -> need.update.asins size=" + asins.size());
     }
 

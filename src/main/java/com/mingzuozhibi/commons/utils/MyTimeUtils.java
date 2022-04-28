@@ -4,12 +4,14 @@ import java.time.*;
 
 public abstract class MyTimeUtils {
 
+    public static final ZoneId ZONE = ZoneId.systemDefault();
+
     public static Instant toInstant(LocalDateTime time) {
-        return time.atZone(ZoneId.systemDefault()).toInstant();
+        return time.atZone(ZONE).toInstant();
     }
 
     public static LocalDateTime ofInstant(Instant instant) {
-        return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+        return instant.atZone(ZONE).toLocalDateTime();
     }
 
     public static long toEpochMilli(LocalDateTime time) {

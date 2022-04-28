@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 import static com.mingzuozhibi.modules.connect.Module.DISC_SHELFS;
 
 @Slf4j
@@ -35,7 +36,7 @@ public class DiscShelfsController extends BaseController {
         if (bodyResult.hasError()) {
             return errorResult(bodyResult.getMessage());
         }
-        JsonObject object = gson.fromJson(bodyResult.getData(), JsonObject.class);
+        JsonObject object = GSON.fromJson(bodyResult.getData(), JsonObject.class);
         if (object.get("success").getAsBoolean()) {
             matchTracked(object.get("data").getAsJsonArray());
         }
