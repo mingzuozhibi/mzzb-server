@@ -4,7 +4,7 @@ import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.group.DiscGroupService;
 import com.mingzuozhibi.modules.record.*;
-import com.mingzuozhibi.modules.remember.RememberRepository;
+import com.mingzuozhibi.modules.user.RememberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

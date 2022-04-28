@@ -1,6 +1,5 @@
-package com.mingzuozhibi.modules.remember;
+package com.mingzuozhibi.modules.user;
 
-import com.mingzuozhibi.modules.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.Instant;

@@ -1,8 +1,5 @@
-package com.mingzuozhibi.modules.session;
+package com.mingzuozhibi.modules.user;
 
-import com.mingzuozhibi.modules.remember.Remember;
-import com.mingzuozhibi.modules.remember.RememberRepository;
-import com.mingzuozhibi.modules.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,7 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static com.mingzuozhibi.modules.session.SessionUtils.setSessionTokenToHeader;
+import static com.mingzuozhibi.modules.user.SessionUtils.setSessionTokenToHeader;
 
 @Service
 public class SessionService {

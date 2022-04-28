@@ -1,4 +1,4 @@
-package com.mingzuozhibi.modules.session;
+package com.mingzuozhibi.modules.user;
 
 import lombok.*;
 import org.springframework.security.core.Authentication;

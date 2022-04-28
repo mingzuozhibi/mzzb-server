@@ -1,7 +1,6 @@
 package com.mingzuozhibi.modules.user;
 
 import com.mingzuozhibi.commons.base.BaseController;
-import com.mingzuozhibi.modules.remember.RememberRepository;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
