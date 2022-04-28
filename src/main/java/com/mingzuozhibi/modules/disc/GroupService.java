@@ -1,6 +1,5 @@
-package com.mingzuozhibi.modules.group;
+package com.mingzuozhibi.modules.disc;
 
-import com.mingzuozhibi.modules.disc.Disc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,10 +16,10 @@ import static java.util.Comparator.*;
 import static java.util.stream.Collectors.*;
 
 @Service
-public class DiscGroupService {
+public class GroupService {
 
     @Autowired
-    private DiscGroupRepository discGroupRepository;
+    private GroupRepository groupRepository;
 
     @Transactional
     public Set<String> findNeedUpdateAsins() {
@@ -30,7 +29,7 @@ public class DiscGroupService {
     }
 
     private Stream<Disc> findNeedUpdateDiscs() {
-        return discGroupRepository.findActiveDiscGroups().stream()
+        return groupRepository.findActiveDiscGroups().stream()
             .flatMap(discGroup -> discGroup.getDiscs().stream());
     }
 
@@ -75,14 +74,14 @@ public class DiscGroupService {
 
     @Transactional
     public void updateGroupModifyTime() {
-        discGroupRepository.findByEnabled(true).forEach(group -> {
+        groupRepository.findByEnabled(true).forEach(group -> {
             findLastUpdate(group).ifPresent(disc -> {
                 group.setModifyTime(disc.getUpdateTime());
             });
         });
     }
 
-    private Optional<Disc> findLastUpdate(DiscGroup group) {
+    private Optional<Disc> findLastUpdate(Group group) {
         return group.getDiscs().stream()
             .max(comparing(Disc::getUpdateTime, nullsFirst(naturalOrder())));
     }

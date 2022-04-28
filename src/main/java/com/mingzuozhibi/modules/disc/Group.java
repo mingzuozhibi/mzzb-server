@@ -1,8 +1,7 @@
-package com.mingzuozhibi.modules.group;
+package com.mingzuozhibi.modules.disc;
 
 import com.mingzuozhibi.commons.base.BaseEntity;
 import com.mingzuozhibi.commons.gson.GsonIgnored;
-import com.mingzuozhibi.modules.disc.Disc;
 import lombok.*;
 
 import javax.persistence.*;
@@ -10,11 +9,11 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
-public class DiscGroup extends BaseEntity {
+@Entity(name = "disc_group")
+public class Group extends BaseEntity {
 
     private static final long serialVersionUID = 100L;
 
@@ -22,7 +21,7 @@ public class DiscGroup extends BaseEntity {
         SakuraList, PublicList, PrivateList
     }
 
-    public DiscGroup(String key, String title, Boolean enabled, ViewType viewType) {
+    public Group(String key, String title, Boolean enabled, ViewType viewType) {
         this.key = key;
         this.title = title;
         this.enabled = enabled;

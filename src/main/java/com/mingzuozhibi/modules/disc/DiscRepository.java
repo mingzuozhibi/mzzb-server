@@ -1,6 +1,5 @@
 package com.mingzuozhibi.modules.disc;
 
-import com.mingzuozhibi.modules.group.DiscGroup;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -18,8 +17,8 @@ public interface DiscRepository extends JpaRepository<Disc, Long> {
     @Query(value = "select count(*) from disc_group_discs where disc_group_id = ?1 and disc_id = ?2", nativeQuery = true)
     long countGroupDiscs(Long groupId, Long discId);
 
-    default boolean existsDiscInGroup(DiscGroup discGroup, Disc disc) {
-        return countGroupDiscs(discGroup.getId(), disc.getId()) > 0;
+    default boolean existsDiscInGroup(Group group, Disc disc) {
+        return countGroupDiscs(group.getId(), disc.getId()) > 0;
     }
 
 }

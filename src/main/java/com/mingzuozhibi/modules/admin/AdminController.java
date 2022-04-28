@@ -2,9 +2,7 @@ package com.mingzuozhibi.modules.admin;
 
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsService;
-import com.mingzuozhibi.modules.disc.Disc;
-import com.mingzuozhibi.modules.disc.DiscRepository;
-import com.mingzuozhibi.modules.group.DiscGroupService;
+import com.mingzuozhibi.modules.disc.*;
 import com.mingzuozhibi.modules.record.RecordCompute;
 import com.mingzuozhibi.utils.ThreadUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,13 +35,13 @@ public class AdminController extends BaseController {
     private DiscRepository discRepository;
 
     @Autowired
-    private DiscGroupService discGroupService;
+    private GroupService groupService;
 
     @Transactional
     @Scheduled(cron = "0 59 * * * ?")
     @GetMapping(value = "/admin/sendNeedUpdateAsins", produces = MEDIA_TYPE)
     public void sendNeedUpdateAsins() {
-        Set<String> asins = discGroupService.findNeedUpdateAsinsSorted();
+        Set<String> asins = groupService.findNeedUpdateAsinsSorted();
         jmsService.convertAndSend("need.update.asins", GSON.toJson(asins));
         jmsMessage.notify("JMS -> need.update.asins size=" + asins.size());
     }

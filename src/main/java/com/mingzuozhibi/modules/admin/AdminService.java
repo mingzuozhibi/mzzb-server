@@ -2,7 +2,7 @@ package com.mingzuozhibi.modules.admin;
 
 import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.modules.disc.Disc;
-import com.mingzuozhibi.modules.group.DiscGroupService;
+import com.mingzuozhibi.modules.disc.GroupService;
 import com.mingzuozhibi.modules.record.*;
 import com.mingzuozhibi.modules.user.RememberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ public class AdminService extends BaseSupport {
     private RecordCompute recordCompute;
 
     @Autowired
-    private DiscGroupService discGroupService;
+    private GroupService groupService;
 
     @Autowired
     private RememberRepository rememberRepository;
@@ -54,7 +54,7 @@ public class AdminService extends BaseSupport {
         LocalDateTime now = LocalDateTime.now();
         LocalDate date = now.toLocalDate();
         int hour = now.getHour();
-        Set<Disc> discs = discGroupService.findNeedRecordDiscs();
+        Set<Disc> discs = groupService.findNeedRecordDiscs();
         discs.forEach(disc -> recordCompute.computePtNow(disc, date, hour));
         jmsMessage.info("[自动任务][记录计算排名][共%d个]", discs.size());
     }
