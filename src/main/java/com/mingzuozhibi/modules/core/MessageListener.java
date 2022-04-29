@@ -42,7 +42,7 @@ public class MessageListener extends BaseSupport {
         JsonObject data = root.get("data").getAsJsonObject();
         Message message = new Message();
         setName(root.get("name").getAsString(), message);
-        setType(data.get("string").getAsString(), message);
+        setType(data.get("type").getAsString(), message);
         message.setText(data.get("text").getAsString());
         message.setCreateOn(Instant.ofEpochMilli(data.get("createOn").getAsLong()));
         saveMessage(message);
@@ -74,10 +74,10 @@ public class MessageListener extends BaseSupport {
 
     private void setName(String name, Message message) {
         switch (name) {
-            case "mzzb_disc_spider":
+            case "mzzb-disc-spider":
                 message.setName(Name.SPIDER_CONTENT);
                 break;
-            case "mzzb_disc_shelfs":
+            case "mzzb-disc-shelfs":
                 message.setName(Name.SPIDER_HISTORY);
                 break;
             default:
