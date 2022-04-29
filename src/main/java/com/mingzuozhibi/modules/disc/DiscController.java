@@ -125,16 +125,16 @@ public class DiscController extends BaseController {
         }
         Disc disc = byId.get();
         if (!Objects.equals(disc.getTitlePc(), form.titlePc)) {
-            disc.setTitlePc(form.titlePc);
             jmsMessage.info(logUpdate("碟片标题", disc.getTitlePc(), form.titlePc));
+            disc.setTitlePc(form.titlePc);
         }
         if (!Objects.equals(disc.getDiscType(), form.discType)) {
-            disc.setDiscType(form.discType);
             jmsMessage.info(logUpdate("碟片类型", disc.getDiscType(), form.discType));
+            disc.setDiscType(form.discType);
         }
         if (!Objects.equals(disc.getReleaseDate(), localDate)) {
-            disc.setReleaseDate(localDate);
             jmsMessage.info(logUpdate("发售日期", disc.getReleaseDate(), localDate));
+            disc.setReleaseDate(localDate);
         }
         return dataResult(disc.toJson());
     }

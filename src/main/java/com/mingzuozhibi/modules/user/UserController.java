@@ -90,17 +90,17 @@ public class UserController extends BaseController {
         }
         User user = byId.get();
         if (!Objects.equals(user.getUsername(), form.username)) {
-            user.setUsername(form.username);
             jmsMessage.info(logUpdate("用户名称", user.getUsername(), form.username));
+            user.setUsername(form.username);
         }
         if (StringUtils.isNotEmpty(form.password) && !Objects.equals(user.getPassword(), form.password)) {
+            jmsMessage.info(logUpdate("用户密码", "******", "******"));
             user.setPassword(form.password);
             onChangePassword(user);
-            jmsMessage.info(logUpdate("用户密码", "******", "******"));
         }
         if (user.isEnabled() != form.enabled) {
-            user.setEnabled(form.enabled);
             jmsMessage.info(logUpdate("启用状态", user.isEnabled(), form.enabled));
+            user.setEnabled(form.enabled);
         }
         return dataResult(user);
     }
