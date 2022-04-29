@@ -24,7 +24,7 @@ public class MessageController extends BaseController {
             .map(json -> gson.fromJson(json, JsonObject.class))
             .collect(Collectors.toList());
         Long count = messageService.countMessage(moduleName, type);
-        return pageResult(messages, new ResultPage(page, pageSize, count));
+        return pageResult(messages, new ResultPage(pageSize, page, count));
     }
 
 }
