@@ -1,7 +1,6 @@
-package com.mingzuozhibi.modules.remember;
+package com.mingzuozhibi.modules.user;
 
 import com.mingzuozhibi.commons.base.BaseEntity;
-import com.mingzuozhibi.modules.user.User;
 import lombok.*;
 
 import javax.persistence.*;

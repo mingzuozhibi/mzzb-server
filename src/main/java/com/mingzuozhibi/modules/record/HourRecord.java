@@ -1,18 +1,14 @@
 package com.mingzuozhibi.modules.record;
 
-import com.google.gson.JsonObject;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mingzuozhibi.commons.base.BaseEntity;
-import com.mingzuozhibi.commons.gson.GsonIgnored;
 import com.mingzuozhibi.modules.disc.Disc;
 import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.stream.DoubleStream;
-
-import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 
 @Entity
 @Getter
@@ -27,7 +23,7 @@ public class HourRecord extends BaseEntity implements Record {
         this.date = date;
     }
 
-    @GsonIgnored
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
     private Disc disc;
 
@@ -43,8 +39,13 @@ public class HourRecord extends BaseEntity implements Record {
     @Column
     private Double guessPt;
 
+    @Transient
+    public Double getAverRank() {
+        return calculateRank();
+    }
+
     @Embedded
-    @GsonIgnored
+    @JsonIgnore
     private HourRecordEmbedded embedded;
 
     public void setRank(int hour, Integer rank) {
@@ -54,7 +55,6 @@ public class HourRecord extends BaseEntity implements Record {
         this.embedded.setRank(hour, rank);
     }
 
-    @Transient
     public Integer getRank(int hour) {
         if (this.embedded == null) {
             return null;
@@ -62,8 +62,7 @@ public class HourRecord extends BaseEntity implements Record {
         return this.embedded.getRank(hour);
     }
 
-    @Transient
-    public Double getAverRank() {
+    private Double calculateRank() {
         if (this.embedded == null) {
             return null;
         }
@@ -76,14 +75,6 @@ public class HourRecord extends BaseEntity implements Record {
         }
         OptionalDouble average = builder.build().average();
         return average.isPresent() ? average.getAsDouble() : null;
-    }
-
-    public JsonObject toJson() {
-        JsonObject object = GSON.toJsonTree(this).getAsJsonObject();
-        Optional.ofNullable(getAverRank()).ifPresent(rank -> {
-            object.addProperty("rank", rank);
-        });
-        return object;
     }
 
 }

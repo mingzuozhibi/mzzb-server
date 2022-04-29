@@ -1,11 +1,9 @@
-package com.mingzuozhibi.modules.group;
+package com.mingzuozhibi.modules.disc;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseController;
-import com.mingzuozhibi.modules.disc.Disc;
-import com.mingzuozhibi.modules.disc.DiscRepository;
-import com.mingzuozhibi.modules.group.DiscGroup.ViewType;
+import com.mingzuozhibi.modules.disc.Group.ViewType;
 import com.mingzuozhibi.utils.ModifyUtils;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,25 +13,26 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
-import static com.mingzuozhibi.modules.group.DiscGroupUtils.*;
+import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
+import static com.mingzuozhibi.modules.disc.DiscUtils.*;
 import static com.mingzuozhibi.utils.ChecksUtils.*;
 import static com.mingzuozhibi.utils.ModifyUtils.*;
 
 @RestController
-public class DiscGroupController extends BaseController {
+public class GroupController extends BaseController {
 
     @Autowired
     private DiscRepository discRepository;
 
     @Autowired
-    private DiscGroupRepository discGroupRepository;
+    private GroupRepository groupRepository;
 
     @Transactional
     @GetMapping(value = "/api/discGroups", produces = MEDIA_TYPE)
     public String findAll(@RequestParam(defaultValue = "false") boolean hasPrivate) {
-        List<DiscGroup> discGroups = discGroupRepository.findAllHasPrivate(hasPrivate);
+        List<Group> groups = groupRepository.findAllHasPrivate(hasPrivate);
         JsonArray array = new JsonArray();
-        discGroups.forEach(discGroup -> {
+        groups.forEach(discGroup -> {
             long count = discRepository.countGroupDiscs(discGroup.getId());
             array.add(buildWithCount(discGroup, count));
         });
@@ -43,7 +42,7 @@ public class DiscGroupController extends BaseController {
     @Transactional
     @GetMapping(value = "/api/discGroups/key/{key}", produces = MEDIA_TYPE)
     public String findByKey(@PathVariable String key) {
-        Optional<DiscGroup> byKey = discGroupRepository.findByKey(key);
+        Optional<Group> byKey = groupRepository.findByKey(key);
         if (!byKey.isPresent()) {
             return paramNotExists("列表索引");
         }
@@ -71,13 +70,13 @@ public class DiscGroupController extends BaseController {
         if (checks.isPresent()) {
             return errorResult(checks.get());
         }
-        if (discGroupRepository.findByKey(form.key).isPresent()) {
+        if (groupRepository.findByKey(form.key).isPresent()) {
             return paramExists("列表索引");
         }
-        DiscGroup discGroup = new DiscGroup(form.key, form.title, form.enabled, form.viewType);
-        discGroupRepository.save(discGroup);
-        jmsMessage.notify(logCreate("列表", discGroup.getTitle(), gson.toJson(discGroup)));
-        return dataResult(discGroup);
+        Group group = new Group(form.key, form.title, form.enabled, form.viewType);
+        groupRepository.save(group);
+        jmsMessage.notify(logCreate("列表", group.getTitle(), GSON.toJson(group)));
+        return dataResult(group);
     }
 
     @Transactional
@@ -94,61 +93,61 @@ public class DiscGroupController extends BaseController {
         if (checks.isPresent()) {
             return errorResult(checks.get());
         }
-        Optional<DiscGroup> byId = discGroupRepository.findById(id);
+        Optional<Group> byId = groupRepository.findById(id);
         if (!byId.isPresent()) {
             return paramNotExists("列表ID");
         }
-        DiscGroup discGroup = byId.get();
-        if (!Objects.equals(discGroup.getKey(), form.key)) {
-            jmsMessage.info(logUpdate("列表索引", discGroup.getKey(), form.key));
-            discGroup.setKey(form.key);
+        Group group = byId.get();
+        if (!Objects.equals(group.getKey(), form.key)) {
+            jmsMessage.info(logUpdate("列表索引", group.getKey(), form.key));
+            group.setKey(form.key);
         }
-        if (!Objects.equals(discGroup.getTitle(), form.title)) {
-            jmsMessage.info(logUpdate("列表标题", discGroup.getTitle(), form.title));
-            discGroup.setTitle(form.title);
+        if (!Objects.equals(group.getTitle(), form.title)) {
+            jmsMessage.info(logUpdate("列表标题", group.getTitle(), form.title));
+            group.setTitle(form.title);
         }
-        if (!Objects.equals(discGroup.getViewType(), form.viewType)) {
-            jmsMessage.info(logUpdate("列表类型", discGroup.getViewType(), form.viewType));
-            discGroup.setViewType(form.viewType);
+        if (!Objects.equals(group.getViewType(), form.viewType)) {
+            jmsMessage.info(logUpdate("列表类型", group.getViewType(), form.viewType));
+            group.setViewType(form.viewType);
         }
-        if (!Objects.equals(discGroup.isEnabled(), form.enabled)) {
-            jmsMessage.info(logUpdate("是否更新", discGroup.isEnabled(), form.enabled));
-            discGroup.setEnabled(form.enabled);
+        if (!Objects.equals(group.isEnabled(), form.enabled)) {
+            jmsMessage.info(logUpdate("是否更新", group.isEnabled(), form.enabled));
+            group.setEnabled(form.enabled);
         }
-        return dataResult(discGroup);
+        return dataResult(group);
     }
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(value = "/api/discGroups/{id}", produces = MEDIA_TYPE)
     public String doDelete(@PathVariable("id") Long id) {
-        Optional<DiscGroup> byId = discGroupRepository.findById(id);
+        Optional<Group> byId = groupRepository.findById(id);
         if (!byId.isPresent()) {
             return paramNotExists("列表ID");
         }
-        DiscGroup discGroup = byId.get();
+        Group group = byId.get();
         if (discRepository.countGroupDiscs(id) > 0) {
-            jmsMessage.warning(logDelete("列表", discGroup.getTitle(), gson.toJson(discGroup)));
-            discGroup.getDiscs().forEach(disc -> {
+            jmsMessage.warning(logDelete("列表", group.getTitle(), GSON.toJson(group)));
+            group.getDiscs().forEach(disc -> {
                 jmsMessage.info("[记录删除的碟片][ASIN=%s][NAME=%s]", disc.getAsin(), disc.getLogName());
             });
         } else {
-            jmsMessage.notify(logDelete("列表", discGroup.getTitle(), gson.toJson(discGroup)));
+            jmsMessage.notify(logDelete("列表", group.getTitle(), GSON.toJson(group)));
         }
-        discGroup.getDiscs().clear();
-        discGroupRepository.delete(discGroup);
-        return dataResult(discGroup);
+        group.getDiscs().clear();
+        groupRepository.delete(group);
+        return dataResult(group);
     }
 
     @Transactional
     @GetMapping(value = "/api/discGroups/key/{key}/discs", produces = MEDIA_TYPE)
     public String findDiscs(@PathVariable String key) {
-        Optional<DiscGroup> byKey = discGroupRepository.findByKey(key);
+        Optional<Group> byKey = groupRepository.findByKey(key);
         if (!byKey.isPresent()) {
             return paramNotExists("列表索引");
         }
-        DiscGroup discGroup = byKey.get();
-        JsonObject object = buildWithDiscs(discGroup);
+        Group group = byKey.get();
+        JsonObject object = buildWithDiscs(group);
         return dataResult(object);
     }
 
@@ -157,11 +156,11 @@ public class DiscGroupController extends BaseController {
     @PostMapping(value = "/api/discGroups/{gid}/discs/{did}", produces = MEDIA_TYPE)
     public synchronized String pushDiscs(@PathVariable Long gid,
                                          @PathVariable Long did) {
-        Optional<DiscGroup> byGid = discGroupRepository.findById(gid);
+        Optional<Group> byGid = groupRepository.findById(gid);
         if (!byGid.isPresent()) {
             return paramNotExists("列表ID");
         }
-        DiscGroup discGroup = byGid.get();
+        Group group = byGid.get();
 
         Optional<Disc> byDid = discRepository.findById(did);
         if (!byDid.isPresent()) {
@@ -169,12 +168,12 @@ public class DiscGroupController extends BaseController {
         }
         Disc disc = byDid.get();
 
-        if (discRepository.existsDiscInGroup(discGroup, disc)) {
+        if (discRepository.existsDiscInGroup(group, disc)) {
             return itemsExists("碟片");
         }
-        discGroup.getDiscs().add(disc);
+        group.getDiscs().add(disc);
 
-        jmsMessage.notify(ModifyUtils.logPush("碟片", disc.getLogName(), discGroup.getTitle()));
+        jmsMessage.notify(ModifyUtils.logPush("碟片", disc.getLogName(), group.getTitle()));
         return dataResult(disc.toJson());
     }
 
@@ -183,11 +182,11 @@ public class DiscGroupController extends BaseController {
     @DeleteMapping(value = "/api/discGroups/{gid}/discs/{did}", produces = MEDIA_TYPE)
     public synchronized String dropDiscs(@PathVariable("gid") Long gid,
                                          @PathVariable("did") Long did) {
-        Optional<DiscGroup> byGid = discGroupRepository.findById(gid);
+        Optional<Group> byGid = groupRepository.findById(gid);
         if (!byGid.isPresent()) {
             return paramNotExists("列表ID");
         }
-        DiscGroup discGroup = byGid.get();
+        Group group = byGid.get();
 
         Optional<Disc> byDid = discRepository.findById(did);
         if (!byDid.isPresent()) {
@@ -195,12 +194,12 @@ public class DiscGroupController extends BaseController {
         }
         Disc disc = byDid.get();
 
-        if (!discRepository.existsDiscInGroup(discGroup, disc)) {
+        if (!discRepository.existsDiscInGroup(group, disc)) {
             return itemsNotExists("碟片");
         }
-        discGroup.getDiscs().remove(disc);
+        group.getDiscs().remove(disc);
 
-        jmsMessage.notify(logDrop("碟片", disc.getLogName(), discGroup.getTitle()));
+        jmsMessage.notify(logDrop("碟片", disc.getLogName(), group.getTitle()));
         return dataResult(disc.toJson());
     }
 

@@ -1,6 +1,6 @@
 package com.mingzuozhibi.commons.base;
 
-import com.mingzuozhibi.commons.gson.GsonIgnored;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,7 +19,7 @@ public abstract class BaseEntity implements Serializable {
     private Long id;
 
     @Version
-    @GsonIgnored
+    @JsonIgnore
     private Long version;
 
 }

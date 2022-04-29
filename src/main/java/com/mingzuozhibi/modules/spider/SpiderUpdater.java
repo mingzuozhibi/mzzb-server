@@ -1,10 +1,8 @@
 package com.mingzuozhibi.modules.spider;
 
 import com.mingzuozhibi.commons.base.BaseSupport;
-import com.mingzuozhibi.modules.disc.Disc;
+import com.mingzuozhibi.modules.disc.*;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
-import com.mingzuozhibi.modules.disc.DiscRepository;
-import com.mingzuozhibi.modules.group.DiscGroupService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,7 +24,7 @@ public class SpiderUpdater extends BaseSupport {
     private DiscRepository discRepository;
 
     @Autowired
-    private DiscGroupService discGroupService;
+    private GroupService groupService;
 
     @Transactional
     public void updateDiscs(List<DiscUpdate> discUpdates, Instant updateOn) {
@@ -42,7 +40,7 @@ public class SpiderUpdater extends BaseSupport {
             }
 
             if (discUpdates.size() > 0) {
-                discGroupService.updateGroupModifyTime();
+                groupService.updateGroupModifyTime();
                 jmsMessage.notify("成功更新日亚排名：共%d个", discUpdates.size());
             } else {
                 jmsMessage.notify("未能更新日亚排名：无数据");

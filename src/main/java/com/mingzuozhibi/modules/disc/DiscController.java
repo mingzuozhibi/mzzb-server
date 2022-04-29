@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 import static com.mingzuozhibi.modules.spider.SpiderUpdater.updateRank;
 import static com.mingzuozhibi.utils.ChecksUtils.*;
@@ -58,7 +59,7 @@ public class DiscController extends BaseController {
             return paramNotExists("碟片ID");
         }
         Disc disc = byId.get();
-        JsonObject object = gson.toJsonTree(disc).getAsJsonObject();
+        JsonObject object = GSON.toJsonTree(disc).getAsJsonObject();
         object.add("records", recordService.buildRecords(disc));
         return dataResult(object);
     }
@@ -94,7 +95,7 @@ public class DiscController extends BaseController {
         LocalDate localDate = LocalDate.parse(form.releaseDate, fmtDate);
         Disc disc = new Disc(form.asin, form.title, form.discType, localDate);
         discRepository.save(disc);
-        jmsMessage.success(logCreate("碟片", disc.getLogName(), gson.toJson(disc)));
+        jmsMessage.success(logCreate("碟片", disc.getLogName(), GSON.toJson(disc)));
         return dataResult(disc.toJson());
     }
 

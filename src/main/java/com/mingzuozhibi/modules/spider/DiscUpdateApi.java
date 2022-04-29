@@ -1,5 +1,6 @@
 package com.mingzuozhibi.modules.spider;
 
+import com.google.gson.reflect.TypeToken;
 import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.commons.domain.Result;
 import com.mingzuozhibi.commons.domain.SearchTask;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.*;
 
+import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 
 @Component
@@ -51,7 +53,7 @@ public class DiscUpdateApi extends BaseSupport {
 
     private SearchTask<DiscUpdate> sendDiscUpdate(String asin) {
         SearchTask<DiscUpdate> task = new SearchTask<>(asin);
-        jmsService.sendJson("send.disc.update", gson.toJson(task), "sendDiscUpdate[" + asin + "]");
+        jmsService.sendJson("send.disc.update", GSON.toJson(task), "sendDiscUpdate[" + asin + "]");
         String uuid = task.getUuid();
         waitMap.put(uuid, task);
 
@@ -62,7 +64,8 @@ public class DiscUpdateApi extends BaseSupport {
 
     @JmsListener(destination = "back.disc.update")
     public void listenDiscUpdate(String json) {
-        SearchTask<DiscUpdate> task = SearchTask.fromJson(json, DiscUpdate.class);
+        TypeToken<?> token = TypeToken.getParameterized(SearchTask.class, DiscUpdate.class);
+        SearchTask<DiscUpdate> task = GSON.fromJson(json, token.getType());
         SearchTask<DiscUpdate> lock = waitMap.remove(task.getUuid());
         if (lock != null) {
             waitMap.put(task.getUuid(), task);

@@ -1,7 +1,6 @@
 package com.mingzuozhibi.modules.user;
 
 import com.mingzuozhibi.commons.base.BaseController;
-import com.mingzuozhibi.modules.remember.RememberRepository;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 import static com.mingzuozhibi.utils.ChecksUtils.*;
 import static com.mingzuozhibi.utils.ModifyUtils.*;
 
@@ -67,7 +67,7 @@ public class UserController extends BaseController {
         }
         User user = new User(form.username, form.password, form.enabled);
         userRepository.save(user);
-        jmsMessage.info(logCreate("创建用户", user.getUsername(), gson.toJson(user)));
+        jmsMessage.info(logCreate("创建用户", user.getUsername(), GSON.toJson(user)));
         return dataResult(user);
     }
 

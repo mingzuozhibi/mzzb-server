@@ -1,6 +1,5 @@
 package com.mingzuozhibi.modules.record;
 
-import com.google.gson.JsonObject;
 import com.mingzuozhibi.modules.disc.Disc;
 
 import java.time.LocalDate;
@@ -20,8 +19,6 @@ public interface Record {
     Double getTotalPt();
 
     Double getGuessPt();
-
-    JsonObject toJson();
 
     void setTodayPt(Double pt);
 

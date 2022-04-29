@@ -1,4 +1,4 @@
-package com.mingzuozhibi.modules.message;
+package com.mingzuozhibi.modules.core;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 
 @RestController
 public class MessageController extends BaseController {
@@ -26,7 +28,7 @@ public class MessageController extends BaseController {
 
         JsonArray array = new JsonArray();
         for (String msg : moduleMsg) {
-            array.add(gson.fromJson(msg, JsonObject.class));
+            array.add(GSON.fromJson(msg, JsonObject.class));
         }
         return gsonResult(array, gsonPage(page, pageSize, count));
     }

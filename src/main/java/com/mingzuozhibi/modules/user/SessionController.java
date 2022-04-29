@@ -1,9 +1,6 @@
-package com.mingzuozhibi.modules.session;
+package com.mingzuozhibi.modules.user;
 
 import com.mingzuozhibi.commons.base.BaseController;
-import com.mingzuozhibi.modules.remember.Remember;
-import com.mingzuozhibi.modules.user.User;
-import com.mingzuozhibi.modules.user.UserRepository;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +12,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.mingzuozhibi.modules.session.SessionUtils.*;
+import static com.mingzuozhibi.modules.user.SessionUtils.*;
 import static com.mingzuozhibi.utils.ChecksUtils.*;
 
 @Slf4j

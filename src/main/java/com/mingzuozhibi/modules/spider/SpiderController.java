@@ -2,9 +2,7 @@ package com.mingzuozhibi.modules.spider;
 
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.domain.Result;
-import com.mingzuozhibi.modules.disc.Disc;
-import com.mingzuozhibi.modules.disc.DiscRepository;
-import com.mingzuozhibi.modules.group.DiscGroupService;
+import com.mingzuozhibi.modules.disc.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,13 +23,13 @@ public class SpiderController extends BaseController {
     private DiscRepository discRepository;
 
     @Autowired
-    private DiscGroupService discGroupService;
+    private GroupService groupService;
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping(value = "/api/admin/fetchCount")
     public String getFetchCount() {
-        return dataResult(discGroupService.findNeedUpdateAsins().size());
+        return dataResult(groupService.findNeedUpdateAsins().size());
     }
 
     @Transactional
