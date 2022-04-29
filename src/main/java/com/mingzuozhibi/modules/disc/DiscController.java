@@ -2,6 +2,7 @@ package com.mingzuozhibi.modules.disc;
 
 import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseController;
+import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import com.mingzuozhibi.modules.record.RecordService;
 import lombok.Setter;
@@ -94,7 +95,8 @@ public class DiscController extends BaseController {
         LocalDate localDate = LocalDate.parse(form.releaseDate, fmtDate);
         Disc disc = new Disc(form.asin, form.title, form.discType, localDate);
         discRepository.save(disc);
-        jmsMessage.success(logCreate("碟片", disc.getLogName(), gson.toJson(disc)));
+        jmsSender.bind(Name.SERVER_USER)
+            .success(logCreate("碟片", disc.getLogName(), gson.toJson(disc)));
         return dataResult(disc.toJson());
     }
 
@@ -125,15 +127,18 @@ public class DiscController extends BaseController {
         }
         Disc disc = byId.get();
         if (!Objects.equals(disc.getTitlePc(), form.titlePc)) {
-            jmsMessage.info(logUpdate("碟片标题", disc.getTitlePc(), form.titlePc));
+            jmsSender.bind(Name.SERVER_USER)
+                .info(logUpdate("碟片标题", disc.getTitlePc(), form.titlePc));
             disc.setTitlePc(form.titlePc);
         }
         if (!Objects.equals(disc.getDiscType(), form.discType)) {
-            jmsMessage.info(logUpdate("碟片类型", disc.getDiscType(), form.discType));
+            jmsSender.bind(Name.SERVER_USER)
+                .notify(logUpdate("碟片类型", disc.getDiscType(), form.discType));
             disc.setDiscType(form.discType);
         }
         if (!Objects.equals(disc.getReleaseDate(), localDate)) {
-            jmsMessage.info(logUpdate("发售日期", disc.getReleaseDate(), localDate));
+            jmsSender.bind(Name.SERVER_USER)
+                .notify(logUpdate("发售日期", disc.getReleaseDate(), localDate));
             disc.setReleaseDate(localDate);
         }
         return dataResult(disc.toJson());
@@ -150,7 +155,8 @@ public class DiscController extends BaseController {
         }
         Disc disc = byAsin.get();
         updateRank(disc, rank, Instant.now());
-        jmsMessage.info(logUpdate("碟片排名", disc.getPrevRank(), disc.getThisRank(), disc.getLogName()));
+        jmsSender.bind(Name.SERVER_USER)
+            .debug(logUpdate("碟片排名", disc.getPrevRank(), disc.getThisRank(), disc.getLogName()));
         return dataResult(disc.toJson());
     }
 

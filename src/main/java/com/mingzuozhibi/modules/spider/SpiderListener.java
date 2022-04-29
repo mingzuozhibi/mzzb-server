@@ -3,6 +3,7 @@ package com.mingzuozhibi.modules.spider;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.mingzuozhibi.commons.base.BaseSupport;
+import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
@@ -25,7 +26,8 @@ public class SpiderListener extends BaseSupport {
     public void listenPrevUpdateDiscs(String json) {
         TypeToken<?> token = TypeToken.getParameterized(ArrayList.class, DiscUpdate.class);
         List<DiscUpdate> discUpdates = gson.fromJson(json, token.getType());
-        jmsMessage.notify("JMS <- prev.update.discs size=" + discUpdates.size());
+        jmsSender.bind(Name.SERVER_DISC)
+            .info("JMS <- prev.update.discs size=%d", discUpdates.size());
         spiderUpdater.updateDiscs(discUpdates, Instant.now());
     }
 
@@ -35,8 +37,8 @@ public class SpiderListener extends BaseSupport {
         LocalDateTime date = gson.fromJson(object.get("date"), LocalDateTime.class);
         TypeToken<?> token = TypeToken.getParameterized(ArrayList.class, DiscUpdate.class);
         List<DiscUpdate> discUpdates = gson.fromJson(object.get("updatedDiscs"), token.getType());
-        jmsMessage.notify("JMS <- last.update.discs time=%s, size=%d",
-            date.format(fmtDateTime), discUpdates.size());
+        jmsSender.bind(Name.SERVER_DISC)
+            .info("JMS <- last.update.discs time=%s, size=%d", date.format(fmtDateTime), discUpdates.size());
         spiderUpdater.updateDiscs(discUpdates, toInstant(date));
     }
 
