@@ -32,7 +32,7 @@ public abstract class ChecksUtils {
     }
 
     public static Optional<String> checkStrMatch(String text, String paramName, String regex) {
-        if (text == null || text.matches(regex)) {
+        if (StringUtils.isEmpty(text) || text.matches(regex)) {
             return Optional.empty();
         }
         return Optional.of(paramName + "必须符合格式" + regex);

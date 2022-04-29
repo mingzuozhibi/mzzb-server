@@ -80,7 +80,7 @@ public class UserController extends BaseController {
         Optional<String> checks = runChecks(
             checkNotEmpty(form.username, "用户名称"),
             checkStrMatch(form.username, "用户名称", "[A-Za-z0-9_]{4,20}"),
-            checkStrMatch(form.username, "用户密码", "[0-9a-f]{32}"),
+            checkStrMatch(form.password, "用户密码", "[0-9a-f]{32}"),
             checkNotEmpty(form.enabled, "启用状态")
         );
         if (checks.isPresent()) {
