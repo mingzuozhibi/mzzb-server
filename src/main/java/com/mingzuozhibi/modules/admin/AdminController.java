@@ -27,8 +27,8 @@ public class AdminController extends BaseController {
     public void sendNeedUpdateAsins() {
         Set<String> asins = groupService.findNeedUpdateAsinsSorted();
         jmsSender.send("need.update.asins", gson.toJson(asins));
-        jmsSender.bind(Name.SERVER_CORE)
-            .info("JMS -> need.update.asins: size=%d", asins.size());
+        jmsSender.bind(Name.SERVER_DISC)
+            .debug("JMS -> need.update.asins: size=%d", asins.size());
     }
 
     @Transactional
