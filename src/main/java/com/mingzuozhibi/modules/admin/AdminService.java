@@ -17,13 +17,13 @@ import java.util.Set;
 public class AdminService extends BaseSupport {
 
     @Autowired
+    private GroupService groupService;
+
+    @Autowired
     private RecordService recordService;
 
     @Autowired
     private RecordCompute recordCompute;
-
-    @Autowired
-    private GroupService groupService;
 
     @Autowired
     private RememberRepository rememberRepository;

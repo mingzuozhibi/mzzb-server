@@ -2,22 +2,17 @@ package com.mingzuozhibi.modules.admin;
 
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsService;
-import com.mingzuozhibi.modules.disc.*;
-import com.mingzuozhibi.modules.record.RecordCompute;
+import com.mingzuozhibi.modules.disc.GroupService;
 import com.mingzuozhibi.utils.ThreadUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
-import java.util.Optional;
 import java.util.Set;
 
 import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
-import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
-import static com.mingzuozhibi.utils.ChecksUtils.paramNotExists;
-import static com.mingzuozhibi.utils.ModifyUtils.logUpdate;
 
 @RestController
 public class AdminController extends BaseController {
@@ -26,16 +21,10 @@ public class AdminController extends BaseController {
     private JmsService jmsService;
 
     @Autowired
-    private AdminService adminService;
-
-    @Autowired
-    private RecordCompute recordCompute;
-
-    @Autowired
-    private DiscRepository discRepository;
-
-    @Autowired
     private GroupService groupService;
+
+    @Autowired
+    private AdminService adminService;
 
     @Transactional
     @Scheduled(cron = "0 59 * * * ?")
@@ -56,35 +45,6 @@ public class AdminController extends BaseController {
             adminService.moveExpiredHourRecords();
             adminService.recordRankAndComputePt();
         });
-    }
-
-    @Transactional
-    @GetMapping(value = "/admin/reComputeDate/{date}", produces = MEDIA_TYPE)
-    public void reComputeDate(@PathVariable String date) {
-        recordCompute.computeDate(LocalDate.parse(date, fmtDate));
-    }
-
-    @Transactional
-    @GetMapping(value = "/admin/reComputeDisc/{id}", produces = MEDIA_TYPE)
-    public void reComputeDisc(@PathVariable Long id) {
-        discRepository.findById(id).ifPresent(disc -> {
-            recordCompute.computeDisc(disc);
-        });
-    }
-
-    @Transactional
-    @PostMapping(value = "/api/admin/reComputeDisc2/{id}", produces = MEDIA_TYPE)
-    public String reComputeDisc2(@PathVariable Long id) {
-        Optional<Disc> byId = discRepository.findById(id);
-        if (!byId.isPresent()) {
-            return paramNotExists("碟片ID");
-        }
-        Disc disc = byId.get();
-        Integer pt1 = disc.getTotalPt();
-        recordCompute.computeDisc(disc);
-        Integer pt2 = disc.getTotalPt();
-        jmsMessage.notify(logUpdate("碟片PT", pt1, pt2, disc.getLogName()));
-        return dataResult("compute: " + pt1 + "->" + pt2);
     }
 
 }
