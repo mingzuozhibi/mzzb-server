@@ -1,32 +1,101 @@
 package com.mingzuozhibi.commons.gson;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.gson.*;
-import com.mingzuozhibi.commons.gson.adapter.*;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.gson.GsonBuilderCustomizer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
+import java.io.IOException;
 import java.time.*;
 
-public abstract class GsonFactory {
+import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
+import static com.mingzuozhibi.commons.utils.MyTimeUtils.*;
 
-    public static final Gson GSON = GsonFactory.createGson();
+@Slf4j
+@Configuration
+public class GsonFactory {
 
-    private static Gson createGson() {
-        GsonBuilder gson = new GsonBuilder();
-        gson.setExclusionStrategies(new ExclusionStrategy() {
-            @Override
+    public static Gson GSON;
+
+    @Autowired
+    public void setGson(Gson gson) {
+        GsonFactory.GSON = gson;
+        log.info("GsonFactory.GSON 已注入");
+    }
+
+    @Bean
+    public GsonBuilderCustomizer gsonConfig() {
+        log.info("GsonFactory.GSON 已配置");
+        return builder -> {
+            setupConfig(builder);
+            withInstant(builder);
+            withLocalDate(builder);
+            withLocalDateTime(builder);
+        };
+    }
+
+    private void setupConfig(GsonBuilder builder) {
+        builder.setExclusionStrategies(new ExclusionStrategy() {
             public boolean shouldSkipField(FieldAttributes f) {
-                return f.getAnnotation(JsonIgnore.class) != null;
+                return f.getAnnotation(GsonIgnored.class) != null;
             }
 
-            @Override
             public boolean shouldSkipClass(Class<?> clazz) {
                 return false;
             }
         });
-        gson.registerTypeAdapter(Instant.class, new AdapterOfInstant());
-        gson.registerTypeAdapter(LocalDate.class, new AdapterOfLocalDate());
-        gson.registerTypeAdapter(LocalDateTime.class, new AdapterOfLocalDateTime());
-        return gson.create();
+    }
+
+    private void withInstant(GsonBuilder builder) {
+        builder.registerTypeAdapter(Instant.class, new GsonAdapter<Instant>() {
+            protected void withWriter(JsonWriter writer, Instant value) throws IOException {
+                writer.value(value.toEpochMilli());
+            }
+
+            protected Instant withReader(JsonReader reader) throws IOException {
+                return Instant.ofEpochMilli(reader.nextLong());
+            }
+        });
+    }
+
+    private void withLocalDate(GsonBuilder builder) {
+        builder.registerTypeAdapter(LocalDate.class, new GsonAdapter<LocalDate>() {
+            protected void withWriter(JsonWriter writer, LocalDate value) throws IOException {
+                writer.value(value.format(fmtDate));
+            }
+
+            protected LocalDate withReader(JsonReader reader) throws IOException {
+                return LocalDate.parse(reader.nextString(), fmtDate);
+            }
+        });
+    }
+
+    private void withLocalDateTime(GsonBuilder builder) {
+        builder.registerTypeAdapter(LocalDateTime.class, new GsonAdapter<LocalDateTime>() {
+            protected void withWriter(JsonWriter writer, LocalDateTime value) throws IOException {
+                writer.value(toEpochMilli(value));
+            }
+
+            protected LocalDateTime withReader(JsonReader reader) throws IOException {
+                return ofEpochMilli(reader.nextLong());
+            }
+        });
+    }
+
+    private ExclusionStrategy getExclusionStrategy() {
+        return new ExclusionStrategy() {
+            public boolean shouldSkipField(FieldAttributes f) {
+                return f.getAnnotation(GsonIgnored.class) != null;
+            }
+
+            public boolean shouldSkipClass(Class<?> clazz) {
+                return false;
+            }
+        };
     }
 
 }

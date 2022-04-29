@@ -1,7 +1,6 @@
 package com.mingzuozhibi.commons.domain;
 
 import lombok.*;
-import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -45,8 +44,8 @@ public class Result<T> {
         return new Result<>(true, null, data, null);
     }
 
-    public static <T> Result<List<T>> ofPage(Page<T> page) {
-        return new Result<>(true, null, page.getContent(), new ResultPage(page));
+    public static <T> Result<List<T>> ofPage(List<T> data, ResultPage page) {
+        return new Result<List<T>>(true, null, data, page);
     }
 
 }

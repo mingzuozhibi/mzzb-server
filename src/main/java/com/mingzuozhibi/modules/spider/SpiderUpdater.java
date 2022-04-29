@@ -13,7 +13,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 
-import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 
 @Slf4j
@@ -35,7 +34,7 @@ public class SpiderUpdater extends BaseSupport {
                     updateDisc(discUpdate, updateOn);
                 } catch (Exception e) {
                     jmsMessage.warning("更新碟片遇到错误：%s, json=%s",
-                        e.toString(), GSON.toJson(discUpdate));
+                        e.toString(), gson.toJson(discUpdate));
                 }
             }
 
