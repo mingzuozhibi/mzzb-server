@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
-import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 import static com.mingzuozhibi.modules.disc.DiscUtils.*;
 import static com.mingzuozhibi.utils.ChecksUtils.*;
 import static com.mingzuozhibi.utils.ModifyUtils.*;
@@ -75,7 +74,7 @@ public class GroupController extends BaseController {
         }
         Group group = new Group(form.key, form.title, form.enabled, form.viewType);
         groupRepository.save(group);
-        jmsMessage.notify(logCreate("列表", group.getTitle(), GSON.toJson(group)));
+        jmsMessage.notify(logCreate("列表", group.getTitle(), gson.toJson(group)));
         return dataResult(group);
     }
 
@@ -127,12 +126,12 @@ public class GroupController extends BaseController {
         }
         Group group = byId.get();
         if (discRepository.countGroupDiscs(id) > 0) {
-            jmsMessage.warning(logDelete("列表", group.getTitle(), GSON.toJson(group)));
+            jmsMessage.warning(logDelete("列表", group.getTitle(), gson.toJson(group)));
             group.getDiscs().forEach(disc -> {
                 jmsMessage.info("[记录删除的碟片][ASIN=%s][NAME=%s]", disc.getAsin(), disc.getLogName());
             });
         } else {
-            jmsMessage.notify(logDelete("列表", group.getTitle(), GSON.toJson(group)));
+            jmsMessage.notify(logDelete("列表", group.getTitle(), gson.toJson(group)));
         }
         group.getDiscs().clear();
         groupRepository.delete(group);

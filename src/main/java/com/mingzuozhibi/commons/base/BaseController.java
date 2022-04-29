@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 
-import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
-
 public abstract class BaseController extends BaseSupport {
 
     protected static final String MEDIA_TYPE = MediaType.APPLICATION_JSON_VALUE;
@@ -23,7 +21,7 @@ public abstract class BaseController extends BaseSupport {
     }
 
     protected <T> String dataResult(T data) {
-        return GSON.toJson(Result.ofData(data));
+        return gson.toJson(Result.ofData(data));
     }
 
     protected <T> String pageResult(Page<T> page) {
@@ -34,7 +32,7 @@ public abstract class BaseController extends BaseSupport {
     }
 
     protected <T> String pageResult(List<T> data, ResultPage page) {
-        return GSON.toJson(Result.ofPage(data, page));
+        return gson.toJson(Result.ofPage(data, page));
     }
 
 }

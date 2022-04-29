@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Set;
 
-import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
-
 @RestController
 public class AdminController extends BaseController {
 
@@ -31,7 +29,7 @@ public class AdminController extends BaseController {
     @GetMapping(value = "/admin/sendNeedUpdateAsins", produces = MEDIA_TYPE)
     public void sendNeedUpdateAsins() {
         Set<String> asins = groupService.findNeedUpdateAsinsSorted();
-        jmsService.convertAndSend("need.update.asins", GSON.toJson(asins));
+        jmsService.convertAndSend("need.update.asins", gson.toJson(asins));
         jmsMessage.notify("JMS -> need.update.asins size=" + asins.size());
     }
 
