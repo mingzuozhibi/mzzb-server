@@ -1,12 +1,14 @@
 package com.mingzuozhibi.commons.base;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.domain.Result;
+import com.mingzuozhibi.commons.domain.ResultPage;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.List;
 
 import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 
@@ -25,23 +27,14 @@ public abstract class BaseController extends BaseSupport {
     }
 
     protected <T> String pageResult(Page<T> page) {
-        return GSON.toJson(Result.ofPage(page));
+        Pageable p = page.getPageable();
+        return pageResult(page.getContent(), new ResultPage(
+            p.getPageSize(), p.getPageNumber() + 1, page.getTotalElements()
+        ));
     }
 
-    protected String gsonResult(JsonElement data, JsonElement page) {
-        JsonObject root = new JsonObject();
-        root.addProperty("success", true);
-        root.add("data", data);
-        root.add("page", page);
-        return root.toString();
-    }
-
-    protected JsonElement gsonPage(long currentPage, long pageSize, long totalElements) {
-        JsonObject object = new JsonObject();
-        object.addProperty("pageSize", pageSize);
-        object.addProperty("currentPage", currentPage);
-        object.addProperty("totalElements", totalElements);
-        return object;
+    protected <T> String pageResult(List<T> data, ResultPage page) {
+        return GSON.toJson(Result.ofPage(data, page));
     }
 
 }
