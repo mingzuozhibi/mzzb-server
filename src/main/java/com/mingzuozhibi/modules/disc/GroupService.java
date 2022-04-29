@@ -48,14 +48,14 @@ public class GroupService {
     }
 
     private Map<String, List<Disc>> groupBy(Stream<Disc> discs) {
-        Instant list_1 = Instant.now().minus(12, ChronoUnit.HOURS);
-        Instant list_2 = Instant.now().minus(8, ChronoUnit.HOURS);
+        Instant time_1 = Instant.now().minus(16, ChronoUnit.HOURS);
+        Instant time_2 = Instant.now().minus(8, ChronoUnit.HOURS);
         Function<Disc, String> function = disc -> {
             if (disc.getUpdateTime() == null)
                 return "list_1";
-            if (disc.getUpdateTime().isBefore(list_1))
+            if (disc.getUpdateTime().isBefore(time_1))
                 return "list_1";
-            if (disc.getUpdateTime().isBefore(list_2)) {
+            if (disc.getUpdateTime().isBefore(time_2)) {
                 return "list_2";
             } else {
                 return "list_3";
