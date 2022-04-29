@@ -21,7 +21,19 @@ public class MessageListener extends BaseSupport {
     @JmsListener(destination = "listenJmsLog")
     public void listenJmsLog(String json) {
         Message message = gson.fromJson(json, Message.class);
-        messageRepository.save(message.withAccept());
+        saveMessage(message);
+    }
+
+    private void saveMessage(Message message) {
+        try {
+            if (message.getText().length() > 1000) {
+                message.setText(message.getText().substring(0, 1000));
+                log.info("saveMessage({})", message);
+            }
+            messageRepository.save(message.withAccept());
+        } catch (Exception e) {
+            log.warn("saveMessage({}): {}", message, e);
+        }
     }
 
     @JmsListener(destination = "module.message")
@@ -33,7 +45,7 @@ public class MessageListener extends BaseSupport {
         setType(data.get("string").getAsString(), message);
         message.setText(data.get("text").getAsString());
         message.setCreateOn(Instant.ofEpochMilli(data.get("createOn").getAsLong()));
-        messageRepository.save(message.withAccept());
+        saveMessage(message);
         log.debug("JMS <- module.message [name={}, data={}]", root.get("name").getAsString(), data);
     }
 
