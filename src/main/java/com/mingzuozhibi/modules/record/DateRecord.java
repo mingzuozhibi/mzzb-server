@@ -1,7 +1,7 @@
 package com.mingzuozhibi.modules.record;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mingzuozhibi.commons.base.BaseEntity;
-import com.mingzuozhibi.commons.gson.GsonIgnored;
 import com.mingzuozhibi.modules.disc.Disc;
 import lombok.*;
 
@@ -21,14 +21,14 @@ public class DateRecord extends BaseEntity implements Record {
         this.date = date;
     }
 
-    @GsonIgnored
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
     private Disc disc;
 
     @Column(nullable = false)
     private LocalDate date;
 
-    @GsonIgnored
+    @JsonIgnore
     @Column(name = "`rank`")
     private Double rank;
 

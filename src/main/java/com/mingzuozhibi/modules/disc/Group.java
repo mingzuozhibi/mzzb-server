@@ -1,7 +1,7 @@
 package com.mingzuozhibi.modules.disc;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mingzuozhibi.commons.base.BaseEntity;
-import com.mingzuozhibi.commons.gson.GsonIgnored;
 import lombok.*;
 
 import javax.persistence.*;
@@ -43,7 +43,7 @@ public class Group extends BaseEntity {
     @Column
     private Instant modifyTime;
 
-    @GsonIgnored
+    @JsonIgnore
     @ManyToMany
     @JoinTable(name = "disc_group_discs",
         joinColumns = {@JoinColumn(name = "disc_group_id")},
