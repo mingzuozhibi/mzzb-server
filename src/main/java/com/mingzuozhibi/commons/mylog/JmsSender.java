@@ -1,6 +1,5 @@
 package com.mingzuozhibi.commons.mylog;
 
-import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Type;
 import com.mingzuozhibi.modules.core.Message;
@@ -10,16 +9,18 @@ import org.springframework.jms.JmsException;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
+import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
+
 @Slf4j
 @Component
-public class JmsSender extends BaseSupport {
+public class JmsSender {
 
     @Autowired
     private JmsTemplate template;
 
     public void info(Name name, Type type, String text) {
         Message message = new Message(name, type, text);
-        send("listenJmsLog", gson.toJson(message));
+        send("listenJmsLog", GSON.toJson(message));
     }
 
     public void send(String destination, String json) {
