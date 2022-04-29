@@ -2,6 +2,7 @@ package com.mingzuozhibi.modules.spider;
 
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.domain.Result;
+import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import com.mingzuozhibi.modules.disc.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -49,12 +50,14 @@ public class SpiderController extends BaseController {
         Disc disc = discUpdateApi.createWith(result.getData());
         if (disc.getReleaseDate() == null) {
             // 检查日期
-            jmsMessage.warning("创建碟片时未发现发售日期，碟片=%s", disc.getLogName());
+            jmsSender.bind(Name.SERVER_USER)
+                .warning("创建碟片时缺少发售日期, 碟片=%s", disc.getLogName());
             disc.setReleaseDate(LocalDate.now());
         }
         // 创建碟片
         discRepository.save(disc);
-        jmsMessage.success(logCreate("碟片", disc.getTitle(), disc.getLogName()));
+        jmsSender.bind(Name.SERVER_USER)
+            .success(logCreate("碟片", disc.getTitle(), disc.getLogName()));
         return dataResult(disc);
     }
 

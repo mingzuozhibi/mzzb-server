@@ -1,7 +1,7 @@
 package com.mingzuozhibi.modules.admin;
 
 import com.mingzuozhibi.commons.base.BaseController;
-import com.mingzuozhibi.commons.mylog.JmsService;
+import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import com.mingzuozhibi.modules.disc.GroupService;
 import com.mingzuozhibi.utils.ThreadUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +16,6 @@ import java.util.Set;
 public class AdminController extends BaseController {
 
     @Autowired
-    private JmsService jmsService;
-
-    @Autowired
     private GroupService groupService;
 
     @Autowired
@@ -29,15 +26,17 @@ public class AdminController extends BaseController {
     @GetMapping(value = "/admin/sendNeedUpdateAsins", produces = MEDIA_TYPE)
     public void sendNeedUpdateAsins() {
         Set<String> asins = groupService.findNeedUpdateAsinsSorted();
-        jmsService.convertAndSend("need.update.asins", gson.toJson(asins));
-        jmsMessage.notify("JMS -> need.update.asins size=" + asins.size());
+        jmsSender.send("need.update.asins", gson.toJson(asins));
+        jmsSender.bind(Name.SERVER_CORE)
+            .info("JMS -> need.update.asins: size=%d", asins.size());
     }
 
     @Transactional
     @Scheduled(cron = "0 0 * * * ?")
     @GetMapping(value = "/admin/runAutomaticTasks", produces = MEDIA_TYPE)
     public void runAutomaticTasks() {
-        jmsMessage.notify("运行每小时自动任务");
+        jmsSender.bind(Name.SERVER_CORE)
+            .info("运行每小时自动任务");
         ThreadUtils.startThread(() -> {
             adminService.deleteExpiredRemembers();
             adminService.moveExpiredHourRecords();

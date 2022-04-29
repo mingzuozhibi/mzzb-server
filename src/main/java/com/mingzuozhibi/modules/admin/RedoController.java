@@ -1,6 +1,7 @@
 package com.mingzuozhibi.modules.admin;
 
 import com.mingzuozhibi.commons.base.BaseController;
+import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.record.RecordCompute;
@@ -49,7 +50,8 @@ public class RedoController extends BaseController {
         Integer pt1 = disc.getTotalPt();
         recordCompute.computeDisc(disc);
         Integer pt2 = disc.getTotalPt();
-        jmsMessage.notify(logUpdate("碟片PT", pt1, pt2, disc.getLogName()));
+        jmsSender.bind(Name.SERVER_USER)
+            .notify(logUpdate("碟片PT", pt1, pt2, disc.getLogName()));
         return dataResult("compute: " + pt1 + "->" + pt2);
     }
 

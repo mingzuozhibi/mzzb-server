@@ -2,25 +2,76 @@ package com.mingzuozhibi.modules.core;
 
 import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseSupport;
+import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
+import com.mingzuozhibi.commons.mylog.JmsEnums.Type;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
+
+import java.time.Instant;
 
 @Slf4j
 @Component
 public class MessageListener extends BaseSupport {
 
     @Autowired
-    private MessageService messageService;
+    private MessageRepository messageRepository;
+
+    @JmsListener(destination = "listenJmsLog")
+    public void listenJmsLog(String json) {
+        Message message = gson.fromJson(json, Message.class);
+        messageRepository.save(message.withAccept());
+    }
 
     @JmsListener(destination = "module.message")
     public void moduleMessage(String json) {
         JsonObject root = gson.fromJson(json, JsonObject.class);
-        String name = root.get("name").getAsString();
         JsonObject data = root.get("data").getAsJsonObject();
-        messageService.saveMessage(name, data);
-        log.debug("JMS <- module.message [name={}, data={}]", name, data);
+        Message message = new Message();
+        setName(root.get("name").getAsString(), message);
+        setType(data.get("string").getAsString(), message);
+        message.setText(data.get("text").getAsString());
+        message.setCreateOn(Instant.ofEpochMilli(data.get("createOn").getAsLong()));
+        messageRepository.save(message.withAccept());
+        log.debug("JMS <- module.message [name={}, data={}]", root.get("name").getAsString(), data);
+    }
+
+    private void setType(String type, Message message) {
+        switch (type) {
+            case "info":
+                message.setType(Type.INFO);
+                break;
+            case "notify":
+                message.setType(Type.NOTIFY);
+                break;
+            case "success":
+                message.setType(Type.SUCCESS);
+                break;
+            case "warning":
+                message.setType(Type.WARNING);
+                break;
+            case "danger":
+                message.setType(Type.ERROR);
+                break;
+            default:
+                message.setType(Type.DEBUG);
+                break;
+        }
+    }
+
+    private void setName(String name, Message message) {
+        switch (name) {
+            case "mzzb_disc_spider":
+                message.setName(Name.SPIDER_CONTENT);
+                break;
+            case "mzzb_disc_shelfs":
+                message.setName(Name.SPIDER_HISTORY);
+                break;
+            default:
+                message.setName(Name.DEFAULT);
+                break;
+        }
     }
 
 }

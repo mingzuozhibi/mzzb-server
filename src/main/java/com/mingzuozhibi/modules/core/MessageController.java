@@ -1,30 +1,46 @@
 package com.mingzuozhibi.modules.core;
 
-import com.google.gson.JsonObject;
-import com.mingzuozhibi.commons.base.BaseController;
-import com.mingzuozhibi.commons.domain.ResultPage;
+import com.mingzuozhibi.commons.base.PageController;
+import com.mingzuozhibi.commons.mylog.JmsEnums;
+import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
+import com.mingzuozhibi.commons.mylog.JmsEnums.Type;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.criteria.Predicate;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
-public class MessageController extends BaseController {
+public class MessageController extends PageController {
 
     @Autowired
-    private MessageService messageService;
+    private MessageRepository messageRepository;
 
-    @GetMapping(value = "/api/messages/{moduleName}", produces = MEDIA_TYPE)
-    public String findMessages(@PathVariable String moduleName,
-                               @RequestParam(defaultValue = "info") MessageType type,
-                               @RequestParam(defaultValue = "1") int page,
-                               @RequestParam(defaultValue = "50") int pageSize) {
-        List<JsonObject> messages = messageService.findMessages(moduleName, type, page, pageSize).stream()
-            .map(json -> gson.fromJson(json, JsonObject.class))
-            .collect(Collectors.toList());
-        Long count = messageService.countMessage(moduleName, type);
-        return pageResult(messages, new ResultPage(pageSize, page, count));
+    @GetMapping(value = "/api/messages/{name}", produces = MEDIA_TYPE)
+    public String findAll(
+        @PathVariable Name name,
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) List<Type> types,
+        @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        return pageResult(messageRepository.findAll((Specification<Message>) (root, query, cb) -> {
+            ArrayList<Predicate> array = new ArrayList<>();
+            array.add(cb.equal(root.get("name"), name));
+            if (StringUtils.isNotBlank(search)) {
+                array.add(cb.like(root.get("text"), "%" + search + "%"));
+            }
+            if (types != null && !types.isEmpty() && types.size() < JmsEnums.Type.values().length) {
+                array.add(cb.in(root.get("type")).value(types));
+            }
+            return query.where(array.toArray(new Predicate[0])).getRestriction();
+        }, pageable));
+
     }
 
 }

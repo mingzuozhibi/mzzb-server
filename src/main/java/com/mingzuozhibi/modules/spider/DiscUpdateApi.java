@@ -4,11 +4,9 @@ import com.google.gson.reflect.TypeToken;
 import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.commons.domain.Result;
 import com.mingzuozhibi.commons.domain.SearchTask;
-import com.mingzuozhibi.commons.mylog.JmsService;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import com.mingzuozhibi.utils.ThreadUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
@@ -19,9 +17,6 @@ import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 
 @Component
 public class DiscUpdateApi extends BaseSupport {
-
-    @Autowired
-    private JmsService jmsService;
 
     private final Map<String, SearchTask<DiscUpdate>> waitMap = Collections.synchronizedMap(new HashMap<>());
 
@@ -52,7 +47,7 @@ public class DiscUpdateApi extends BaseSupport {
 
     private SearchTask<DiscUpdate> sendDiscUpdate(String asin) {
         SearchTask<DiscUpdate> task = new SearchTask<>(asin);
-        jmsService.sendJson("send.disc.update", gson.toJson(task), "sendDiscUpdate[" + asin + "]");
+        jmsSender.send("send.disc.update", gson.toJson(task));
         String uuid = task.getUuid();
         waitMap.put(uuid, task);
 

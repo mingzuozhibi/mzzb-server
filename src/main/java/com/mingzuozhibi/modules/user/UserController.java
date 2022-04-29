@@ -1,6 +1,7 @@
 package com.mingzuozhibi.modules.user;
 
 import com.mingzuozhibi.commons.base.BaseController;
+import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +67,8 @@ public class UserController extends BaseController {
         }
         User user = new User(form.username, form.password, form.enabled);
         userRepository.save(user);
-        jmsMessage.info(logCreate("创建用户", user.getUsername(), gson.toJson(user)));
+        jmsSender.bind(Name.SERVER_USER)
+            .success(logCreate("创建用户", user.getUsername(), gson.toJson(user)));
         return dataResult(user);
     }
 
@@ -90,16 +92,19 @@ public class UserController extends BaseController {
         }
         User user = byId.get();
         if (!Objects.equals(user.getUsername(), form.username)) {
-            jmsMessage.info(logUpdate("用户名称", user.getUsername(), form.username));
+            jmsSender.bind(Name.SERVER_USER)
+                .notify(logUpdate("用户名称", user.getUsername(), form.username));
             user.setUsername(form.username);
         }
         if (StringUtils.isNotEmpty(form.password) && !Objects.equals(user.getPassword(), form.password)) {
-            jmsMessage.info(logUpdate("用户密码", "******", "******"));
+            jmsSender.bind(Name.SERVER_USER)
+                .notify(logUpdate("用户密码", "******", "******"));
             user.setPassword(form.password);
             onChangePassword(user);
         }
         if (user.isEnabled() != form.enabled) {
-            jmsMessage.info(logUpdate("启用状态", user.isEnabled(), form.enabled));
+            jmsSender.bind(Name.SERVER_USER)
+                .notify(logUpdate("启用状态", user.isEnabled(), form.enabled));
             user.setEnabled(form.enabled);
         }
         return dataResult(user);
