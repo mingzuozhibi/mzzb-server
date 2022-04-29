@@ -18,8 +18,8 @@ public class MessageListener extends BaseSupport {
     @Autowired
     private MessageRepository messageRepository;
 
-    @JmsListener(destination = "listenJmsLog")
-    public void listenJmsLog(String json) {
+    @JmsListener(destination = "listen.message")
+    public void listenMessage(String json) {
         Message message = gson.fromJson(json, Message.class);
         saveMessage(message);
     }

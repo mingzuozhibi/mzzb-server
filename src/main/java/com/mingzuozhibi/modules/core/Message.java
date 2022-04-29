@@ -43,13 +43,13 @@ public class Message extends BaseEntity {
     @Column(nullable = false)
     private Instant acceptOn;
 
-    public String toString() {
-        return String.format("[%s][%7s][%s][%s]", fmt(createOn), type, name, text);
-    }
-
     public Message withAccept() {
         this.setAcceptOn(Instant.now());
         return this;
+    }
+
+    public String toString() {
+        return String.format("[%s][%7s][%s][%s]", fmt(createOn), type, name, text);
     }
 
     private String fmt(Instant instant) {
