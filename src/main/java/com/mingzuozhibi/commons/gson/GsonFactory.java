@@ -1,6 +1,5 @@
 package com.mingzuozhibi.commons.gson;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.gson.*;
 import com.mingzuozhibi.commons.gson.adapter.*;
 
@@ -15,7 +14,7 @@ public abstract class GsonFactory {
         gson.setExclusionStrategies(new ExclusionStrategy() {
             @Override
             public boolean shouldSkipField(FieldAttributes f) {
-                return f.getAnnotation(JsonIgnore.class) != null;
+                return f.getAnnotation(GsonIgnored.class) != null;
             }
 
             @Override

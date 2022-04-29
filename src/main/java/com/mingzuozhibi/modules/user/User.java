@@ -1,7 +1,7 @@
 package com.mingzuozhibi.modules.user;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mingzuozhibi.commons.base.BaseEntity;
+import com.mingzuozhibi.commons.gson.GsonIgnored;
 import lombok.*;
 
 import javax.persistence.*;
@@ -28,7 +28,7 @@ public class User extends BaseEntity implements Serializable {
     @Column(length = 32, unique = true, nullable = false)
     private String username;
 
-    @JsonIgnore
+    @GsonIgnored
     @Column(length = 32, nullable = false)
     private String password;
 

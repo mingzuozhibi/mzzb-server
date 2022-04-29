@@ -1,7 +1,7 @@
 package com.mingzuozhibi.modules.record;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mingzuozhibi.commons.base.BaseEntity;
+import com.mingzuozhibi.commons.gson.GsonIgnored;
 import com.mingzuozhibi.modules.disc.Disc;
 import lombok.*;
 
@@ -23,7 +23,7 @@ public class HourRecord extends BaseEntity implements Record {
         this.date = date;
     }
 
-    @JsonIgnore
+    @GsonIgnored
     @OneToOne(fetch = FetchType.LAZY)
     private Disc disc;
 
@@ -45,7 +45,7 @@ public class HourRecord extends BaseEntity implements Record {
     }
 
     @Embedded
-    @JsonIgnore
+    @GsonIgnored
     private HourRecordEmbedded embedded;
 
     public void setRank(int hour, Integer rank) {
