@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
+import static com.mingzuozhibi.commons.mylog.JmsEnums.MODULE_CONNECT;
+
 @Component
 public class ConnectListener extends BaseSupport {
 
@@ -23,13 +25,13 @@ public class ConnectListener extends BaseSupport {
     @Autowired
     private ConnectService connectService;
 
-    @JmsListener(destination = "module.connect")
+    @JmsListener(destination = MODULE_CONNECT)
     public void moduleConnect(String json) {
         JsonObject root = gson.fromJson(json, JsonObject.class);
         String name = root.get("name").getAsString();
         String addr = root.get("addr").getAsString();
         connectService.setModuleAddr(name, addr);
-        bind.debug("JMS <- module.connect: name=%s, addr=%s", name, addr);
+        bind.debug("JMS <- %s name=%s, addr=%s", MODULE_CONNECT, name, addr);
     }
 
 }

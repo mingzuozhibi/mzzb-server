@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.*;
 
+import static com.mingzuozhibi.commons.mylog.JmsEnums.*;
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 
 @Component
@@ -21,7 +22,7 @@ public class DiscUpdateApi extends BaseSupport {
     private final Map<String, SearchTask<DiscUpdate>> waitMap = Collections.synchronizedMap(new HashMap<>());
 
     public Result<DiscUpdate> doGet(String asin) {
-        SearchTask<DiscUpdate> task = sendDiscUpdate(asin);
+        SearchTask<DiscUpdate> task = contentSearch(asin);
         if (!task.isSuccess()) {
             return Result.ofError(task.getMessage());
         }
@@ -45,9 +46,9 @@ public class DiscUpdateApi extends BaseSupport {
         return new Disc(asin, title, discType, releaseDate);
     }
 
-    private SearchTask<DiscUpdate> sendDiscUpdate(String asin) {
+    private SearchTask<DiscUpdate> contentSearch(String asin) {
         SearchTask<DiscUpdate> task = new SearchTask<>(asin);
-        jmsSender.send("send.disc.update", gson.toJson(task));
+        jmsSender.send(CONTENT_SEARCH, gson.toJson(task));
         String uuid = task.getUuid();
         waitMap.put(uuid, task);
 
@@ -56,8 +57,8 @@ public class DiscUpdateApi extends BaseSupport {
         return waitMap.remove(uuid);
     }
 
-    @JmsListener(destination = "back.disc.update")
-    public void listenDiscUpdate(String json) {
+    @JmsListener(destination = CONTENT_RETURN)
+    public void contentReturn(String json) {
         TypeToken<?> token = TypeToken.getParameterized(SearchTask.class, DiscUpdate.class);
         SearchTask<DiscUpdate> task = gson.fromJson(json, token.getType());
         SearchTask<DiscUpdate> lock = waitMap.remove(task.getUuid());
