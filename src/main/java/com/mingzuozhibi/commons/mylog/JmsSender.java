@@ -20,7 +20,7 @@ public class JmsSender {
 
     public void info(Name name, Type type, String text) {
         JmsLog jmsLog = new JmsLog(name, type, text);
-        log.info("JMS -> listen.message: {}", jmsLog);
+        log.info("JMS -> listen.message msg={}", jmsLog);
         send("listen.message", GSON.toJson(jmsLog));
     }
 
