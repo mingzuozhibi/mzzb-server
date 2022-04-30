@@ -1,8 +1,8 @@
 package com.mingzuozhibi.commons.mylog;
 
+import com.mingzuozhibi.commons.domain.JmsLog;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Type;
-import com.mingzuozhibi.modules.core.Message;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.JmsException;
@@ -19,9 +19,9 @@ public class JmsSender {
     private JmsTemplate template;
 
     public void info(Name name, Type type, String text) {
-        Message message = new Message(name, type, text);
-        log.info("JMS -> listen.message: {}", message);
-        send("listen.message", GSON.toJson(message));
+        JmsLog jmsLog = new JmsLog(name, type, text);
+        log.info("JMS -> listen.message: {}", jmsLog);
+        send("listen.message", GSON.toJson(jmsLog));
     }
 
     public void send(String destination, String json) {

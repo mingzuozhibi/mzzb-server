@@ -6,7 +6,7 @@ import com.mingzuozhibi.commons.domain.Result;
 import com.mingzuozhibi.commons.domain.SearchTask;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
-import com.mingzuozhibi.utils.ThreadUtils;
+import com.mingzuozhibi.commons.utils.ThreadUtils;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 

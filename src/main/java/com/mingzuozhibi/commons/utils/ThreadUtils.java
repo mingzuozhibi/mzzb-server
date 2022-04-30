@@ -1,4 +1,4 @@
-package com.mingzuozhibi.utils;
+package com.mingzuozhibi.commons.utils;
 
 import com.mingzuozhibi.commons.mylog.JmsLogger;
 

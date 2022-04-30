@@ -3,7 +3,7 @@ package com.mingzuozhibi.modules.admin;
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import com.mingzuozhibi.modules.disc.GroupService;
-import com.mingzuozhibi.utils.ThreadUtils;
+import com.mingzuozhibi.commons.utils.ThreadUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;

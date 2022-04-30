@@ -20,7 +20,7 @@ public class ConnectListener extends BaseSupport {
         String addr = root.get("addr").getAsString();
         connectService.setModuleAddr(name, addr);
         jmsSender.bind(Name.SERVER_CORE)
-            .debug("JMS <- module.connect: name={}, addr={}", name, addr);
+            .debug("JMS <- module.connect: name=%s, addr=%s", name, addr);
     }
 
 }
