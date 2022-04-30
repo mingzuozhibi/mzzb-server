@@ -7,13 +7,11 @@ import java.time.Instant;
 public abstract class ThreadUtils {
 
     public static void runWithDaemon(String name, JmsLogger bind, Callback callback) {
-        bind.info("开始%s", name);
         Thread thread = new Thread(() -> {
             try {
                 callback.call();
-                bind.info("完成%s", name);
             } catch (Exception e) {
-                bind.error("运行%s遇到错误: %s", name, e);
+                bind.error("runWithDaemon(name=%s): %s", name, e);
             }
         });
         thread.setDaemon(true);
