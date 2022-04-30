@@ -27,13 +27,13 @@ public class SpiderController extends BaseController {
     }
 
     @Autowired
-    private DiscUpdateApi discUpdateApi;
+    private GroupService groupService;
 
     @Autowired
     private DiscRepository discRepository;
 
     @Autowired
-    private GroupService groupService;
+    private DiscContentApi discContentApi;
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
@@ -51,12 +51,12 @@ public class SpiderController extends BaseController {
             // 碟片已存在
             return dataResult(byAsin.get().toJson());
         }
-        Result<DiscUpdate> result = discUpdateApi.doGet(asin);
+        Result<DiscContent> result = discContentApi.doGet(asin);
         if (result.hasError()) {
             // 查询失败
             return errorResult(result.getMessage());
         }
-        Disc disc = discUpdateApi.createWith(result.getData());
+        Disc disc = discContentApi.createWith(result.getData());
         if (disc.getReleaseDate() == null) {
             // 检查日期
             bind.warning("创建碟片时缺少发售日期, 碟片=%s", disc.getLogName());

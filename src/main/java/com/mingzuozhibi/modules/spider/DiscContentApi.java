@@ -17,37 +17,34 @@ import static com.mingzuozhibi.commons.mylog.JmsEnums.*;
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 
 @Component
-public class DiscUpdateApi extends BaseSupport {
+public class DiscContentApi extends BaseSupport {
 
-    private final Map<String, SearchTask<DiscUpdate>> waitMap = Collections.synchronizedMap(new HashMap<>());
+    private final Map<String, SearchTask<DiscContent>> waitMap = Collections.synchronizedMap(new HashMap<>());
 
-    public Result<DiscUpdate> doGet(String asin) {
-        SearchTask<DiscUpdate> task = contentSearch(asin);
+    public Result<DiscContent> doGet(String asin) {
+        SearchTask<DiscContent> task = contentSearch(asin);
         if (!task.isSuccess()) {
             return Result.ofError(task.getMessage());
         }
-        DiscUpdate discUpdate = task.getData();
-        if (discUpdate.isOffTheShelf()) {
+        DiscContent discContent = task.getData();
+        if (discContent.isOffTheShelf()) {
             return Result.ofError("可能该碟片已下架");
-        }
-        if (!Objects.equals(asin, discUpdate.getAsin())) {
-            return Result.ofError(String.format("ASIN不符合, [%s]=>[%s]", asin, discUpdate.getAsin()));
         }
         return Result.ofData(task.getData());
     }
 
-    public Disc createWith(DiscUpdate discUpdate) {
-        String asin = discUpdate.getAsin();
-        String title = discUpdate.getTitle();
-        DiscType discType = DiscType.valueOf(discUpdate.getType());
-        LocalDate releaseDate = Optional.ofNullable(discUpdate.getDate())
+    public Disc createWith(DiscContent discContent) {
+        String asin = discContent.getAsin();
+        String title = discContent.getTitle();
+        DiscType discType = DiscType.valueOf(discContent.getType());
+        LocalDate releaseDate = Optional.ofNullable(discContent.getDate())
             .map(date -> LocalDate.parse(date, fmtDate))
             .orElse(null);
         return new Disc(asin, title, discType, releaseDate);
     }
 
-    private SearchTask<DiscUpdate> contentSearch(String asin) {
-        SearchTask<DiscUpdate> task = new SearchTask<>(asin);
+    private SearchTask<DiscContent> contentSearch(String asin) {
+        SearchTask<DiscContent> task = new SearchTask<>(asin);
         jmsSender.send(CONTENT_SEARCH, gson.toJson(task));
         String uuid = task.getUuid();
         waitMap.put(uuid, task);
@@ -59,9 +56,9 @@ public class DiscUpdateApi extends BaseSupport {
 
     @JmsListener(destination = CONTENT_RETURN)
     public void contentReturn(String json) {
-        TypeToken<?> token = TypeToken.getParameterized(SearchTask.class, DiscUpdate.class);
-        SearchTask<DiscUpdate> task = gson.fromJson(json, token.getType());
-        SearchTask<DiscUpdate> lock = waitMap.remove(task.getUuid());
+        TypeToken<?> token = TypeToken.getParameterized(SearchTask.class, DiscContent.class);
+        SearchTask<DiscContent> task = gson.fromJson(json, token.getType());
+        SearchTask<DiscContent> lock = waitMap.remove(task.getUuid());
         if (lock != null) {
             waitMap.put(task.getUuid(), task);
             ThreadUtils.notifyAll(lock);

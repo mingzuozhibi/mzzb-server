@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
-import static com.mingzuozhibi.modules.spider.SpiderUpdater.updateRank;
+import static com.mingzuozhibi.modules.disc.DiscUtils.updateRank;
 import static com.mingzuozhibi.utils.ChecksUtils.*;
 import static com.mingzuozhibi.utils.ModifyUtils.*;
 

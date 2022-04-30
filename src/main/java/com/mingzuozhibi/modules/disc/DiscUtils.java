@@ -3,7 +3,9 @@ package com.mingzuozhibi.modules.disc;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import java.time.Instant;
 import java.util.Collection;
+import java.util.Objects;
 
 import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 
@@ -25,6 +27,15 @@ public abstract class DiscUtils {
         JsonArray array = new JsonArray();
         discs.forEach(disc -> array.add(disc.toJson()));
         return array;
+    }
+
+    public static void updateRank(Disc disc, Integer rank, Instant instant) {
+        disc.setPrevRank(disc.getThisRank());
+        disc.setThisRank(rank);
+        disc.setUpdateTime(instant);
+        if (!Objects.equals(disc.getThisRank(), disc.getPrevRank())) {
+            disc.setModifyTime(instant);
+        }
     }
 
 }
