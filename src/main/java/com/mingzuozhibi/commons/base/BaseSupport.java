@@ -10,7 +10,7 @@ import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 public abstract class BaseSupport {
 
     @Autowired
-    protected Gson gson = GSON;
+    protected Gson gson;
 
     @Autowired
     protected JmsSender jmsSender;
