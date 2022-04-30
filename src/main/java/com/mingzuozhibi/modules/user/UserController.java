@@ -2,6 +2,7 @@ package com.mingzuozhibi.modules.user;
 
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
+import com.mingzuozhibi.commons.mylog.JmsLogger;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -17,6 +19,13 @@ import static com.mingzuozhibi.utils.ModifyUtils.*;
 
 @RestController
 public class UserController extends BaseController {
+
+    private JmsLogger bind;
+
+    @PostConstruct
+    public void bind() {
+        bind = jmsSender.bind(Name.SERVER_USER);
+    }
 
     @Autowired
     private UserRepository userRepository;
@@ -67,8 +76,7 @@ public class UserController extends BaseController {
         }
         User user = new User(form.username, form.password, form.enabled);
         userRepository.save(user);
-        jmsSender.bind(Name.SERVER_USER)
-            .success(logCreate("创建用户", user.getUsername(), gson.toJson(user)));
+        bind.success(logCreate("创建用户", user.getUsername(), gson.toJson(user)));
         return dataResult(user);
     }
 
@@ -92,19 +100,16 @@ public class UserController extends BaseController {
         }
         User user = byId.get();
         if (!Objects.equals(user.getUsername(), form.username)) {
-            jmsSender.bind(Name.SERVER_USER)
-                .notify(logUpdate("用户名称", user.getUsername(), form.username));
+            bind.notify(logUpdate("用户名称", user.getUsername(), form.username));
             user.setUsername(form.username);
         }
         if (StringUtils.isNotEmpty(form.password) && !Objects.equals(user.getPassword(), form.password)) {
-            jmsSender.bind(Name.SERVER_USER)
-                .notify(logUpdate("用户密码", "******", "******"));
+            bind.notify(logUpdate("用户密码", "******", "******"));
             user.setPassword(form.password);
             onChangePassword(user);
         }
         if (user.isEnabled() != form.enabled) {
-            jmsSender.bind(Name.SERVER_USER)
-                .notify(logUpdate("启用状态", user.isEnabled(), form.enabled));
+            bind.notify(logUpdate("启用状态", user.isEnabled(), form.enabled));
             user.setEnabled(form.enabled);
         }
         return dataResult(user);

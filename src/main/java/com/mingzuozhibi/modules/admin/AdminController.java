@@ -2,6 +2,7 @@ package com.mingzuozhibi.modules.admin;
 
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
+import com.mingzuozhibi.commons.mylog.JmsLogger;
 import com.mingzuozhibi.commons.utils.ThreadUtils;
 import com.mingzuozhibi.modules.disc.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,10 +11,18 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.PostConstruct;
 import java.util.Set;
 
 @RestController
 public class AdminController extends BaseController {
+
+    private JmsLogger bind;
+
+    @PostConstruct
+    public void bind() {
+        bind = jmsSender.bind(Name.SERVER_CORE);
+    }
 
     @Autowired
     private GroupService groupService;

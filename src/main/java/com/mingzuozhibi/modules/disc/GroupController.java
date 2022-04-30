@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
+import com.mingzuozhibi.commons.mylog.JmsLogger;
 import com.mingzuozhibi.modules.disc.Group.ViewType;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 
 import static com.mingzuozhibi.modules.disc.DiscUtils.*;
@@ -19,6 +21,13 @@ import static com.mingzuozhibi.utils.ModifyUtils.*;
 
 @RestController
 public class GroupController extends BaseController {
+
+    private JmsLogger bind;
+
+    @PostConstruct
+    public void bind() {
+        bind = jmsSender.bind(Name.SERVER_USER);
+    }
 
     @Autowired
     private DiscRepository discRepository;
@@ -74,8 +83,7 @@ public class GroupController extends BaseController {
         }
         Group group = new Group(form.key, form.title, form.enabled, form.viewType);
         groupRepository.save(group);
-        jmsSender.bind(Name.SERVER_USER)
-            .notify(logCreate("列表", group.getTitle(), gson.toJson(group)));
+        bind.notify(logCreate("列表", group.getTitle(), gson.toJson(group)));
         return dataResult(group);
     }
 
@@ -99,23 +107,19 @@ public class GroupController extends BaseController {
         }
         Group group = byId.get();
         if (!Objects.equals(group.getKey(), form.key)) {
-            jmsSender.bind(Name.SERVER_USER)
-                .notify(logUpdate("列表索引", group.getKey(), form.key));
+            bind.notify(logUpdate("列表索引", group.getKey(), form.key));
             group.setKey(form.key);
         }
         if (!Objects.equals(group.getTitle(), form.title)) {
-            jmsSender.bind(Name.SERVER_USER)
-                .notify(logUpdate("列表标题", group.getTitle(), form.title));
+            bind.notify(logUpdate("列表标题", group.getTitle(), form.title));
             group.setTitle(form.title);
         }
         if (!Objects.equals(group.getViewType(), form.viewType)) {
-            jmsSender.bind(Name.SERVER_USER)
-                .notify(logUpdate("列表类型", group.getViewType(), form.viewType));
+            bind.notify(logUpdate("列表类型", group.getViewType(), form.viewType));
             group.setViewType(form.viewType);
         }
         if (!Objects.equals(group.isEnabled(), form.enabled)) {
-            jmsSender.bind(Name.SERVER_USER)
-                .notify(logUpdate("是否更新", group.isEnabled(), form.enabled));
+            bind.notify(logUpdate("是否更新", group.isEnabled(), form.enabled));
             group.setEnabled(form.enabled);
         }
         return dataResult(group);
@@ -131,16 +135,13 @@ public class GroupController extends BaseController {
         }
         Group group = byId.get();
         if (discRepository.countGroupDiscs(id) > 0) {
-            jmsSender.bind(Name.SERVER_USER)
-                .warning(logDelete("列表", group.getTitle(), gson.toJson(group)));
+            bind.warning(logDelete("列表", group.getTitle(), gson.toJson(group)));
             group.getDiscs().forEach(disc -> {
                 String format = "[记录删除的碟片][ASIN=%s][NAME=%s]";
-                jmsSender.bind(Name.SERVER_USER)
-                    .debug(String.format(format, disc.getAsin(), disc.getLogName()));
+                bind.debug(String.format(format, disc.getAsin(), disc.getLogName()));
             });
         } else {
-            jmsSender.bind(Name.SERVER_USER)
-                .notify(logDelete("列表", group.getTitle(), gson.toJson(group)));
+            bind.notify(logDelete("列表", group.getTitle(), gson.toJson(group)));
         }
         group.getDiscs().clear();
         groupRepository.delete(group);
@@ -181,8 +182,7 @@ public class GroupController extends BaseController {
         }
         group.getDiscs().add(disc);
 
-        jmsSender.bind(Name.SERVER_USER)
-            .info(logPush("碟片", disc.getLogName(), group.getTitle()));
+        bind.info(logPush("碟片", disc.getLogName(), group.getTitle()));
         return dataResult(disc.toJson());
     }
 
@@ -208,8 +208,7 @@ public class GroupController extends BaseController {
         }
         group.getDiscs().remove(disc);
 
-        jmsSender.bind(Name.SERVER_USER)
-            .info(logDrop("碟片", disc.getLogName(), group.getTitle()));
+        bind.info(logDrop("碟片", disc.getLogName(), group.getTitle()));
         return dataResult(disc.toJson());
     }
 

@@ -2,6 +2,7 @@ package com.mingzuozhibi.modules.admin;
 
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
+import com.mingzuozhibi.commons.mylog.JmsLogger;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.record.RecordCompute;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -18,6 +20,13 @@ import static com.mingzuozhibi.utils.ModifyUtils.logUpdate;
 
 @RestController
 public class RedoController extends BaseController {
+
+    private JmsLogger bind;
+
+    @PostConstruct
+    public void bind() {
+        bind = jmsSender.bind(Name.SERVER_USER);
+    }
 
     @Autowired
     private RecordCompute recordCompute;
@@ -50,8 +59,7 @@ public class RedoController extends BaseController {
         Integer pt1 = disc.getTotalPt();
         recordCompute.computeDisc(disc);
         Integer pt2 = disc.getTotalPt();
-        jmsSender.bind(Name.SERVER_USER)
-            .notify(logUpdate("碟片PT", pt1, pt2, disc.getLogName()));
+        bind.notify(logUpdate("碟片PT", pt1, pt2, disc.getLogName()));
         return dataResult("compute: " + pt1 + "->" + pt2);
     }
 

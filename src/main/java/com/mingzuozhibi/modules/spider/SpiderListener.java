@@ -4,10 +4,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
+import com.mingzuozhibi.commons.mylog.JmsLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,6 +21,13 @@ import static com.mingzuozhibi.commons.utils.MyTimeUtils.toInstant;
 @Component
 public class SpiderListener extends BaseSupport {
 
+    private JmsLogger bind;
+
+    @PostConstruct
+    public void bind() {
+        bind = jmsSender.bind(Name.SERVER_DISC);
+    }
+
     @Autowired
     private SpiderUpdater spiderUpdater;
 
@@ -26,8 +35,7 @@ public class SpiderListener extends BaseSupport {
     public void listenPrevUpdateDiscs(String json) {
         TypeToken<?> token = TypeToken.getParameterized(ArrayList.class, DiscUpdate.class);
         List<DiscUpdate> discUpdates = gson.fromJson(json, token.getType());
-        jmsSender.bind(Name.SERVER_DISC)
-            .debug("JMS <- prev.update.discs size=%d", discUpdates.size());
+        bind.debug("JMS <- prev.update.discs size=%d", discUpdates.size());
         spiderUpdater.updateDiscs(discUpdates, Instant.now());
     }
 
@@ -37,8 +45,7 @@ public class SpiderListener extends BaseSupport {
         LocalDateTime date = gson.fromJson(object.get("date"), LocalDateTime.class);
         TypeToken<?> token = TypeToken.getParameterized(ArrayList.class, DiscUpdate.class);
         List<DiscUpdate> discUpdates = gson.fromJson(object.get("updatedDiscs"), token.getType());
-        jmsSender.bind(Name.SERVER_DISC)
-            .debug("JMS <- last.update.discs time=%s, size=%d", date.format(fmtDateTime), discUpdates.size());
+        bind.debug("JMS <- last.update.discs time=%s, size=%d", date.format(fmtDateTime), discUpdates.size());
         spiderUpdater.updateDiscs(discUpdates, toInstant(date));
     }
 
