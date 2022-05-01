@@ -7,9 +7,6 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.Instant;
-import java.time.ZoneId;
-
-import static com.mingzuozhibi.commons.utils.FormatUtils.fmtLog;
 
 @Entity
 @Getter
@@ -49,11 +46,7 @@ public class Message extends BaseEntity {
     }
 
     public String toString() {
-        return String.format("[%s][%7s][%s][%s]", fmt(createOn), type, name, text);
-    }
-
-    private String fmt(Instant instant) {
-        return fmtLog.format(instant.atZone(ZoneId.systemDefault()).toLocalDateTime());
+        return String.format("[%s][%s][%s]", type, name, text);
     }
 
 }

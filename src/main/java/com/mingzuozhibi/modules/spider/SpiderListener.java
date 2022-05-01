@@ -27,7 +27,7 @@ public class SpiderListener extends BaseSupport {
         TypeToken<?> token = TypeToken.getParameterized(ArrayList.class, DiscUpdate.class);
         List<DiscUpdate> discUpdates = gson.fromJson(json, token.getType());
         jmsSender.bind(Name.SERVER_DISC)
-            .info("JMS <- prev.update.discs size=%d", discUpdates.size());
+            .debug("JMS <- prev.update.discs size=%d", discUpdates.size());
         spiderUpdater.updateDiscs(discUpdates, Instant.now());
     }
 
@@ -38,7 +38,7 @@ public class SpiderListener extends BaseSupport {
         TypeToken<?> token = TypeToken.getParameterized(ArrayList.class, DiscUpdate.class);
         List<DiscUpdate> discUpdates = gson.fromJson(object.get("updatedDiscs"), token.getType());
         jmsSender.bind(Name.SERVER_DISC)
-            .info("JMS <- last.update.discs time=%s, size=%d", date.format(fmtDateTime), discUpdates.size());
+            .debug("JMS <- last.update.discs time=%s, size=%d", date.format(fmtDateTime), discUpdates.size());
         spiderUpdater.updateDiscs(discUpdates, toInstant(date));
     }
 

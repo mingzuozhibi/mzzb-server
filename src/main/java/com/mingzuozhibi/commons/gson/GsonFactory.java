@@ -4,7 +4,6 @@ import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.gson.GsonBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,12 +20,6 @@ public class GsonFactory {
 
     public static Gson GSON;
 
-    @Autowired
-    public void setGson(Gson gson) {
-        GsonFactory.GSON = gson;
-        log.info("GsonFactory.GSON 已注入");
-    }
-
     @Bean
     public GsonBuilderCustomizer gsonConfig() {
         log.info("GsonFactory.GSON 已配置");
@@ -35,7 +28,13 @@ public class GsonFactory {
             withInstant(builder);
             withLocalDate(builder);
             withLocalDateTime(builder);
+            setGson(builder);
         };
+    }
+
+    private void setGson(GsonBuilder builder) {
+        GsonFactory.GSON = builder.create();
+        log.info("GsonFactory.GSON 已注入");
     }
 
     private void setupConfig(GsonBuilder builder) {
@@ -84,18 +83,6 @@ public class GsonFactory {
                 return ofEpochMilli(reader.nextLong());
             }
         });
-    }
-
-    private ExclusionStrategy getExclusionStrategy() {
-        return new ExclusionStrategy() {
-            public boolean shouldSkipField(FieldAttributes f) {
-                return f.getAnnotation(GsonIgnored.class) != null;
-            }
-
-            public boolean shouldSkipClass(Class<?> clazz) {
-                return false;
-            }
-        };
     }
 
 }

@@ -1,11 +1,25 @@
-package com.mingzuozhibi.utils;
+package com.mingzuozhibi.commons.utils;
+
+import com.mingzuozhibi.commons.mylog.JmsLogger;
 
 import java.time.Instant;
 
 public abstract class ThreadUtils {
 
-    public static void startThread(Runnable runnable) {
-        new Thread(runnable).start();
+    public static void runWithDaemon(String name, JmsLogger bind, Callback callback) {
+        Thread thread = new Thread(() -> {
+            try {
+                callback.call();
+            } catch (Exception e) {
+                bind.error("runWithDaemon(name=%s): %s", name, e);
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    public interface Callback {
+        void call() throws Exception;
     }
 
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")

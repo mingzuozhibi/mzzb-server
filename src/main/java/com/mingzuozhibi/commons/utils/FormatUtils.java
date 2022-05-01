@@ -10,11 +10,4 @@ public abstract class FormatUtils {
     public static final DateTimeFormatter fmtDate =
         DateTimeFormatter.ofPattern("yyyy/M/d");
 
-    public static final DateTimeFormatter fmtTime =
-        DateTimeFormatter.ofPattern("HH:mm:ss");
-
-    public static final DateTimeFormatter fmtLog =
-        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-
-
 }
