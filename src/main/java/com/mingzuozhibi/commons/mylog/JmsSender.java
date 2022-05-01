@@ -10,6 +10,7 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
 import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
+import static com.mingzuozhibi.commons.mylog.JmsEnums.MODULE_MESSAGE;
 
 @Slf4j
 @Component
@@ -20,8 +21,8 @@ public class JmsSender {
 
     public void info(Name name, Type type, String text) {
         JmsLog jmsLog = new JmsLog(name, type, text);
-        log.info("JMS -> listen.message msg={}", jmsLog);
-        send("listen.message", GSON.toJson(jmsLog));
+        log.info("JMS -> {} msg={}", MODULE_MESSAGE, jmsLog);
+        send(MODULE_MESSAGE, GSON.toJson(jmsLog));
     }
 
     public void send(String destination, String json) {

@@ -6,6 +6,7 @@ import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import com.mingzuozhibi.commons.mylog.JmsLogger;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import com.mingzuozhibi.modules.record.RecordService;
+import com.mingzuozhibi.modules.spider.HistoryRepository;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +22,8 @@ import java.util.Optional;
 
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 import static com.mingzuozhibi.modules.disc.DiscUtils.updateRank;
-import static com.mingzuozhibi.utils.ChecksUtils.*;
-import static com.mingzuozhibi.utils.ModifyUtils.*;
+import static com.mingzuozhibi.support.ChecksUtils.*;
+import static com.mingzuozhibi.support.ModifyUtils.*;
 
 @RestController
 public class DiscController extends BaseController {
@@ -39,6 +40,9 @@ public class DiscController extends BaseController {
 
     @Autowired
     private DiscRepository discRepository;
+
+    @Autowired
+    private HistoryRepository historyRepository;
 
     @Transactional
     @GetMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
@@ -104,6 +108,7 @@ public class DiscController extends BaseController {
         LocalDate localDate = LocalDate.parse(form.releaseDate, fmtDate);
         Disc disc = new Disc(form.asin, form.title, form.discType, localDate);
         discRepository.save(disc);
+        historyRepository.setTracked(form.asin, true);
         bind.success(logCreate("碟片", disc.getLogName(), gson.toJson(disc)));
         return dataResult(disc.toJson());
     }

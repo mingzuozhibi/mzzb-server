@@ -1,4 +1,4 @@
-package com.mingzuozhibi.utils;
+package com.mingzuozhibi.support;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

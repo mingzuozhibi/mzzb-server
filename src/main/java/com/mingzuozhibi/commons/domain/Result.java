@@ -46,7 +46,7 @@ public class Result<T> {
         this.success = true;
         this.data = data;
         this.page = page;
-        return null;
+        return this;
     }
 
     public Result<T> ifSuccess(BiConsumer<T, Result<T>> consumer) {

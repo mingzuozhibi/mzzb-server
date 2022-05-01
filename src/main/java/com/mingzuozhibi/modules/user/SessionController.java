@@ -13,7 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.mingzuozhibi.modules.user.SessionUtils.*;
-import static com.mingzuozhibi.utils.ChecksUtils.*;
+import static com.mingzuozhibi.support.ChecksUtils.*;
 
 @Slf4j
 @RestController

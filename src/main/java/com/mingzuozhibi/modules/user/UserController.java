@@ -14,8 +14,8 @@ import javax.annotation.PostConstruct;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.mingzuozhibi.utils.ChecksUtils.*;
-import static com.mingzuozhibi.utils.ModifyUtils.*;
+import static com.mingzuozhibi.support.ChecksUtils.*;
+import static com.mingzuozhibi.support.ModifyUtils.*;
 
 @RestController
 public class UserController extends BaseController {

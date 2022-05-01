@@ -20,7 +20,7 @@ import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 
 @Slf4j
 @Component
-public class DiscUpdater extends BaseSupport {
+public class ContentUpdater extends BaseSupport {
 
     private JmsLogger bind;
 
@@ -36,21 +36,21 @@ public class DiscUpdater extends BaseSupport {
     private DiscRepository discRepository;
 
     @Transactional
-    public void updateDiscs(List<DiscContent> discContents, Instant updateOn) {
+    public void updateDiscs(List<Content> contents, Instant updateOn) {
         try {
             bind.notify("开始更新日亚排名");
-            for (DiscContent discContent : discContents) {
+            for (Content content : contents) {
                 try {
-                    updateDisc(discContent, updateOn);
+                    updateDisc(content, updateOn);
                 } catch (Exception e) {
                     String format = "更新碟片遇到错误：%s, json=%s";
-                    bind.warning(format, e, gson.toJson(discContent));
+                    bind.warning(format, e, gson.toJson(content));
                 }
             }
 
-            if (discContents.size() > 0) {
+            if (contents.size() > 0) {
                 groupService.updateGroupModifyTime();
-                bind.notify("成功更新日亚排名：共%d个", discContents.size());
+                bind.notify("成功更新日亚排名：共%d个", contents.size());
             } else {
                 bind.warning("未能更新日亚排名：无数据");
             }
@@ -59,36 +59,36 @@ public class DiscUpdater extends BaseSupport {
         }
     }
 
-    private void updateDisc(DiscContent discContent, Instant updateOn) {
-        String asin = discContent.getAsin();
+    private void updateDisc(Content content, Instant updateOn) {
+        String asin = content.getAsin();
         Optional<Disc> byAsin = discRepository.findByAsin(asin);
         if (!byAsin.isPresent()) {
             bind.warning("[应用碟片更新时，发现未知碟片][%s]", asin);
             return;
         }
-        if (discContent.isOffTheShelf()) {
+        if (content.isOffTheShelf()) {
             bind.warning("[碟片可能已下架][%s]", asin);
             return;
         }
         Disc disc = byAsin.get();
-        updateTitle(disc, discContent);
-        updateType(disc, discContent);
-        updateDate(disc, discContent);
+        updateTitle(disc, content);
+        updateType(disc, content);
+        updateDate(disc, content);
         if (disc.getModifyTime() == null || updateOn.isAfter(disc.getModifyTime())) {
-            DiscUtils.updateRank(disc, discContent.getRank(), updateOn);
+            DiscUtils.updateRank(disc, content.getRank(), updateOn);
         }
     }
 
-    private void updateTitle(Disc disc, DiscContent discContent) {
-        String title = discContent.getTitle();
+    private void updateTitle(Disc disc, Content content) {
+        String title = content.getTitle();
         if (!Objects.equals(title, disc.getTitle())) {
             bind.info("[碟片标题更新][%s => %s][%s]", disc.getTitle(), title, disc.getAsin());
             disc.setTitle(title);
         }
     }
 
-    private void updateType(Disc disc, DiscContent discContent) {
-        DiscType type = DiscType.valueOf(discContent.getType());
+    private void updateType(Disc disc, Content content) {
+        DiscType type = DiscType.valueOf(content.getType());
         if (disc.getDiscType() == DiscType.Auto || disc.getDiscType() == DiscType.Other) {
             disc.setDiscType(type);
         }
@@ -97,13 +97,13 @@ public class DiscUpdater extends BaseSupport {
         }
     }
 
-    private void updateDate(Disc disc, DiscContent discContent) {
-        if (!StringUtils.hasLength(discContent.getDate())) {
+    private void updateDate(Disc disc, Content content) {
+        if (!StringUtils.hasLength(content.getDate())) {
             bind.info("[发售时间为空][当前设置为%s][%s]", disc.getReleaseDate(), disc.getAsin());
             return;
         }
-        LocalDate date = LocalDate.parse(discContent.getDate(), fmtDate);
-        boolean buyset = discContent.isBuyset();
+        LocalDate date = LocalDate.parse(content.getDate(), fmtDate);
+        boolean buyset = content.isBuyset();
         if (date.isAfter(disc.getReleaseDate()) && !buyset) {
             bind.notify("[发售时间更新][%s => %s][%s]", disc.getReleaseDate(), date, disc.getAsin());
             disc.setReleaseDate(date);

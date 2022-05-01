@@ -16,8 +16,8 @@ import javax.annotation.PostConstruct;
 import java.util.*;
 
 import static com.mingzuozhibi.modules.disc.DiscUtils.*;
-import static com.mingzuozhibi.utils.ChecksUtils.*;
-import static com.mingzuozhibi.utils.ModifyUtils.*;
+import static com.mingzuozhibi.support.ChecksUtils.*;
+import static com.mingzuozhibi.support.ModifyUtils.*;
 
 @RestController
 public class GroupController extends BaseController {

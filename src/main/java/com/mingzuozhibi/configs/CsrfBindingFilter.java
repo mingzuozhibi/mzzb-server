@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.mingzuozhibi.support;
+package com.mingzuozhibi.configs;
 
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.filter.OncePerRequestFilter;
