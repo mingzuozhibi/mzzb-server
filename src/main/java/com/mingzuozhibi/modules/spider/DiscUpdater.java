@@ -20,7 +20,7 @@ import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 
 @Slf4j
 @Component
-public class DiscContentUpdater extends BaseSupport {
+public class DiscUpdater extends BaseSupport {
 
     private JmsLogger bind;
 

@@ -33,10 +33,10 @@ public class SpiderListener extends BaseSupport {
     }
 
     @Autowired
-    private GroupService groupService;
+    private DiscUpdater discUpdater;
 
     @Autowired
-    private DiscContentUpdater discContentUpdater;
+    private GroupService groupService;
 
     @Transactional
     @Scheduled(cron = "0 59 * * * ?")
@@ -53,7 +53,7 @@ public class SpiderListener extends BaseSupport {
         TypeToken<?> token = TypeToken.getParameterized(ArrayList.class, DiscContent.class);
         List<DiscContent> discContents = gson.fromJson(json, token.getType());
         bind.debug("JMS <- %s size=%d", PREV_UPDATE_DISCS, discContents.size());
-        discContentUpdater.updateDiscs(discContents, Instant.now());
+        discUpdater.updateDiscs(discContents, Instant.now());
     }
 
     @JmsListener(destination = LAST_UPDATE_DISCS)
@@ -63,7 +63,7 @@ public class SpiderListener extends BaseSupport {
         TypeToken<?> token = TypeToken.getParameterized(ArrayList.class, DiscContent.class);
         List<DiscContent> discContents = gson.fromJson(object.get("updatedDiscs"), token.getType());
         bind.debug("JMS <- %s time=%s, size=%d", LAST_UPDATE_DISCS, date.format(fmtDateTime), discContents.size());
-        discContentUpdater.updateDiscs(discContents, toInstant(date));
+        discUpdater.updateDiscs(discContents, toInstant(date));
     }
 
 }

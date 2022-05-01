@@ -35,16 +35,29 @@ public class SpiderController extends BaseController {
     @Autowired
     private DiscContentApi discContentApi;
 
+    @Autowired
+    private DiscHistoryApi discHistoryApi;
+
+    @Transactional
+    @GetMapping(value = "/api/spider/discShelfs", produces = MEDIA_TYPE)
+    public String findAll(@RequestParam(defaultValue = "1") int page,
+                          @RequestParam(defaultValue = "20") int size) {
+        if (size > 40) {
+            return errorResult("Size不能大于40");
+        }
+        return baseResult(discHistoryApi.findHistory(page, size));
+    }
+
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
-    @GetMapping(value = "/api/admin/fetchCount")
+    @GetMapping(value = "/api/spider/fetchCount", produces = MEDIA_TYPE)
     public String getFetchCount() {
         return dataResult(groupService.findNeedUpdateAsins().size());
     }
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
-    @GetMapping(value = "/api/admin/searchDisc/{asin}", produces = MEDIA_TYPE)
+    @GetMapping(value = "/api/spider/searchDisc/{asin}", produces = MEDIA_TYPE)
     public String searchDisc(@PathVariable String asin) {
         Optional<Disc> byAsin = discRepository.findByAsin(asin);
         if (byAsin.isPresent()) {
