@@ -23,14 +23,11 @@ public class DiscContentApi extends BaseSupport {
 
     public Result<DiscContent> doGet(String asin) {
         SearchTask<DiscContent> task = contentSearch(asin);
-        if (!task.isSuccess()) {
-            return Result.ofError(task.getMessage());
-        }
-        DiscContent discContent = task.getData();
-        if (discContent.isOffTheShelf()) {
-            return Result.ofError("可能该碟片已下架");
-        }
-        return Result.ofData(task.getData());
+        return Result.ofTask(task).ifSuccess((data, result) -> {
+            if (data.isOffTheShelf()) {
+                result.withError("可能该碟片已下架");
+            }
+        });
     }
 
     public Disc createWith(DiscContent discContent) {
