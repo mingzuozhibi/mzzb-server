@@ -10,7 +10,7 @@ import java.util.List;
 public interface DateRecordRepository extends JpaRepository<DateRecord, Long> {
 
     @Query(value = "select * from date_record " +
-        "where disc = ?1 and date < ?2 " +
+        "where disc_id = ?1 and date < ?2 " +
         "order by date desc", nativeQuery = true)
     List<DateRecord> findDateRecords(Disc disc, LocalDate date);
 
