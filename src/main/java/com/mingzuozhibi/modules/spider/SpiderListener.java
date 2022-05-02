@@ -91,7 +91,8 @@ public class SpiderListener extends BaseSupport {
             if (!historyRepository.existsByAsin(history.getAsin())) {
                 historyRepository.save(history);
                 String format = "[发现新碟片][asin=%s][type=%s][title=%s]";
-                bind.success(format, history.getAsin(), history.getType(), history.getTitle());
+                jmsSender.bind(Name.SPIDER_HISTORY)
+                    .success(format, history.getAsin(), history.getType(), history.getTitle());
             }
         });
     }
