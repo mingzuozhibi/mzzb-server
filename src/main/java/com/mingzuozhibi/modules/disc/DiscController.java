@@ -3,8 +3,10 @@ package com.mingzuozhibi.modules.disc;
 import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
+import com.mingzuozhibi.commons.mylog.JmsLogger;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import com.mingzuozhibi.modules.record.RecordService;
+import com.mingzuozhibi.modules.spider.HistoryRepository;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,24 +14,35 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Optional;
 
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
-import static com.mingzuozhibi.modules.spider.SpiderUpdater.updateRank;
-import static com.mingzuozhibi.utils.ChecksUtils.*;
-import static com.mingzuozhibi.utils.ModifyUtils.*;
+import static com.mingzuozhibi.modules.disc.DiscUtils.updateRank;
+import static com.mingzuozhibi.support.ChecksUtils.*;
+import static com.mingzuozhibi.support.ModifyUtils.*;
 
 @RestController
 public class DiscController extends BaseController {
+
+    private JmsLogger bind;
+
+    @PostConstruct
+    public void bind() {
+        bind = jmsSender.bind(Name.SERVER_USER);
+    }
 
     @Autowired
     private RecordService recordService;
 
     @Autowired
     private DiscRepository discRepository;
+
+    @Autowired
+    private HistoryRepository historyRepository;
 
     @Transactional
     @GetMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
@@ -95,8 +108,8 @@ public class DiscController extends BaseController {
         LocalDate localDate = LocalDate.parse(form.releaseDate, fmtDate);
         Disc disc = new Disc(form.asin, form.title, form.discType, localDate);
         discRepository.save(disc);
-        jmsSender.bind(Name.SERVER_USER)
-            .success(logCreate("碟片", disc.getLogName(), gson.toJson(disc)));
+        historyRepository.setTracked(form.asin, true);
+        bind.success(logCreate("碟片", disc.getLogName(), gson.toJson(disc)));
         return dataResult(disc.toJson());
     }
 
@@ -127,18 +140,15 @@ public class DiscController extends BaseController {
         }
         Disc disc = byId.get();
         if (!Objects.equals(disc.getTitlePc(), form.titlePc)) {
-            jmsSender.bind(Name.SERVER_USER)
-                .info(logUpdate("碟片标题", disc.getTitlePc(), form.titlePc));
+            bind.info(logUpdate("碟片标题", disc.getTitlePc(), form.titlePc));
             disc.setTitlePc(form.titlePc);
         }
         if (!Objects.equals(disc.getDiscType(), form.discType)) {
-            jmsSender.bind(Name.SERVER_USER)
-                .notify(logUpdate("碟片类型", disc.getDiscType(), form.discType));
+            bind.notify(logUpdate("碟片类型", disc.getDiscType(), form.discType));
             disc.setDiscType(form.discType);
         }
         if (!Objects.equals(disc.getReleaseDate(), localDate)) {
-            jmsSender.bind(Name.SERVER_USER)
-                .notify(logUpdate("发售日期", disc.getReleaseDate(), localDate));
+            bind.notify(logUpdate("发售日期", disc.getReleaseDate(), localDate));
             disc.setReleaseDate(localDate);
         }
         return dataResult(disc.toJson());
@@ -155,8 +165,7 @@ public class DiscController extends BaseController {
         }
         Disc disc = byAsin.get();
         updateRank(disc, rank, Instant.now());
-        jmsSender.bind(Name.SERVER_USER)
-            .debug(logUpdate("碟片排名", disc.getPrevRank(), disc.getThisRank(), disc.getLogName()));
+        bind.debug(logUpdate("碟片排名", disc.getPrevRank(), disc.getThisRank(), disc.getLogName()));
         return dataResult(disc.toJson());
     }
 

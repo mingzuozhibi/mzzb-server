@@ -18,6 +18,10 @@ public abstract class BaseController extends BaseSupport {
         return errorResult(e.toString());
     }
 
+    protected <T> String baseResult(Result<T> base) {
+        return gson.toJson(base);
+    }
+
     protected <T> String dataResult(T data) {
         return gson.toJson(Result.ofData(data));
     }

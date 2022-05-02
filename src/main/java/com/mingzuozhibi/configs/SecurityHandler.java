@@ -1,4 +1,4 @@
-package com.mingzuozhibi.support;
+package com.mingzuozhibi.configs;
 
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;

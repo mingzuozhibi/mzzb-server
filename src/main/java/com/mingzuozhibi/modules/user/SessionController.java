@@ -5,15 +5,17 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import static com.mingzuozhibi.modules.user.SessionUtils.*;
-import static com.mingzuozhibi.utils.ChecksUtils.*;
+import static com.mingzuozhibi.support.ChecksUtils.*;
 
 @Slf4j
 @RestController
@@ -28,17 +30,32 @@ public class SessionController extends BaseController {
     @Transactional
     @GetMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionQuery() {
+        {
+            String token = getSessionTokenFromHeader();
+            System.out.println("token:" + token);
+            Optional<Remember> remember = sessionService.vaildSession(token);
+            System.out.println("token:" + remember.isPresent());
+        }
         Optional<Authentication> optional = getAuthentication();
         if (!optional.isPresent()) {
             log.debug("sessionQuery: Authentication is null");
             setAuthentication(buildGuestAuthentication());
-        } else if (!optional.get().isAuthenticated()) {
-            String token = getSessionTokenFromHeader();
-            sessionService.vaildSession(token).ifPresent(remember -> {
-                onSessionLogin(remember.getUser(), false);
-            });
+        } else {
+            if (!isLogged(optional.get())) {
+                String token = getSessionTokenFromHeader();
+                System.out.println("token:" + token);
+                sessionService.vaildSession(token).ifPresent(remember -> {
+                    onSessionLogin(remember.getUser(), false);
+                });
+            }
         }
         return buildSessionAndCount();
+    }
+
+    private boolean isLogged(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .anyMatch(Predicate.isEqual("ROLE_LOGIN"));
     }
 
     @Setter

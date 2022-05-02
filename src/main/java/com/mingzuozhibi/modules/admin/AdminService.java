@@ -2,6 +2,7 @@ package com.mingzuozhibi.modules.admin;
 
 import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
+import com.mingzuozhibi.commons.mylog.JmsLogger;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.GroupService;
 import com.mingzuozhibi.modules.record.*;
@@ -10,12 +11,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import java.time.*;
 import java.util.List;
 import java.util.Set;
 
 @Service
 public class AdminService extends BaseSupport {
+
+    private JmsLogger bind;
+
+    @PostConstruct
+    public void bind() {
+        bind = jmsSender.bind(Name.SERVER_CORE);
+    }
 
     @Autowired
     private GroupService groupService;
@@ -32,8 +41,7 @@ public class AdminService extends BaseSupport {
     @Transactional
     public void deleteExpiredRemembers() {
         long count = rememberRepository.deleteByExpiredBefore(Instant.now());
-        jmsSender.bind(Name.SERVER_CORE)
-            .info("[自动任务][清理自动登入][共%d个]", count);
+        bind.info("[自动任务][清理自动登入][共%d个]", count);
     }
 
     @Transactional
@@ -47,8 +55,7 @@ public class AdminService extends BaseSupport {
             dateRecord.setGuessPt(hourRecord.getGuessPt());
             recordService.moveRecord(hourRecord, dateRecord);
         });
-        jmsSender.bind(Name.SERVER_CORE)
-            .info("[自动任务][转存昨日排名][共%d个]", records.size());
+        bind.info("[自动任务][转存昨日排名][共%d个]", records.size());
     }
 
     @Transactional
@@ -59,8 +66,7 @@ public class AdminService extends BaseSupport {
         int hour = now.getHour();
         Set<Disc> discs = groupService.findNeedRecordDiscs();
         discs.forEach(disc -> recordCompute.computePtNow(disc, date, hour));
-        jmsSender.bind(Name.SERVER_CORE)
-            .info("[自动任务][记录计算排名][共%d个]", discs.size());
+        bind.info("[自动任务][记录计算排名][共%d个]", discs.size());
     }
 
 }
