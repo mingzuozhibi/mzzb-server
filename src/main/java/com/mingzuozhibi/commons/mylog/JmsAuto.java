@@ -1,7 +1,6 @@
-package com.mingzuozhibi.configs;
+package com.mingzuozhibi.commons.mylog;
 
 import com.mingzuozhibi.commons.base.BaseSupport;
-import com.mingzuozhibi.commons.mylog.*;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
@@ -13,7 +12,7 @@ import java.lang.reflect.Method;
 
 @Slf4j
 @Component
-public class AutoBindLogger implements BeanPostProcessor {
+public class JmsAuto implements BeanPostProcessor {
 
     @Autowired
     private JmsSender jmsSender;
