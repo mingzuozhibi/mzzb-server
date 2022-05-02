@@ -2,8 +2,8 @@ package com.mingzuozhibi.modules.disc;
 
 import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseController;
+import com.mingzuozhibi.commons.mylog.JmsBind;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
-import com.mingzuozhibi.commons.mylog.JmsLogger;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import com.mingzuozhibi.modules.record.RecordService;
 import com.mingzuozhibi.modules.spider.HistoryRepository;
@@ -14,7 +14,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -26,14 +25,8 @@ import static com.mingzuozhibi.support.ChecksUtils.*;
 import static com.mingzuozhibi.support.ModifyUtils.*;
 
 @RestController
+@JmsBind(Name.SERVER_USER)
 public class DiscController extends BaseController {
-
-    private JmsLogger bind;
-
-    @PostConstruct
-    public void bind() {
-        bind = jmsSender.bind(Name.SERVER_USER);
-    }
 
     @Autowired
     private RecordService recordService;

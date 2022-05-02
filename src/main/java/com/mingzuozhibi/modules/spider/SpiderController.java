@@ -2,8 +2,8 @@ package com.mingzuozhibi.modules.spider;
 
 import com.mingzuozhibi.commons.base.PageController;
 import com.mingzuozhibi.commons.domain.Result;
+import com.mingzuozhibi.commons.mylog.JmsBind;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
-import com.mingzuozhibi.commons.mylog.JmsLogger;
 import com.mingzuozhibi.modules.disc.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -13,21 +13,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.util.Optional;
 
 import static com.mingzuozhibi.support.ModifyUtils.logCreate;
 
 @RestController
+@JmsBind(Name.SERVER_USER)
 public class SpiderController extends PageController {
-
-    private JmsLogger bind;
-
-    @PostConstruct
-    public void bind() {
-        bind = jmsSender.bind(Name.SERVER_USER);
-    }
 
     @Autowired
     private ContentApi contentApi;

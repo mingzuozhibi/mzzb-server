@@ -3,6 +3,7 @@ package com.mingzuozhibi.modules.spider;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.mingzuozhibi.commons.base.BaseSupport;
+import com.mingzuozhibi.commons.mylog.JmsBind;
 import com.mingzuozhibi.commons.mylog.JmsLogger;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.disc.GroupService;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -25,14 +25,8 @@ import static com.mingzuozhibi.commons.utils.MyTimeUtils.toInstant;
 import static javax.xml.transform.OutputKeys.MEDIA_TYPE;
 
 @Component
+@JmsBind(Name.SERVER_DISC)
 public class SpiderListener extends BaseSupport {
-
-    private JmsLogger bind;
-
-    @PostConstruct
-    public void bind() {
-        bind = jmsSender.bind(Name.SERVER_DISC);
-    }
 
     @Autowired
     private GroupService groupService;
