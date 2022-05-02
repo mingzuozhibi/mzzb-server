@@ -158,7 +158,8 @@ public class DiscController extends BaseController {
         }
         Disc disc = byAsin.get();
         updateRank(disc, rank, Instant.now());
-        bind.debug(logUpdate("碟片排名", disc.getPrevRank(), disc.getThisRank(), disc.getLogName()));
+        jmsSender.bind(Name.DEFAULT)
+            .debug(logUpdate("碟片排名", disc.getPrevRank(), disc.getThisRank(), disc.getLogName()));
         return dataResult(disc.toJson());
     }
 
