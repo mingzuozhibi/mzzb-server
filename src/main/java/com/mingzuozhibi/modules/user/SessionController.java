@@ -37,7 +37,6 @@ public class SessionController extends BaseController {
         } else {
             if (!isLogged(optional.get())) {
                 String token = getSessionTokenFromHeader();
-                System.out.println("token:" + token);
                 sessionService.vaildSession(token).ifPresent(remember -> {
                     onSessionLogin(remember.getUser(), false);
                 });
