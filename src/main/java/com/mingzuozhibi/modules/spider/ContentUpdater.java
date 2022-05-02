@@ -41,7 +41,7 @@ public class ContentUpdater extends BaseSupport {
 
             if (contents.size() > 0) {
                 groupService.updateGroupModifyTime();
-                bind.notify("成功更新日亚排名：共%d个", contents.size());
+                bind.success("成功更新日亚排名：共%d个", contents.size());
             } else {
                 bind.warning("未能更新日亚排名：无数据");
             }
