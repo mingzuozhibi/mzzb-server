@@ -1,8 +1,8 @@
 package com.mingzuozhibi.modules.admin;
 
 import com.mingzuozhibi.commons.base.BaseSupport;
+import com.mingzuozhibi.commons.mylog.JmsBind;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
-import com.mingzuozhibi.commons.mylog.JmsLogger;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.GroupService;
 import com.mingzuozhibi.modules.record.*;
@@ -11,20 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
 import java.time.*;
 import java.util.List;
 import java.util.Set;
 
 @Service
+@JmsBind(Name.SERVER_CORE)
 public class AdminService extends BaseSupport {
-
-    private JmsLogger bind;
-
-    @PostConstruct
-    public void bind() {
-        bind = jmsSender.bind(Name.SERVER_CORE);
-    }
 
     @Autowired
     private GroupService groupService;

@@ -4,7 +4,7 @@ import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.modules.disc.Disc;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-@Service
+@Component
 public class RecordCompute extends BaseSupport {
 
     @Autowired

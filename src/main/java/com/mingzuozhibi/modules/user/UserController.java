@@ -1,8 +1,8 @@
 package com.mingzuozhibi.modules.user;
 
 import com.mingzuozhibi.commons.base.BaseController;
+import com.mingzuozhibi.commons.mylog.JmsBind;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
-import com.mingzuozhibi.commons.mylog.JmsLogger;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +10,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.PostConstruct;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -18,14 +17,8 @@ import static com.mingzuozhibi.support.ChecksUtils.*;
 import static com.mingzuozhibi.support.ModifyUtils.*;
 
 @RestController
+@JmsBind(Name.SERVER_USER)
 public class UserController extends BaseController {
-
-    private JmsLogger bind;
-
-    @PostConstruct
-    public void bind() {
-        bind = jmsSender.bind(Name.SERVER_USER);
-    }
 
     @Autowired
     private UserRepository userRepository;

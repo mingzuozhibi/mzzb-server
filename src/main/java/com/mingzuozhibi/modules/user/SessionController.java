@@ -30,12 +30,6 @@ public class SessionController extends BaseController {
     @Transactional
     @GetMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionQuery() {
-        {
-            String token = getSessionTokenFromHeader();
-            System.out.println("token:" + token);
-            Optional<Remember> remember = sessionService.vaildSession(token);
-            System.out.println("token:" + remember.isPresent());
-        }
         Optional<Authentication> optional = getAuthentication();
         if (!optional.isPresent()) {
             log.debug("sessionQuery: Authentication is null");
@@ -55,7 +49,7 @@ public class SessionController extends BaseController {
     private boolean isLogged(Authentication authentication) {
         return authentication.getAuthorities().stream()
             .map(GrantedAuthority::getAuthority)
-            .anyMatch(Predicate.isEqual("ROLE_LOGIN"));
+            .anyMatch(Predicate.isEqual("ROLE_BASIC"));
     }
 
     @Setter

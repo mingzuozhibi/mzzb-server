@@ -6,7 +6,7 @@ import java.time.Instant;
 
 public abstract class ThreadUtils {
 
-    public static void runWithDaemon(String name, JmsLogger bind, Callback callback) {
+    public static void runWithDaemon(JmsLogger bind, String name, Callback callback) {
         Thread thread = new Thread(() -> {
             try {
                 callback.call();

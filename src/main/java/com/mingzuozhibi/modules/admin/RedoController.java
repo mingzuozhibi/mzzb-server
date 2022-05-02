@@ -1,8 +1,8 @@
 package com.mingzuozhibi.modules.admin;
 
 import com.mingzuozhibi.commons.base.BaseController;
+import com.mingzuozhibi.commons.mylog.JmsBind;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
-import com.mingzuozhibi.commons.mylog.JmsLogger;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.record.RecordCompute;
@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -19,14 +18,8 @@ import static com.mingzuozhibi.support.ChecksUtils.paramNotExists;
 import static com.mingzuozhibi.support.ModifyUtils.logUpdate;
 
 @RestController
+@JmsBind(Name.SERVER_USER)
 public class RedoController extends BaseController {
-
-    private JmsLogger bind;
-
-    @PostConstruct
-    public void bind() {
-        bind = jmsSender.bind(Name.SERVER_USER);
-    }
 
     @Autowired
     private RecordCompute recordCompute;

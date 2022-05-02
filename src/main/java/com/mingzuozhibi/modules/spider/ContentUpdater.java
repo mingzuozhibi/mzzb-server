@@ -1,33 +1,24 @@
 package com.mingzuozhibi.modules.spider;
 
 import com.mingzuozhibi.commons.base.BaseSupport;
+import com.mingzuozhibi.commons.mylog.JmsBind;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
-import com.mingzuozhibi.commons.mylog.JmsLogger;
 import com.mingzuozhibi.modules.disc.*;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 
-@Slf4j
 @Component
+@JmsBind(Name.SERVER_DISC)
 public class ContentUpdater extends BaseSupport {
-
-    private JmsLogger bind;
-
-    @PostConstruct
-    public void bind() {
-        bind = jmsSender.bind(Name.SERVER_DISC);
-    }
 
     @Autowired
     private GroupService groupService;
