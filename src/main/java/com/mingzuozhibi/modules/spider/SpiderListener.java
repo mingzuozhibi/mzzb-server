@@ -82,6 +82,7 @@ public class SpiderListener extends BaseSupport {
             String format = "[发现新碟片][asin=%s][type=%s][title=%s]";
             logger.success(format, history.getAsin(), history.getType(), history.getTitle());
         });
+        logger.notify("发现新碟片%d个", list.size());
         historyList.removeAll(list);
     }
 
