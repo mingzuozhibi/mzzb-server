@@ -100,19 +100,19 @@ public class GroupController extends BaseController {
         }
         Group group = byId.get();
         if (!Objects.equals(group.getKey(), form.key)) {
-            bind.notify(logUpdate("列表索引", group.getKey(), form.key));
+            bind.notify(logUpdate("列表索引", group.getKey(), form.key, group.getTitle()));
             group.setKey(form.key);
         }
         if (!Objects.equals(group.getTitle(), form.title)) {
-            bind.notify(logUpdate("列表标题", group.getTitle(), form.title));
+            bind.notify(logUpdate("列表标题", group.getTitle(), form.title, group.getTitle()));
             group.setTitle(form.title);
         }
         if (!Objects.equals(group.getViewType(), form.viewType)) {
-            bind.notify(logUpdate("列表类型", group.getViewType(), form.viewType));
+            bind.notify(logUpdate("列表类型", group.getViewType(), form.viewType, group.getTitle()));
             group.setViewType(form.viewType);
         }
         if (!Objects.equals(group.isEnabled(), form.enabled)) {
-            bind.notify(logUpdate("是否更新", group.isEnabled(), form.enabled));
+            bind.notify(logUpdate("是否更新", group.isEnabled(), form.enabled, group.getTitle()));
             group.setEnabled(form.enabled);
         }
         return dataResult(group);

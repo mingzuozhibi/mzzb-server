@@ -93,16 +93,16 @@ public class UserController extends BaseController {
         }
         User user = byId.get();
         if (!Objects.equals(user.getUsername(), form.username)) {
-            bind.notify(logUpdate("用户名称", user.getUsername(), form.username));
+            bind.notify(logUpdate("用户名称", user.getUsername(), form.username, user.getUsername()));
             user.setUsername(form.username);
         }
         if (StringUtils.isNotEmpty(form.password) && !Objects.equals(user.getPassword(), form.password)) {
-            bind.notify(logUpdate("用户密码", "******", "******"));
+            bind.notify(logUpdate("用户密码", "******", "******", user.getUsername()));
             user.setPassword(form.password);
             onChangePassword(user);
         }
         if (user.isEnabled() != form.enabled) {
-            bind.notify(logUpdate("启用状态", user.isEnabled(), form.enabled));
+            bind.notify(logUpdate("启用状态", user.isEnabled(), form.enabled, user.getUsername()));
             user.setEnabled(form.enabled);
         }
         return dataResult(user);
