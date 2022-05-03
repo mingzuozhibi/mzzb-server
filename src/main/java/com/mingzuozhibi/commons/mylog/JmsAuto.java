@@ -21,7 +21,8 @@ public class JmsAuto implements BeanPostProcessor {
         if (bean instanceof BaseSupport) {
             try {
                 Class<?> beanClass = bean.getClass();
-                Name name = beanClass.getAnnotation(JmsBind.class).value();
+                JmsBind jmsBind = beanClass.getAnnotation(JmsBind.class);
+                Name name = jmsBind != null ? jmsBind.value() : Name.DEFAULT;
                 Method setBind = beanClass.getMethod("setBind", JmsLogger.class);
                 setBind.invoke(bean, jmsSender.bind(name));
                 log.debug("JmsBind: bean={}, name={}", beanName, name.name());

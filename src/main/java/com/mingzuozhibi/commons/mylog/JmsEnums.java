@@ -6,6 +6,7 @@ public class JmsEnums {
     public static final String CONTENT_SEARCH = "content.search";
     public static final String CONTENT_RETURN = "content.return";
     public static final String HISTORY_UPDATE = "history.update";
+    public static final String HISTORY_FINISH = "history.finish";
 
     public static final String NEED_UPDATE_ASINS = "need.update.asins";
     public static final String NEXT_UPDATE_ASINS = "next.update.asins";

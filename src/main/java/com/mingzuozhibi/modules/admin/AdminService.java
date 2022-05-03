@@ -3,6 +3,8 @@ package com.mingzuozhibi.modules.admin;
 import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.commons.mylog.JmsBind;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
+import com.mingzuozhibi.commons.mylog.JmsEnums.Type;
+import com.mingzuozhibi.modules.core.MessageRepository;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.GroupService;
 import com.mingzuozhibi.modules.record.*;
@@ -27,6 +29,9 @@ public class AdminService extends BaseSupport {
 
     @Autowired
     private RecordCompute recordCompute;
+
+    @Autowired
+    private MessageRepository messageRepository;
 
     @Autowired
     private RememberRepository rememberRepository;
@@ -60,6 +65,33 @@ public class AdminService extends BaseSupport {
         Set<Disc> discs = groupService.findNeedRecordDiscs();
         discs.forEach(disc -> recordCompute.computePtNow(disc, date, hour));
         bind.info("[自动任务][记录计算排名][共%d个]", discs.size());
+    }
+
+    @Transactional
+    public void cleanupModulesMessages() {
+        {
+            int c1 = messageRepository.cleanup(Name.SPIDER_CONTENT, 100, Type.DEBUG, Type.INFO, Type.WARNING);
+            int c2 = messageRepository.cleanup(Name.SPIDER_CONTENT, 200);
+            bind.info("[清理日志][name=%s][size=%d,%d]", Name.SPIDER_CONTENT, c1, c2);
+        }
+        {
+            int c1 = messageRepository.cleanup(Name.SPIDER_HISTORY, 200, Type.INFO);
+            int c2 = messageRepository.cleanup(Name.SPIDER_HISTORY, 200);
+            bind.info("[清理日志][name=%s][size=%d,%d]", Name.SPIDER_HISTORY, c1, c2);
+        }
+        {
+            int c1 = messageRepository.cleanup(Name.SERVER_DISC, 200, Type.INFO);
+            int c2 = messageRepository.cleanup(Name.SERVER_DISC, 200);
+            bind.info("[清理日志][name=%s][size=%d,%d]", Name.SERVER_DISC, c1, c2);
+        }
+        {
+            int c1 = messageRepository.cleanup(Name.SERVER_CORE, 200);
+            bind.info("[清理日志][name=%s][size=%d]", Name.SERVER_CORE, c1);
+        }
+        {
+            int c1 = messageRepository.cleanup(Name.DEFAULT, 200);
+            bind.info("[清理日志][name=%s][size=%d]", Name.DEFAULT, c1);
+        }
     }
 
 }

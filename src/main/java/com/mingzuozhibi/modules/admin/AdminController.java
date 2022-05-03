@@ -25,14 +25,16 @@ public class AdminController extends BaseController {
     @Autowired
     private GroupService groupService;
 
-    @Transactional
     @Scheduled(cron = "0 0 * * * ?")
     @GetMapping(value = "/admin/runAutomaticTasks", produces = MEDIA_TYPE)
     public void runAutomaticTasks() {
         runWithDaemon(bind, "自动任务", () -> {
+            bind.info("每小时自动任务：开始");
             adminService.deleteExpiredRemembers();
             adminService.moveExpiredHourRecords();
             adminService.recordRankAndComputePt();
+            adminService.cleanupModulesMessages();
+            bind.info("每小时自动任务：完成");
         });
     }
 

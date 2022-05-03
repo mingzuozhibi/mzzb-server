@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.commons.mylog.JmsBind;
+import com.mingzuozhibi.commons.mylog.JmsLogger;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
@@ -11,8 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static com.google.gson.reflect.TypeToken.getParameterized;
 import static com.mingzuozhibi.commons.mylog.JmsEnums.*;
@@ -31,6 +31,9 @@ public class SpiderListener extends BaseSupport {
 
     @Autowired
     private HistoryRepository historyRepository;
+
+    private final List<History> historyList =
+        Collections.synchronizedList(new LinkedList<>());
 
     @JmsListener(destination = DONE_UPDATE_DISCS)
     public void doneUpdateDiscs(String json) {
@@ -65,12 +68,22 @@ public class SpiderListener extends BaseSupport {
         historyList.forEach(history -> {
             history.setTracked(discRepository.existsByAsin(history.getAsin()));
             if (!historyRepository.existsByAsin(history.getAsin())) {
+                historyList.add(history);
                 historyRepository.save(history);
-                String format = "[发现新碟片][asin=%s][type=%s][title=%s]";
-                jmsSender.bind(Name.SPIDER_HISTORY)
-                    .success(format, history.getAsin(), history.getType(), history.getTitle());
             }
         });
+    }
+
+    @JmsListener(destination = HISTORY_FINISH)
+    public void historyFinish(String json) {
+        JmsLogger logger = jmsSender.bind(Name.SPIDER_HISTORY);
+        ArrayList<History> list = new ArrayList<>(historyList);
+        list.forEach(history -> {
+            String format = "[发现新碟片][asin=%s][type=%s][title=%s]";
+            logger.success(format, history.getAsin(), history.getType(), history.getTitle());
+        });
+        logger.notify("发现新碟片%d个", list.size());
+        historyList.removeAll(list);
     }
 
 }
