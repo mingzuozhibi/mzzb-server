@@ -17,10 +17,15 @@ import java.util.*;
 import static com.mingzuozhibi.modules.disc.DiscUtils.*;
 import static com.mingzuozhibi.support.ChecksUtils.*;
 import static com.mingzuozhibi.support.ModifyUtils.*;
+import static java.util.Comparator.*;
 
 @RestController
 @JmsBind(Name.SERVER_USER)
 public class GroupController extends BaseController {
+
+    public static final Comparator<Group> GROUP_COMPARATOR = comparing(Group::isEnabled, reverseOrder())
+        .thenComparing(Group::getViewType, comparingInt(Enum::ordinal))
+        .thenComparing(Group::getKey, reverseOrder());
 
     @Autowired
     private DiscRepository discRepository;
@@ -34,7 +39,7 @@ public class GroupController extends BaseController {
                           @RequestParam(defaultValue = "true") boolean hasDisable) {
         List<Group> groups = groupRepository.findBy(hasPrivate, hasDisable);
         JsonArray array = new JsonArray();
-        groups.forEach(group -> {
+        groups.stream().sorted(GROUP_COMPARATOR).forEach(group -> {
             long count = discRepository.countByGroup(group);
             array.add(buildWithCount(group, count));
         });
