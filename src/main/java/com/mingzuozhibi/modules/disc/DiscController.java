@@ -50,11 +50,11 @@ public class DiscController extends BaseController {
     @Transactional
     @GetMapping(value = "/api/discs/asin/{asin}", produces = MEDIA_TYPE)
     public String findByAsin(@PathVariable String asin) {
-        Optional<Disc> byId = discRepository.findByAsin(asin);
-        if (!byId.isPresent()) {
+        Optional<Disc> byAsin = discRepository.findByAsin(asin);
+        if (!byAsin.isPresent()) {
             return paramNotExists("碟片ASIN");
         }
-        return dataResult(byId.get().toJson());
+        return dataResult(byAsin.get().toJson());
     }
 
     @Transactional

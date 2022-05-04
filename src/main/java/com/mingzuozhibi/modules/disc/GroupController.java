@@ -30,12 +30,13 @@ public class GroupController extends BaseController {
 
     @Transactional
     @GetMapping(value = "/api/discGroups", produces = MEDIA_TYPE)
-    public String findAll(@RequestParam(defaultValue = "false") boolean hasPrivate) {
-        List<Group> groups = groupRepository.findAllHasPrivate(hasPrivate);
+    public String findAll(@RequestParam(defaultValue = "false") boolean hasPrivate,
+                          @RequestParam(defaultValue = "true") boolean hasDisable) {
+        List<Group> groups = groupRepository.findBy(hasPrivate, hasDisable);
         JsonArray array = new JsonArray();
-        groups.forEach(discGroup -> {
-            long count = discRepository.countGroupDiscs(discGroup.getId());
-            array.add(buildWithCount(discGroup, count));
+        groups.forEach(group -> {
+            long count = discRepository.countByGroup(group);
+            array.add(buildWithCount(group, count));
         });
         return dataResult(array);
     }
@@ -127,7 +128,7 @@ public class GroupController extends BaseController {
             return paramNotExists("列表ID");
         }
         Group group = byId.get();
-        if (discRepository.countGroupDiscs(id) > 0) {
+        if (discRepository.countByGroup(group) > 0) {
             bind.warning(logDelete("列表", group.getTitle(), gson.toJson(group)));
             group.getDiscs().forEach(disc -> {
                 String format = "[记录删除的碟片][ASIN=%s][NAME=%s]";
@@ -170,7 +171,7 @@ public class GroupController extends BaseController {
         }
         Disc disc = byDid.get();
 
-        if (discRepository.existsDiscInGroup(group, disc)) {
+        if (discRepository.countByGroup(group, disc) > 0) {
             return itemsExists("碟片");
         }
         group.getDiscs().add(disc);
@@ -196,7 +197,7 @@ public class GroupController extends BaseController {
         }
         Disc disc = byDid.get();
 
-        if (!discRepository.existsDiscInGroup(group, disc)) {
+        if (!(discRepository.countByGroup(group, disc) > 0)) {
             return itemsNotExists("碟片");
         }
         group.getDiscs().remove(disc);
