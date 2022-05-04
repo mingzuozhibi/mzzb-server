@@ -9,9 +9,9 @@ import java.time.Instant;
 @Getter
 @Setter
 @NoArgsConstructor
-public class JmsLog {
+public class Logger {
 
-    public JmsLog(Name name, Type type, String text) {
+    public Logger(Name name, Type type, String text) {
         this.name = name;
         this.type = type;
         this.text = text;
