@@ -1,6 +1,6 @@
 package com.mingzuozhibi.commons.mylog;
 
-import com.mingzuozhibi.commons.domain.JmsLog;
+import com.mingzuozhibi.commons.domain.Logger;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Type;
 import lombok.extern.slf4j.Slf4j;
@@ -20,9 +20,9 @@ public class JmsSender {
     private JmsTemplate template;
 
     public void info(Name name, Type type, String text) {
-        JmsLog jmsLog = new JmsLog(name, type, text);
-        log.info("JMS -> {} msg={}", MODULE_MESSAGE, jmsLog);
-        send(MODULE_MESSAGE, GSON.toJson(jmsLog));
+        Logger logger = new Logger(name, type, text);
+        log.info("JMS -> {} msg={}", MODULE_MESSAGE, logger);
+        send(MODULE_MESSAGE, GSON.toJson(logger));
     }
 
     public void send(String destination, String json) {

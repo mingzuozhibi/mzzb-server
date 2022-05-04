@@ -1,12 +1,32 @@
 package com.mingzuozhibi.modules.core;
 
+import com.mingzuozhibi.commons.mylog.JmsEnums;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Type;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.*;
 
-import java.util.Arrays;
+import javax.persistence.criteria.Predicate;
+import java.util.*;
 
 public interface MessageRepository extends JpaRepository<Message, Long>, JpaSpecificationExecutor<Message> {
+
+    default Page<Message> findBy(Name name, List<Type> types, String search, Pageable pageable) {
+        return findAll((Specification<Message>) (root, query, cb) -> {
+            ArrayList<Predicate> array = new ArrayList<>();
+            array.add(cb.equal(root.get("name"), name));
+            if (types != null && !types.isEmpty() && types.size() < JmsEnums.Type.values().length) {
+                array.add(cb.in(root.get("type")).value(types));
+            }
+            if (StringUtils.isNotBlank(search)) {
+                array.add(cb.like(root.get("text"), "%" + search + "%"));
+            }
+            return query.where(array.toArray(new Predicate[0])).getRestriction();
+        }, pageable);
+    }
 
     default int cleanup(Name name, int size, Type... typeIn) {
         if (typeIn.length == 0) typeIn = Type.values();

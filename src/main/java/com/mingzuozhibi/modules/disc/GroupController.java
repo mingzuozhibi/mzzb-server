@@ -17,10 +17,15 @@ import java.util.*;
 import static com.mingzuozhibi.modules.disc.DiscUtils.*;
 import static com.mingzuozhibi.support.ChecksUtils.*;
 import static com.mingzuozhibi.support.ModifyUtils.*;
+import static java.util.Comparator.*;
 
 @RestController
 @JmsBind(Name.SERVER_USER)
 public class GroupController extends BaseController {
+
+    public static final Comparator<Group> GROUP_COMPARATOR = comparing(Group::isEnabled, reverseOrder())
+        .thenComparing(Group::getViewType, comparingInt(Enum::ordinal))
+        .thenComparing(Group::getKey, reverseOrder());
 
     @Autowired
     private DiscRepository discRepository;
@@ -30,12 +35,13 @@ public class GroupController extends BaseController {
 
     @Transactional
     @GetMapping(value = "/api/discGroups", produces = MEDIA_TYPE)
-    public String findAll(@RequestParam(defaultValue = "false") boolean hasPrivate) {
-        List<Group> groups = groupRepository.findAllHasPrivate(hasPrivate);
+    public String findAll(@RequestParam(defaultValue = "false") boolean hasPrivate,
+                          @RequestParam(defaultValue = "true") boolean hasDisable) {
+        List<Group> groups = groupRepository.findBy(hasPrivate, hasDisable);
         JsonArray array = new JsonArray();
-        groups.forEach(discGroup -> {
-            long count = discRepository.countGroupDiscs(discGroup.getId());
-            array.add(buildWithCount(discGroup, count));
+        groups.stream().sorted(GROUP_COMPARATOR).forEach(group -> {
+            long count = discRepository.countByGroup(group);
+            array.add(buildWithCount(group, count));
         });
         return dataResult(array);
     }
@@ -100,19 +106,19 @@ public class GroupController extends BaseController {
         }
         Group group = byId.get();
         if (!Objects.equals(group.getKey(), form.key)) {
-            bind.notify(logUpdate("列表索引", group.getKey(), form.key));
+            bind.notify(logUpdate("列表索引", group.getKey(), form.key, group.getTitle()));
             group.setKey(form.key);
         }
         if (!Objects.equals(group.getTitle(), form.title)) {
-            bind.notify(logUpdate("列表标题", group.getTitle(), form.title));
+            bind.notify(logUpdate("列表标题", group.getTitle(), form.title, group.getTitle()));
             group.setTitle(form.title);
         }
         if (!Objects.equals(group.getViewType(), form.viewType)) {
-            bind.notify(logUpdate("列表类型", group.getViewType(), form.viewType));
+            bind.notify(logUpdate("列表类型", group.getViewType(), form.viewType, group.getTitle()));
             group.setViewType(form.viewType);
         }
         if (!Objects.equals(group.isEnabled(), form.enabled)) {
-            bind.notify(logUpdate("是否更新", group.isEnabled(), form.enabled));
+            bind.notify(logUpdate("是否更新", group.isEnabled(), form.enabled, group.getTitle()));
             group.setEnabled(form.enabled);
         }
         return dataResult(group);
@@ -127,7 +133,7 @@ public class GroupController extends BaseController {
             return paramNotExists("列表ID");
         }
         Group group = byId.get();
-        if (discRepository.countGroupDiscs(id) > 0) {
+        if (discRepository.countByGroup(group) > 0) {
             bind.warning(logDelete("列表", group.getTitle(), gson.toJson(group)));
             group.getDiscs().forEach(disc -> {
                 String format = "[记录删除的碟片][ASIN=%s][NAME=%s]";
@@ -170,7 +176,7 @@ public class GroupController extends BaseController {
         }
         Disc disc = byDid.get();
 
-        if (discRepository.existsDiscInGroup(group, disc)) {
+        if (discRepository.countByGroup(group, disc) > 0) {
             return itemsExists("碟片");
         }
         group.getDiscs().add(disc);
@@ -196,7 +202,7 @@ public class GroupController extends BaseController {
         }
         Disc disc = byDid.get();
 
-        if (!discRepository.existsDiscInGroup(group, disc)) {
+        if (!(discRepository.countByGroup(group, disc) > 0)) {
             return itemsNotExists("碟片");
         }
         group.getDiscs().remove(disc);

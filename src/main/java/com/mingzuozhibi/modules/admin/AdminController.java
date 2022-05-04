@@ -28,13 +28,22 @@ public class AdminController extends BaseController {
     @Scheduled(cron = "0 0 * * * ?")
     @GetMapping(value = "/admin/runAutomaticTasks", produces = MEDIA_TYPE)
     public void runAutomaticTasks() {
-        runWithDaemon(bind, "自动任务", () -> {
-            bind.info("每小时自动任务：开始");
-            adminService.deleteExpiredRemembers();
+        runWithDaemon(bind, "每1小时自动任务", () -> {
+            bind.info("每1小时自动任务：开始");
             adminService.moveExpiredHourRecords();
             adminService.recordRankAndComputePt();
+            bind.info("每1小时自动任务：完成");
+        });
+    }
+
+    @Scheduled(cron = "0 55 1/4 * * ?")
+    @GetMapping(value = "/admin/runAutomaticTasks2", produces = MEDIA_TYPE)
+    public void runAutomaticTasks2() {
+        runWithDaemon(bind, "每4小时自动任务", () -> {
+            bind.info("每4小时自动任务：开始");
+            adminService.deleteExpiredRemembers();
             adminService.cleanupModulesMessages();
-            bind.info("每小时自动任务：完成");
+            bind.info("每4小时自动任务：完成");
         });
     }
 

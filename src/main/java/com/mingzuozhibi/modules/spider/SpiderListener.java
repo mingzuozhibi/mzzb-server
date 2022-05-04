@@ -9,6 +9,7 @@ import com.mingzuozhibi.modules.disc.DiscRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -61,15 +62,21 @@ public class SpiderListener extends BaseSupport {
         contentUpdater.updateDiscs(contents, toInstant(date));
     }
 
+    @Transactional
     @JmsListener(destination = HISTORY_UPDATE)
     public void historyUpdate(String json) {
         TypeToken<?> token = getParameterized(ArrayList.class, History.class);
         List<History> historyList = gson.fromJson(json, token.getType());
         historyList.forEach(history -> {
-            history.setTracked(discRepository.existsByAsin(history.getAsin()));
-            if (!historyRepository.existsByAsin(history.getAsin())) {
+            Optional<History> byAsin = historyRepository.findByAsin(history.getAsin());
+            if (!byAsin.isPresent()) {
                 historyList.add(history);
+                history.setTracked(discRepository.existsByAsin(history.getAsin()));
                 historyRepository.save(history);
+            } else {
+                History toUpdate = byAsin.get();
+                toUpdate.setTitle(history.getTitle());
+                toUpdate.setType(history.getType());
             }
         });
     }

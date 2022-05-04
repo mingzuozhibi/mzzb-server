@@ -50,11 +50,11 @@ public class DiscController extends BaseController {
     @Transactional
     @GetMapping(value = "/api/discs/asin/{asin}", produces = MEDIA_TYPE)
     public String findByAsin(@PathVariable String asin) {
-        Optional<Disc> byId = discRepository.findByAsin(asin);
-        if (!byId.isPresent()) {
+        Optional<Disc> byAsin = discRepository.findByAsin(asin);
+        if (!byAsin.isPresent()) {
             return paramNotExists("碟片ASIN");
         }
-        return dataResult(byId.get().toJson());
+        return dataResult(byAsin.get().toJson());
     }
 
     @Transactional
@@ -133,15 +133,15 @@ public class DiscController extends BaseController {
         }
         Disc disc = byId.get();
         if (!Objects.equals(disc.getTitlePc(), form.titlePc)) {
-            bind.info(logUpdate("碟片标题", disc.getTitlePc(), form.titlePc));
+            bind.info(logUpdate("碟片标题", disc.getTitlePc(), form.titlePc, disc.getLogName()));
             disc.setTitlePc(form.titlePc);
         }
         if (!Objects.equals(disc.getDiscType(), form.discType)) {
-            bind.notify(logUpdate("碟片类型", disc.getDiscType(), form.discType));
+            bind.notify(logUpdate("碟片类型", disc.getDiscType(), form.discType, disc.getLogName()));
             disc.setDiscType(form.discType);
         }
         if (!Objects.equals(disc.getReleaseDate(), localDate)) {
-            bind.notify(logUpdate("发售日期", disc.getReleaseDate(), localDate));
+            bind.notify(logUpdate("发售日期", disc.getReleaseDate(), localDate, disc.getLogName()));
             disc.setReleaseDate(localDate);
         }
         return dataResult(disc.toJson());
