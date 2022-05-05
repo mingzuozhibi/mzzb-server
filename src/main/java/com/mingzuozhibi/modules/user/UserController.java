@@ -69,7 +69,7 @@ public class UserController extends BaseController {
         }
         User user = new User(form.username, form.password, form.enabled);
         userRepository.save(user);
-        bind.success(logCreate("创建用户", user.getUsername(), gson.toJson(user)));
+        bind.success(logCreate("用户", user.getUsername(), gson.toJson(user)));
         return dataResult(user);
     }
 
