@@ -102,7 +102,7 @@ public class DiscController extends BaseController {
         Disc disc = new Disc(form.asin, form.title, form.discType, localDate);
         discRepository.save(disc);
         historyRepository.setTracked(form.asin, true);
-        bind.success(logCreate("碟片", disc.getLogName(), gson.toJson(disc)));
+        bind.success(logCreate("碟片(手动)", disc.getLogName(), disc.toJson().toString()));
         return dataResult(disc.toJson());
     }
 
