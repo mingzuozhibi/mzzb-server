@@ -4,6 +4,7 @@ import com.mingzuozhibi.commons.base.BaseController;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,21 @@ public class SessionController extends BaseController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Transactional
+    @PreAuthorize("hasRole('BASIC')")
+    @GetMapping(value = "/api/session/current", produces = MEDIA_TYPE)
+    public String sessionCurrent() {
+        Optional<Authentication> optional = SessionUtils.getAuthentication();
+        if (optional.isPresent()) {
+            String name = optional.get().getName();
+            Optional<User> byUsername = userRepository.findByUsername(name);
+            if (byUsername.isPresent()) {
+                return dataResult(byUsername.get());
+            }
+        }
+        return errorResult("登入状态异常");
+    }
 
     @Transactional
     @GetMapping(value = "/api/session", produces = MEDIA_TYPE)

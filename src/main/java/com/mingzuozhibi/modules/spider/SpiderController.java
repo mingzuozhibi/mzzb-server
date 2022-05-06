@@ -75,7 +75,7 @@ public class SpiderController extends PageController {
         // 创建碟片
         discRepository.save(disc);
         historyRepository.setTracked(asin, true);
-        bind.success(logCreate("碟片", disc.getTitle(), disc.getLogName()));
+        bind.success(logCreate("碟片(查询)", disc.getLogName(), disc.toJson().toString()));
         return dataResult(disc.toJson());
     }
 
