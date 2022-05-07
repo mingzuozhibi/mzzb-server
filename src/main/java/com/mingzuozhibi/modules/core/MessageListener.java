@@ -1,6 +1,8 @@
 package com.mingzuozhibi.modules.core;
 
 import com.mingzuozhibi.commons.base.BaseSupport;
+import com.mingzuozhibi.commons.mylog.JmsBind;
+import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
@@ -10,6 +12,7 @@ import static com.mingzuozhibi.commons.mylog.JmsEnums.MODULE_MESSAGE;
 
 @Slf4j
 @Component
+@JmsBind(Name.SERVER_CORE)
 public class MessageListener extends BaseSupport {
 
     @Autowired
@@ -27,6 +30,11 @@ public class MessageListener extends BaseSupport {
         } catch (Exception e) {
             log.warn("saveMessage({}): {}", message, e);
         }
+    }
+
+    @JmsListener(destination = "ActiveMQ.DLQ")
+    public void ActiveMQ_DLQ(String json) {
+        bind.warning("JMS <- ActiveMQ.DLQ: %s", json);
     }
 
 }
