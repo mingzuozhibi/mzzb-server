@@ -22,8 +22,8 @@ public class MessageListener extends BaseSupport {
     public void moduleMessage(String json) {
         Message message = gson.fromJson(json, Message.class);
         if (message.getText().length() > 1000) {
-            message.setText(message.getText().substring(0, 1000));
             log.info("saveMessage({})", message);
+            message.setText(message.getText().substring(0, 1000));
         }
         try {
             messageRepository.save(message.withAccept());
