@@ -70,7 +70,7 @@ public class SpiderListener extends BaseSupport {
         historyList.forEach(history -> {
             Optional<History> byAsin = historyRepository.findByAsin(history.getAsin());
             if (!byAsin.isPresent()) {
-                historyList.add(history);
+                this.historyList.add(history);
                 history.setTracked(discRepository.existsByAsin(history.getAsin()));
                 historyRepository.save(history);
             } else {
