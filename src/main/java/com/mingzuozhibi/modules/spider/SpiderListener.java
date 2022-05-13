@@ -19,6 +19,7 @@ import static com.google.gson.reflect.TypeToken.getParameterized;
 import static com.mingzuozhibi.commons.mylog.JmsEnums.*;
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDateTime;
 import static com.mingzuozhibi.commons.utils.MyTimeUtils.toInstant;
+import static java.util.Collections.synchronizedList;
 
 @Component
 @JmsBind(Name.SERVER_DISC)
@@ -33,8 +34,7 @@ public class SpiderListener extends BaseSupport {
     @Autowired
     private HistoryRepository historyRepository;
 
-    private final List<History> historyList =
-        Collections.synchronizedList(new LinkedList<>());
+    private final List<History> toReportList = synchronizedList(new LinkedList<>());
 
     @JmsListener(destination = DONE_UPDATE_DISCS)
     public void doneUpdateDiscs(String json) {
@@ -66,11 +66,11 @@ public class SpiderListener extends BaseSupport {
     @JmsListener(destination = HISTORY_UPDATE)
     public void historyUpdate(String json) {
         TypeToken<?> token = getParameterized(ArrayList.class, History.class);
-        List<History> historyList = gson.fromJson(json, token.getType());
-        historyList.forEach(history -> {
+        List<History> histories = gson.fromJson(json, token.getType());
+        histories.forEach(history -> {
             Optional<History> byAsin = historyRepository.findByAsin(history.getAsin());
             if (!byAsin.isPresent()) {
-                this.historyList.add(history);
+                toReportList.add(history);
                 history.setTracked(discRepository.existsByAsin(history.getAsin()));
                 historyRepository.save(history);
             } else {
@@ -84,13 +84,13 @@ public class SpiderListener extends BaseSupport {
     @JmsListener(destination = HISTORY_FINISH)
     public void historyFinish(String json) {
         JmsLogger logger = jmsSender.bind(Name.SPIDER_HISTORY);
-        ArrayList<History> list = new ArrayList<>(historyList);
-        list.forEach(history -> {
+        ArrayList<History> histories = new ArrayList<>(toReportList);
+        histories.forEach(history -> {
             String format = "[发现新碟片][asin=%s][type=%s][title=%s]";
             logger.success(format, history.getAsin(), history.getType(), history.getTitle());
         });
-        logger.notify("发现新碟片%d个", list.size());
-        historyList.removeAll(list);
+        logger.notify("发现新碟片%d个", histories.size());
+        toReportList.removeAll(histories);
     }
 
 }
