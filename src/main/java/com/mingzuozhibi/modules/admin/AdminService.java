@@ -70,17 +70,17 @@ public class AdminService extends BaseSupport {
     @Transactional
     public void cleanupModulesMessages() {
         {
-            int c1 = messageRepository.cleanup(Name.SPIDER_CONTENT, 100, Type.INFO, Type.WARNING);
+            int c1 = messageRepository.cleanup(Name.SPIDER_CONTENT, 150, Type.INFO, Type.WARNING);
             int c2 = messageRepository.cleanup(Name.SPIDER_CONTENT, 200);
             bind.info("[清理日志][name=%s][size=%d,%d]", Name.SPIDER_CONTENT, c1, c2);
         }
         {
-            int c1 = messageRepository.cleanup(Name.SPIDER_HISTORY, 200, Type.INFO);
+            int c1 = messageRepository.cleanup(Name.SPIDER_HISTORY, 150, Type.INFO);
             int c2 = messageRepository.cleanup(Name.SPIDER_HISTORY, 200);
             bind.info("[清理日志][name=%s][size=%d,%d]", Name.SPIDER_HISTORY, c1, c2);
         }
         {
-            int c1 = messageRepository.cleanup(Name.SERVER_DISC, 200, Type.INFO);
+            int c1 = messageRepository.cleanup(Name.SERVER_DISC, 150, Type.INFO);
             int c2 = messageRepository.cleanup(Name.SERVER_DISC, 200);
             bind.info("[清理日志][name=%s][size=%d,%d]", Name.SERVER_DISC, c1, c2);
         }

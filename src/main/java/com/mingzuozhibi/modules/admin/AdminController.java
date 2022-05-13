@@ -36,7 +36,7 @@ public class AdminController extends BaseController {
         });
     }
 
-    @Scheduled(cron = "0 55 1/4 * * ?")
+    @Scheduled(cron = "0 8 1/4 * * ?")
     @GetMapping(value = "/admin/runAutomaticTasks2", produces = MEDIA_TYPE)
     public void runAutomaticTasks2() {
         runWithDaemon(bind, "每4小时自动任务", () -> {
@@ -48,7 +48,7 @@ public class AdminController extends BaseController {
     }
 
     @Transactional
-    @Scheduled(cron = "0 59 * * * ?")
+    @Scheduled(cron = "0 10 * * * ?")
     @GetMapping(value = "/admin/sendNeedUpdateAsins", produces = MEDIA_TYPE)
     public void sendNeedUpdateAsins() {
         Set<String> asins = groupService.findNeedUpdateAsinsSorted();
