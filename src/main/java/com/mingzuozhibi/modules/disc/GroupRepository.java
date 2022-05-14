@@ -25,7 +25,9 @@ public interface GroupRepository extends JpaRepository<Group, Long>, JpaSpecific
 
     Optional<Group> findByKey(String key);
 
-    @Query(value = "select * from disc_group where enabled = true order by `key` desc", nativeQuery = true)
+    @Query(value = "select * from `group` " +
+        "where enabled = true " +
+        "order by `key` desc", nativeQuery = true)
     List<Group> findActiveDiscGroups();
 
 }

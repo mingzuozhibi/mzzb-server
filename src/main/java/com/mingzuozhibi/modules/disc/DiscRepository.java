@@ -11,12 +11,12 @@ public interface DiscRepository extends JpaRepository<Disc, Long> {
 
     Optional<Disc> findByAsin(String asin);
 
-    @Query(value = "select count(*) from disc_group_discs " +
-        "where disc_group_id = ?1", nativeQuery = true)
+    @Query(value = "select count(*) from group_discs " +
+        "where group_id = ?1", nativeQuery = true)
     long countByGroup(Group group);
 
-    @Query(value = "select count(*) from disc_group_discs " +
-        "where disc_group_id = ?1 and disc_id = ?2", nativeQuery = true)
+    @Query(value = "select count(*) from group_discs " +
+        "where group_id = ?1 and disc_id = ?2", nativeQuery = true)
     long countByGroup(Group group, Disc disc);
 
 }

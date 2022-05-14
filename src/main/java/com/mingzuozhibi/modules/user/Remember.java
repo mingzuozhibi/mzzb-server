@@ -7,10 +7,10 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
 
+@Entity
 @Getter
 @Setter
 @NoArgsConstructor
-@Entity(name = "auto_login")
 public class Remember extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 100L;
