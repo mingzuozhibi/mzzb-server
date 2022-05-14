@@ -10,11 +10,13 @@ spring:
     username: mzzb_server
     password: mzzb_server
   jpa:
-    hibernate:
-      ddl-auto: update
     open-in-view: true
+    generate-ddl: true
     properties:
+      hibernate.format_sql: true
       hibernate.auto_quote_keyword: true
+      hibernate.dialect: org.hibernate.dialect.MySQL8Dialect
+      hibernate.current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
 ---
 spring:
   config:
@@ -26,8 +28,6 @@ spring:
     user: admin
   jpa:
     show-sql: true
-    properties:
-      hibernate.format_sql: true
 ---
 spring:
   config:
