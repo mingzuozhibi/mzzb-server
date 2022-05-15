@@ -71,7 +71,7 @@ public class SpiderController extends PageController {
         Disc disc = contentService.createWith(result.getData());
         if (disc.getReleaseDate() == null) {
             // 检查日期
-            bind.warning("创建碟片时缺少发售日期, 碟片=%s", disc.getLogName());
+            bind.warning("[创建碟片时缺少发售日期][碟片=%s]", disc.getLogName());
             disc.setReleaseDate(LocalDate.now());
         }
         // 创建碟片
