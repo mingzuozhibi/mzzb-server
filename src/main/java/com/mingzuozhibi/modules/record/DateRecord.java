@@ -29,7 +29,7 @@ public class DateRecord extends BaseEntity implements Record {
     private LocalDate date;
 
     @GsonIgnored
-    @Column(name = "`rank`")
+    @Column
     private Double rank;
 
     @Column

@@ -4,20 +4,24 @@ import com.google.gson.reflect.TypeToken;
 import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.commons.domain.Result;
 import com.mingzuozhibi.commons.domain.SearchTask;
+import com.mingzuozhibi.commons.mylog.JmsBind;
 import com.mingzuozhibi.commons.utils.ThreadUtils;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 
 import static com.mingzuozhibi.commons.mylog.JmsEnums.*;
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
+import static com.mingzuozhibi.support.ModifyUtils.getName;
 
 @Component
-public class ContentApi extends BaseSupport {
+@JmsBind(Name.SERVER_USER)
+public class ContentService extends BaseSupport {
 
     private final Map<String, SearchTask<Content>> waitMap = Collections.synchronizedMap(new HashMap<>());
 
@@ -46,9 +50,20 @@ public class ContentApi extends BaseSupport {
         String uuid = task.getUuid();
         waitMap.put(uuid, task);
 
+        long time = Instant.now().toEpochMilli();
         ThreadUtils.waitSecond(task, 30);
+        long cost = Instant.now().toEpochMilli() - time;
 
-        return waitMap.remove(uuid);
+        SearchTask<Content> remove = waitMap.remove(uuid);
+        if (remove == task) {
+            bind.warning("[%s][查询碟片超时][asin=%s][cost=%d ms]", getName(), asin, cost);
+        } else if (!remove.isSuccess()) {
+            String format = "[%s][查询碟片失败][asin=%s][cost=%d ms][error=%s]";
+            bind.warning(format, getName(), asin, cost, remove.getMessage());
+        } else {
+            bind.success("[%s][查询碟片成功][asin=%s][cost=%d ms]", getName(), asin, cost);
+        }
+        return remove;
     }
 
     @JmsListener(destination = CONTENT_RETURN)

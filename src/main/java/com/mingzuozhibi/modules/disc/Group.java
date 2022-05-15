@@ -9,10 +9,10 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
+@Entity
 @Getter
 @Setter
 @NoArgsConstructor
-@Entity(name = "disc_group")
 public class Group extends BaseEntity {
 
     private static final long serialVersionUID = 100L;
@@ -28,7 +28,7 @@ public class Group extends BaseEntity {
         this.viewType = viewType;
     }
 
-    @Column(name = "`key`", length = 100, nullable = false, unique = true)
+    @Column(length = 100, nullable = false, unique = true)
     private String key;
 
     @Column(length = 100, nullable = false)
@@ -45,8 +45,8 @@ public class Group extends BaseEntity {
 
     @GsonIgnored
     @ManyToMany
-    @JoinTable(name = "disc_group_discs",
-        joinColumns = {@JoinColumn(name = "disc_group_id")},
+    @JoinTable(name = "group_discs",
+        joinColumns = {@JoinColumn(name = "group_id")},
         inverseJoinColumns = {@JoinColumn(name = "disc_id")})
     private Set<Disc> discs = new HashSet<>();
 

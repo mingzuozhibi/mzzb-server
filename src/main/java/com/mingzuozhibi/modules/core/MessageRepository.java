@@ -42,7 +42,8 @@ public interface MessageRepository extends JpaRepository<Message, Long>, JpaSpec
     Long findTargetId(String name, int[] types, int size);
 
     @Modifying
-    @Query(value = "delete from message where name = ?1 and type in ?2 and id <= ?3", nativeQuery = true)
+    @Query(value = "delete from message " +
+        "where name = ?1 and type in ?2 and id <= ?3", nativeQuery = true)
     int deleteByTargetId(String name, int[] types, Long id);
 
 }
