@@ -6,8 +6,7 @@ import com.mingzuozhibi.commons.mylog.JmsBind;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import com.mingzuozhibi.modules.disc.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.mingzuozhibi.support.ModifyUtils.logCreate;
 
@@ -23,10 +23,10 @@ import static com.mingzuozhibi.support.ModifyUtils.logCreate;
 public class SpiderController extends PageController {
 
     @Autowired
-    private ContentApi contentApi;
+    private GroupService groupService;
 
     @Autowired
-    private GroupService groupService;
+    private ContentService contentService;
 
     @Autowired
     private DiscRepository discRepository;
@@ -42,14 +42,16 @@ public class SpiderController extends PageController {
             return errorResult("Size不能大于40");
         }
         PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by(Order.desc("id")));
-        return pageResult(historyRepository.findAll(pageRequest));
+        Page<History> pageResult = historyRepository.findAll(pageRequest);
+        return pageResult(pageResult);
     }
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping(value = "/api/spider/fetchCount", produces = MEDIA_TYPE)
     public String getFetchCount() {
-        return dataResult(groupService.findNeedUpdateAsins().size());
+        Set<String> needUpdateAsins = groupService.findNeedUpdateAsins();
+        return dataResult(needUpdateAsins.size());
     }
 
     @Transactional
@@ -61,12 +63,12 @@ public class SpiderController extends PageController {
             // 碟片已存在
             return dataResult(byAsin.get().toJson());
         }
-        Result<Content> result = contentApi.doGet(asin);
+        Result<Content> result = contentService.doGet(asin);
         if (result.hasError()) {
             // 查询失败
             return errorResult(result.getMessage());
         }
-        Disc disc = contentApi.createWith(result.getData());
+        Disc disc = contentService.createWith(result.getData());
         if (disc.getReleaseDate() == null) {
             // 检查日期
             bind.warning("创建碟片时缺少发售日期, 碟片=%s", disc.getLogName());

@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
+import static com.mingzuozhibi.modules.disc.DiscUtils.updateRank;
 
 @Component
 @JmsBind(Name.SERVER_DISC)
@@ -66,7 +67,7 @@ public class ContentUpdater extends BaseSupport {
         updateType(disc, content);
         updateDate(disc, content);
         if (disc.getModifyTime() == null || updateOn.isAfter(disc.getModifyTime())) {
-            DiscUtils.updateRank(disc, content.getRank(), updateOn);
+            updateRank(disc, content.getRank(), updateOn);
         }
     }
 
