@@ -8,7 +8,7 @@ import com.mingzuozhibi.commons.mylog.JmsBind;
 import com.mingzuozhibi.commons.utils.ThreadUtils;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
-import org.springframework.jms.annotation.JmsListener;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -66,7 +66,7 @@ public class ContentService extends BaseSupport {
         return remove;
     }
 
-    @JmsListener(destination = CONTENT_RETURN)
+    @RabbitListener(queues = CONTENT_RETURN)
     public void contentReturn(String json) {
         TypeToken<?> token = TypeToken.getParameterized(SearchTask.class, Content.class);
         SearchTask<Content> task = gson.fromJson(json, token.getType());

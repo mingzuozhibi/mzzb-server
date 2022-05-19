@@ -4,9 +4,9 @@ import com.mingzuozhibi.commons.domain.Logger;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import com.mingzuozhibi.commons.mylog.JmsEnums.Type;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jms.JmsException;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
 import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
@@ -17,7 +17,7 @@ import static com.mingzuozhibi.commons.mylog.JmsEnums.MODULE_MESSAGE;
 public class JmsSender {
 
     @Autowired
-    private JmsTemplate template;
+    private AmqpTemplate template;
 
     public void info(Name name, Type type, String text) {
         Logger logger = new Logger(name, type, text);
@@ -30,7 +30,7 @@ public class JmsSender {
             try {
                 template.convertAndSend(destination, json);
                 break;
-            } catch (JmsException e) {
+            } catch (AmqpException e) {
                 String format = "convertAndSend(destination=%s, json=%s)";
                 log.debug(String.format(format, destination, json), e);
             }

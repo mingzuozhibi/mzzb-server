@@ -6,8 +6,8 @@ import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.commons.mylog.JmsBind;
 import com.mingzuozhibi.commons.mylog.JmsLogger;
 import com.mingzuozhibi.modules.disc.DiscRepository;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +36,7 @@ public class SpiderListener extends BaseSupport {
 
     private final List<History> toReportList = synchronizedList(new LinkedList<>());
 
-    @JmsListener(destination = DONE_UPDATE_DISCS)
+    @RabbitListener(queues = DONE_UPDATE_DISCS)
     public void doneUpdateDiscs(String json) {
         TypeToken<?> token = getParameterized(ArrayList.class, Content.class);
         List<Content> contents = gson.fromJson(json, token.getType());
@@ -44,7 +44,7 @@ public class SpiderListener extends BaseSupport {
         contentUpdater.updateDiscs(contents, Instant.now());
     }
 
-    @JmsListener(destination = PREV_UPDATE_DISCS)
+    @RabbitListener(queues = PREV_UPDATE_DISCS)
     public void prevUpdateDiscs(String json) {
         TypeToken<?> token = getParameterized(ArrayList.class, Content.class);
         List<Content> contents = gson.fromJson(json, token.getType());
@@ -52,7 +52,7 @@ public class SpiderListener extends BaseSupport {
         contentUpdater.updateDiscs(contents, Instant.now());
     }
 
-    @JmsListener(destination = LAST_UPDATE_DISCS)
+    @RabbitListener(queues = LAST_UPDATE_DISCS)
     public void lastUpdateDiscs(String json) {
         JsonObject object = gson.fromJson(json, JsonObject.class);
         LocalDateTime date = gson.fromJson(object.get("date"), LocalDateTime.class);
@@ -63,7 +63,7 @@ public class SpiderListener extends BaseSupport {
     }
 
     @Transactional
-    @JmsListener(destination = HISTORY_UPDATE)
+    @RabbitListener(queues = HISTORY_UPDATE)
     public void historyUpdate(String json) {
         TypeToken<?> token = getParameterized(ArrayList.class, History.class);
         List<History> histories = gson.fromJson(json, token.getType());
@@ -81,7 +81,7 @@ public class SpiderListener extends BaseSupport {
         });
     }
 
-    @JmsListener(destination = HISTORY_FINISH)
+    @RabbitListener(queues = HISTORY_FINISH)
     public void historyFinish(String json) {
         JmsLogger logger = jmsSender.bind(Name.SPIDER_HISTORY);
         ArrayList<History> histories = new ArrayList<>(toReportList);
