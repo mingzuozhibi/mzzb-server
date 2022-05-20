@@ -1,8 +1,8 @@
 package com.mingzuozhibi.modules.admin;
 
+import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
+import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseController;
-import com.mingzuozhibi.commons.mylog.JmsBind;
-import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import com.mingzuozhibi.modules.disc.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Set;
 
-import static com.mingzuozhibi.commons.mylog.JmsEnums.NEED_UPDATE_ASINS;
+import static com.mingzuozhibi.commons.amqp.AmqpEnums.NEED_UPDATE_ASINS;
 import static com.mingzuozhibi.commons.utils.ThreadUtils.runWithDaemon;
 
 @RestController
-@JmsBind(Name.SERVER_CORE)
+@LoggerBind(Name.SERVER_CORE)
 public class AdminController extends BaseController {
 
     @Autowired
@@ -52,7 +52,7 @@ public class AdminController extends BaseController {
     @GetMapping(value = "/admin/sendNeedUpdateAsins", produces = MEDIA_TYPE)
     public void sendNeedUpdateAsins() {
         Set<String> asins = groupService.findNeedUpdateAsinsSorted();
-        jmsSender.send(NEED_UPDATE_ASINS, gson.toJson(asins));
+        amqpSender.send(NEED_UPDATE_ASINS, gson.toJson(asins));
         bind.debug("JMS -> %s size=%d", NEED_UPDATE_ASINS, asins.size());
     }
 

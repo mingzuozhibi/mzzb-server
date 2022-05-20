@@ -1,9 +1,9 @@
 package com.mingzuozhibi.modules.disc;
 
 import com.google.gson.JsonObject;
+import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
+import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseController;
-import com.mingzuozhibi.commons.mylog.JmsBind;
-import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import com.mingzuozhibi.modules.record.RecordService;
 import com.mingzuozhibi.modules.spider.HistoryRepository;
@@ -25,7 +25,7 @@ import static com.mingzuozhibi.support.ChecksUtils.*;
 import static com.mingzuozhibi.support.ModifyUtils.*;
 
 @RestController
-@JmsBind(Name.SERVER_USER)
+@LoggerBind(Name.SERVER_USER)
 public class DiscController extends BaseController {
 
     @Autowired
@@ -158,7 +158,7 @@ public class DiscController extends BaseController {
         }
         Disc disc = byAsin.get();
         updateRank(disc, rank, Instant.now());
-        jmsSender.bind(Name.DEFAULT)
+        amqpSender.bind(Name.DEFAULT)
             .debug(logUpdate("碟片排名", disc.getPrevRank(), disc.getThisRank(), disc.getLogName()));
         return dataResult(disc.toJson());
     }

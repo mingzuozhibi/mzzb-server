@@ -1,12 +1,12 @@
-package com.mingzuozhibi.commons.mylog;
+package com.mingzuozhibi.commons.amqp.logger;
 
-import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
+import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
 
 import java.lang.annotation.*;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-public @interface JmsBind {
+public @interface LoggerBind {
     Name value() default Name.DEFAULT;
 }

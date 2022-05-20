@@ -1,12 +1,12 @@
 package com.mingzuozhibi.commons.utils;
 
-import com.mingzuozhibi.commons.mylog.JmsLogger;
+import com.mingzuozhibi.commons.amqp.logger.Logger;
 
 import java.time.Instant;
 
 public abstract class ThreadUtils {
 
-    public static void runWithDaemon(JmsLogger bind, String name, Callback callback) {
+    public static void runWithDaemon(Logger bind, String name, Callback callback) {
         Thread thread = new Thread(() -> {
             try {
                 callback.call();

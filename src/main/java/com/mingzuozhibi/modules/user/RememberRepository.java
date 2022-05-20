@@ -11,6 +11,6 @@ public interface RememberRepository extends JpaRepository<Remember, Long> {
 
     Optional<Remember> findByToken(String token);
 
-    long deleteByExpiredBefore(Instant instant);
+    long deleteByExpiredBefore(Instant expired);
 
 }

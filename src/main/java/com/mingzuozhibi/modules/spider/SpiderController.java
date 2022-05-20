@@ -1,9 +1,9 @@
 package com.mingzuozhibi.modules.spider;
 
+import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
+import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.PageController;
 import com.mingzuozhibi.commons.domain.Result;
-import com.mingzuozhibi.commons.mylog.JmsBind;
-import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import com.mingzuozhibi.modules.disc.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -19,7 +19,7 @@ import java.util.Set;
 import static com.mingzuozhibi.support.ModifyUtils.logCreate;
 
 @RestController
-@JmsBind(Name.SERVER_USER)
+@LoggerBind(Name.SERVER_USER)
 public class SpiderController extends PageController {
 
     @Autowired
@@ -71,7 +71,7 @@ public class SpiderController extends PageController {
         Disc disc = contentService.createWith(result.getData());
         if (disc.getReleaseDate() == null) {
             // 检查日期
-            bind.warning("创建碟片时缺少发售日期, 碟片=%s", disc.getLogName());
+            bind.warning("[创建碟片时缺少发售日期][碟片=%s]", disc.getLogName());
             disc.setReleaseDate(LocalDate.now());
         }
         // 创建碟片

@@ -2,12 +2,12 @@ package com.mingzuozhibi.modules.spider;
 
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import com.mingzuozhibi.commons.amqp.logger.Logger;
+import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseSupport;
-import com.mingzuozhibi.commons.mylog.JmsBind;
-import com.mingzuozhibi.commons.mylog.JmsLogger;
 import com.mingzuozhibi.modules.disc.DiscRepository;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,13 +16,13 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static com.google.gson.reflect.TypeToken.getParameterized;
-import static com.mingzuozhibi.commons.mylog.JmsEnums.*;
+import static com.mingzuozhibi.commons.amqp.AmqpEnums.*;
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDateTime;
 import static com.mingzuozhibi.commons.utils.MyTimeUtils.toInstant;
 import static java.util.Collections.synchronizedList;
 
 @Component
-@JmsBind(Name.SERVER_DISC)
+@LoggerBind(Name.SERVER_DISC)
 public class SpiderListener extends BaseSupport {
 
     @Autowired
@@ -36,7 +36,7 @@ public class SpiderListener extends BaseSupport {
 
     private final List<History> toReportList = synchronizedList(new LinkedList<>());
 
-    @JmsListener(destination = DONE_UPDATE_DISCS)
+    @RabbitListener(queues = DONE_UPDATE_DISCS)
     public void doneUpdateDiscs(String json) {
         TypeToken<?> token = getParameterized(ArrayList.class, Content.class);
         List<Content> contents = gson.fromJson(json, token.getType());
@@ -44,7 +44,7 @@ public class SpiderListener extends BaseSupport {
         contentUpdater.updateDiscs(contents, Instant.now());
     }
 
-    @JmsListener(destination = PREV_UPDATE_DISCS)
+    @RabbitListener(queues = PREV_UPDATE_DISCS)
     public void prevUpdateDiscs(String json) {
         TypeToken<?> token = getParameterized(ArrayList.class, Content.class);
         List<Content> contents = gson.fromJson(json, token.getType());
@@ -52,7 +52,7 @@ public class SpiderListener extends BaseSupport {
         contentUpdater.updateDiscs(contents, Instant.now());
     }
 
-    @JmsListener(destination = LAST_UPDATE_DISCS)
+    @RabbitListener(queues = LAST_UPDATE_DISCS)
     public void lastUpdateDiscs(String json) {
         JsonObject object = gson.fromJson(json, JsonObject.class);
         LocalDateTime date = gson.fromJson(object.get("date"), LocalDateTime.class);
@@ -63,7 +63,7 @@ public class SpiderListener extends BaseSupport {
     }
 
     @Transactional
-    @JmsListener(destination = HISTORY_UPDATE)
+    @RabbitListener(queues = HISTORY_UPDATE)
     public void historyUpdate(String json) {
         TypeToken<?> token = getParameterized(ArrayList.class, History.class);
         List<History> histories = gson.fromJson(json, token.getType());
@@ -81,9 +81,9 @@ public class SpiderListener extends BaseSupport {
         });
     }
 
-    @JmsListener(destination = HISTORY_FINISH)
+    @RabbitListener(queues = HISTORY_FINISH)
     public void historyFinish(String json) {
-        JmsLogger logger = jmsSender.bind(Name.SPIDER_HISTORY);
+        Logger logger = amqpSender.bind(Name.SPIDER_HISTORY);
         ArrayList<History> histories = new ArrayList<>(toReportList);
         histories.forEach(history -> {
             String format = "[发现新碟片][asin=%s][type=%s][title=%s]";

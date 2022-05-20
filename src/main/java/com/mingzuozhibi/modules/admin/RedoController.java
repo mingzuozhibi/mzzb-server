@@ -1,8 +1,8 @@
 package com.mingzuozhibi.modules.admin;
 
+import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
+import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseController;
-import com.mingzuozhibi.commons.mylog.JmsBind;
-import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.record.RecordCompute;
@@ -18,7 +18,7 @@ import static com.mingzuozhibi.support.ChecksUtils.paramNotExists;
 import static com.mingzuozhibi.support.ModifyUtils.logUpdate;
 
 @RestController
-@JmsBind(Name.SERVER_USER)
+@LoggerBind(Name.SERVER_USER)
 public class RedoController extends BaseController {
 
     @Autowired
