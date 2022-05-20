@@ -1,7 +1,7 @@
-package com.mingzuozhibi.commons.domain;
+package com.mingzuozhibi.commons.amqp;
 
-import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
-import com.mingzuozhibi.commons.mylog.JmsEnums.Type;
+import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
+import com.mingzuozhibi.commons.amqp.AmqpEnums.Type;
 import lombok.*;
 
 import java.time.Instant;
@@ -9,9 +9,9 @@ import java.time.Instant;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Logger {
+public class AmqpLogger {
 
-    public Logger(Name name, Type type, String text) {
+    public AmqpLogger(Name name, Type type, String text) {
         this.name = name;
         this.type = type;
         this.text = text;

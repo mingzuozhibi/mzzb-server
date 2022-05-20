@@ -1,10 +1,10 @@
 package com.mingzuozhibi.modules.spider;
 
 import com.google.gson.reflect.TypeToken;
+import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.commons.domain.Result;
 import com.mingzuozhibi.commons.domain.SearchTask;
-import com.mingzuozhibi.commons.mylog.JmsBind;
 import com.mingzuozhibi.commons.utils.ThreadUtils;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
@@ -15,12 +15,12 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 
-import static com.mingzuozhibi.commons.mylog.JmsEnums.*;
+import static com.mingzuozhibi.commons.amqp.AmqpEnums.*;
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 import static com.mingzuozhibi.support.ModifyUtils.getName;
 
 @Component
-@JmsBind(Name.SERVER_USER)
+@LoggerBind(Name.SERVER_USER)
 public class ContentService extends BaseSupport {
 
     private final Map<String, SearchTask<Content>> waitMap = Collections.synchronizedMap(new HashMap<>());
@@ -46,7 +46,7 @@ public class ContentService extends BaseSupport {
 
     private SearchTask<Content> contentSearch(String asin) {
         SearchTask<Content> task = new SearchTask<>(asin);
-        jmsSender.send(CONTENT_SEARCH, gson.toJson(task));
+        amqpSender.send(CONTENT_SEARCH, gson.toJson(task));
         String uuid = task.getUuid();
         waitMap.put(uuid, task);
 

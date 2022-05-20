@@ -1,9 +1,9 @@
 package com.mingzuozhibi.modules.admin;
 
+import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
+import com.mingzuozhibi.commons.amqp.AmqpEnums.Type;
+import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseSupport;
-import com.mingzuozhibi.commons.mylog.JmsBind;
-import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
-import com.mingzuozhibi.commons.mylog.JmsEnums.Type;
 import com.mingzuozhibi.modules.core.MessageRepository;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.GroupService;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-@JmsBind(Name.SERVER_CORE)
+@LoggerBind(Name.SERVER_CORE)
 public class AdminService extends BaseSupport {
 
     @Autowired

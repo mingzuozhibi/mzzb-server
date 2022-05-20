@@ -1,18 +1,18 @@
 package com.mingzuozhibi.modules.core;
 
+import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
+import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseSupport;
-import com.mingzuozhibi.commons.mylog.JmsBind;
-import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import static com.mingzuozhibi.commons.mylog.JmsEnums.MODULE_MESSAGE;
+import static com.mingzuozhibi.commons.amqp.AmqpEnums.MODULE_MESSAGE;
 
 @Slf4j
 @Component
-@JmsBind(Name.SERVER_CORE)
+@LoggerBind(Name.SERVER_CORE)
 public class MessageListener extends BaseSupport {
 
     @Autowired

@@ -1,28 +1,28 @@
-package com.mingzuozhibi.commons.mylog;
+package com.mingzuozhibi.commons.amqp;
 
-import com.mingzuozhibi.commons.domain.Logger;
-import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
-import com.mingzuozhibi.commons.mylog.JmsEnums.Type;
+import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
+import com.mingzuozhibi.commons.amqp.AmqpEnums.Type;
+import com.mingzuozhibi.commons.amqp.logger.Logger;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import static com.mingzuozhibi.commons.amqp.AmqpEnums.MODULE_MESSAGE;
 import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
-import static com.mingzuozhibi.commons.mylog.JmsEnums.MODULE_MESSAGE;
 
 @Slf4j
 @Component
-public class JmsSender {
+public class AmqpSender {
 
     @Autowired
     private AmqpTemplate template;
 
     public void info(Name name, Type type, String text) {
-        Logger logger = new Logger(name, type, text);
-        log.info("JMS -> {} msg={}", MODULE_MESSAGE, logger);
-        send(MODULE_MESSAGE, GSON.toJson(logger));
+        AmqpLogger amqpLogger = new AmqpLogger(name, type, text);
+        log.info("JMS -> {} msg={}", MODULE_MESSAGE, amqpLogger);
+        send(MODULE_MESSAGE, GSON.toJson(amqpLogger));
     }
 
     public void send(String destination, String json) {
@@ -37,8 +37,8 @@ public class JmsSender {
         }
     }
 
-    public JmsLogger bind(Name name) {
-        return new JmsLogger(name, this);
+    public Logger bind(Name name) {
+        return new Logger(name, this);
     }
 
 }

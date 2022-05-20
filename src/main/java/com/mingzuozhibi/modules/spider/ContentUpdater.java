@@ -1,8 +1,8 @@
 package com.mingzuozhibi.modules.spider;
 
+import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
+import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseSupport;
-import com.mingzuozhibi.commons.mylog.JmsBind;
-import com.mingzuozhibi.commons.mylog.JmsEnums.Name;
 import com.mingzuozhibi.modules.disc.*;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,7 @@ import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 import static com.mingzuozhibi.modules.disc.DiscUtils.updateRank;
 
 @Component
-@JmsBind(Name.SERVER_DISC)
+@LoggerBind(Name.SERVER_DISC)
 public class ContentUpdater extends BaseSupport {
 
     @Autowired

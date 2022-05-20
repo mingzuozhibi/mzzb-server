@@ -1,6 +1,6 @@
-package com.mingzuozhibi.commons.mylog;
+package com.mingzuozhibi.commons.amqp;
 
-public abstract class JmsEnums {
+public abstract class AmqpEnums {
 
     public static final String MODULE_MESSAGE = "module.message";
     public static final String CONTENT_SEARCH = "content.search";

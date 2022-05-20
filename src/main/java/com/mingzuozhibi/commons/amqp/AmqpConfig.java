@@ -1,13 +1,13 @@
-package com.mingzuozhibi.commons.mylog;
+package com.mingzuozhibi.commons.amqp;
 
 import org.springframework.amqp.core.Queue;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import static com.mingzuozhibi.commons.mylog.JmsEnums.*;
+import static com.mingzuozhibi.commons.amqp.AmqpEnums.*;
 
 @Configuration
-public class JmsConfig {
+public class AmqpConfig {
 
     @Bean
     public Queue moduleMessage() {
