@@ -7,6 +7,7 @@ import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.record.RecordCompute;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,6 +43,7 @@ public class RedoController extends BaseController {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/api/admin/reComputeDisc2/{id}", produces = MEDIA_TYPE)
     public String reComputeDisc2(@PathVariable Long id) {
         Optional<Disc> byId = discRepository.findById(id);
