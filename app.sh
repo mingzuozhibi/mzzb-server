@@ -63,7 +63,7 @@ kill_app() {
             [[ $(ps -p $PidText | wc -l) -lt 2 ]] && break
         done
     fi
-    rm $PidFile
+    [[ -f $PidFile ]] && rm $PidFile
     echo "The server is stopped"
 }
 
