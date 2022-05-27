@@ -5,6 +5,7 @@ import com.mingzuozhibi.commons.gson.GsonIgnored;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serial;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
@@ -15,6 +16,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class Group extends BaseEntity {
 
+    @Serial
     private static final long serialVersionUID = 100L;
 
     public enum ViewType {

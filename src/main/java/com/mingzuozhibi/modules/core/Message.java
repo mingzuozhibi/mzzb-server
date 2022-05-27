@@ -6,6 +6,7 @@ import com.mingzuozhibi.commons.base.BaseEntity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serial;
 import java.time.Instant;
 
 @Entity
@@ -14,6 +15,7 @@ import java.time.Instant;
 @NoArgsConstructor
 public class Message extends BaseEntity {
 
+    @Serial
     private static final long serialVersionUID = 100L;
 
     public Message(Name name, Type type, String text) {

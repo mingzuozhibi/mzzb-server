@@ -4,6 +4,7 @@ import com.mingzuozhibi.commons.base.BaseEntity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 
@@ -13,6 +14,7 @@ import java.time.Instant;
 @NoArgsConstructor
 public class Remember extends BaseEntity implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 100L;
 
     public Remember(User user, String token, Instant expired) {

@@ -28,7 +28,7 @@ public class SessionService {
             return Optional.empty();
         }
         Optional<Remember> byToken = rememberRepository.findByToken(token);
-        if (!byToken.isPresent()) {
+        if (byToken.isEmpty()) {
             setSessionTokenToHeader("");
             return Optional.empty();
         }

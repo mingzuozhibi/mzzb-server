@@ -5,6 +5,7 @@ import lombok.*;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import java.io.Serial;
 import java.time.Instant;
 
 @Entity
@@ -13,6 +14,7 @@ import java.time.Instant;
 @NoArgsConstructor
 public class History extends BaseEntity {
 
+    @Serial
     private static final long serialVersionUID = 100L;
 
     @Column(nullable = false, length = 20, unique = true)

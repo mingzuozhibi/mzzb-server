@@ -69,7 +69,7 @@ public class SpiderListener extends BaseSupport {
         List<History> histories = gson.fromJson(json, token.getType());
         histories.forEach(history -> {
             Optional<History> byAsin = historyRepository.findByAsin(history.getAsin());
-            if (!byAsin.isPresent()) {
+            if (byAsin.isEmpty()) {
                 toReportList.add(history);
                 history.setTracked(discRepository.existsByAsin(history.getAsin()));
                 historyRepository.save(history);

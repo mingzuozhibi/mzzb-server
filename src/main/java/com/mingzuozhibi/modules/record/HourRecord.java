@@ -6,6 +6,7 @@ import com.mingzuozhibi.modules.disc.Disc;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serial;
 import java.time.LocalDate;
 import java.util.OptionalDouble;
 import java.util.stream.DoubleStream;
@@ -16,6 +17,7 @@ import java.util.stream.DoubleStream;
 @NoArgsConstructor
 public class HourRecord extends BaseEntity implements Record {
 
+    @Serial
     private static final long serialVersionUID = 100L;
 
     public HourRecord(Disc disc, LocalDate date) {

@@ -116,17 +116,12 @@ public class RecordCompute extends BaseSupport {
     }
 
     private static double computeHourPt(Disc disc, double rank) {
-        switch (disc.getDiscType()) {
-            case Cd:
-                return computeHourPt(150, 5.25, rank);
-            case Auto:
-            case Bluray:
-                return computePtOfBD(rank);
-            case Dvd:
-                return computeHourPt(100, 4.2, rank);
-            default:
-                return 0d;
-        }
+        return switch (disc.getDiscType()) {
+            case Cd -> computeHourPt(150, 5.25, rank);
+            case Auto, Bluray -> computePtOfBD(rank);
+            case Dvd -> computeHourPt(100, 4.2, rank);
+            default -> 0d;
+        };
     }
 
     private static double computePtOfBD(double rank) {

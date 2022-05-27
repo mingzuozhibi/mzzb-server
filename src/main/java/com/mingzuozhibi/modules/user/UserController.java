@@ -38,7 +38,7 @@ public class UserController extends BaseController {
     @GetMapping(value = "/api/users/{id}", produces = MEDIA_TYPE)
     public String findById(@PathVariable Long id) {
         Optional<User> byId = userRepository.findById(id);
-        if (!byId.isPresent()) {
+        if (byId.isEmpty()) {
             return paramNotExists("用户ID");
         }
         return dataResult(byId.get());
@@ -88,7 +88,7 @@ public class UserController extends BaseController {
             return errorResult(checks.get());
         }
         Optional<User> byId = userRepository.findById(id);
-        if (!byId.isPresent()) {
+        if (byId.isEmpty()) {
             return paramNotExists("用户ID");
         }
         User user = byId.get();

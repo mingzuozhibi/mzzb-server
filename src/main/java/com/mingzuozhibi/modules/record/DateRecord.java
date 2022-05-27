@@ -6,6 +6,7 @@ import com.mingzuozhibi.modules.disc.Disc;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serial;
 import java.time.LocalDate;
 
 @Entity
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class DateRecord extends BaseEntity implements Record {
 
+    @Serial
     private static final long serialVersionUID = 100L;
 
     public DateRecord(Disc disc, LocalDate date) {

@@ -19,7 +19,7 @@
     <description>Server for mingzuozhibi.com</description>
 
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>17</java.version>
         <app.profiles>dev</app.profiles>
     </properties>
 
