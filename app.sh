@@ -9,6 +9,7 @@ StdFile=$RunHome/std.log
 PidFile=$RunHome/run.pid
 Param1="${1:-help}"
 Param2=$2
+ScName=mzzb-server
 
 mkdir -p $RunHome
 cd $AppHome || exit
@@ -139,6 +140,10 @@ fem)
     echo git reset --hard origin/master
     git reset --hard origin/master
     ;;
+sc)
+    echo sudo systemctl $Param2 $ScName
+    sudo systemctl $Param2 $ScName
+    ;;
 *)
     echo "usage: bash app.sh [d|dd|dev]"
     echo "usage: bash app.sh [st|start] [-f]"
@@ -149,5 +154,6 @@ fem)
     echo "usage: bash app.sh std [-a]"
     echo "usage: bash app.sh fed"
     echo "usage: bash app.sh fem"
+    echo "usage: bash app.sh sc [start|stop|restart]"
     ;;
 esac
