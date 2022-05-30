@@ -6,6 +6,7 @@ import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.*;
+import java.io.Serial;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoField;
@@ -19,6 +20,7 @@ import static com.mingzuozhibi.commons.gson.GsonFactory.GSON;
 @NoArgsConstructor
 public class Disc extends BaseEntity {
 
+    @Serial
     private static final long serialVersionUID = 100L;
 
     public enum DiscType {

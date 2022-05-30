@@ -51,17 +51,13 @@ public class ContentService extends BaseSupport {
         waitMap.put(uuid, task);
 
         long time = Instant.now().toEpochMilli();
-        ThreadUtils.waitSecond(task, 30);
+        ThreadUtils.waitSecond(task, 15);
         long cost = Instant.now().toEpochMilli() - time;
 
         SearchTask<Content> remove = waitMap.remove(uuid);
-        if (remove == task) {
-            bind.warning("[%s][查询碟片超时][asin=%s][cost=%d ms]", getName(), asin, cost);
-        } else if (!remove.isSuccess()) {
-            String format = "[%s][查询碟片失败][asin=%s][cost=%d ms][error=%s]";
-            bind.warning(format, getName(), asin, cost, remove.getMessage());
-        } else {
-            bind.success("[%s][查询碟片成功][asin=%s][cost=%d ms]", getName(), asin, cost);
+        if (!remove.isSuccess()) {
+            bind.warning("[%s][查询碟片失败][asin=%s][cost=%d ms][error=%s]",
+                getName(), asin, cost, remove.getMessage());
         }
         return remove;
     }

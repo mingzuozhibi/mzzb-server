@@ -5,6 +5,7 @@ import com.mingzuozhibi.commons.gson.GsonIgnored;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.*;
@@ -15,6 +16,7 @@ import java.util.*;
 @NoArgsConstructor
 public class User extends BaseEntity implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 100L;
 
     public User(String username, String password, boolean enabled) {

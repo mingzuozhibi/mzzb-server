@@ -50,7 +50,7 @@ public class GroupController extends BaseController {
     @GetMapping(value = "/api/discGroups/key/{key}", produces = MEDIA_TYPE)
     public String findByKey(@PathVariable String key) {
         Optional<Group> byKey = groupRepository.findByKey(key);
-        if (!byKey.isPresent()) {
+        if (byKey.isEmpty()) {
             return paramNotExists("列表索引");
         }
         return dataResult(byKey.get());
@@ -101,7 +101,7 @@ public class GroupController extends BaseController {
             return errorResult(checks.get());
         }
         Optional<Group> byId = groupRepository.findById(id);
-        if (!byId.isPresent()) {
+        if (byId.isEmpty()) {
             return paramNotExists("列表ID");
         }
         Group group = byId.get();
@@ -129,7 +129,7 @@ public class GroupController extends BaseController {
     @DeleteMapping(value = "/api/discGroups/{id}", produces = MEDIA_TYPE)
     public String doDelete(@PathVariable("id") Long id) {
         Optional<Group> byId = groupRepository.findById(id);
-        if (!byId.isPresent()) {
+        if (byId.isEmpty()) {
             return paramNotExists("列表ID");
         }
         Group group = byId.get();
@@ -151,7 +151,7 @@ public class GroupController extends BaseController {
     @GetMapping(value = "/api/discGroups/key/{key}/discs", produces = MEDIA_TYPE)
     public String findDiscs(@PathVariable String key) {
         Optional<Group> byKey = groupRepository.findByKey(key);
-        if (!byKey.isPresent()) {
+        if (byKey.isEmpty()) {
             return paramNotExists("列表索引");
         }
         Group group = byKey.get();
@@ -165,13 +165,13 @@ public class GroupController extends BaseController {
     public synchronized String pushDiscs(@PathVariable Long gid,
                                          @PathVariable Long did) {
         Optional<Group> byGid = groupRepository.findById(gid);
-        if (!byGid.isPresent()) {
+        if (byGid.isEmpty()) {
             return paramNotExists("列表ID");
         }
         Group group = byGid.get();
 
         Optional<Disc> byDid = discRepository.findById(did);
-        if (!byDid.isPresent()) {
+        if (byDid.isEmpty()) {
             return paramNotExists("碟片ID");
         }
         Disc disc = byDid.get();
@@ -191,13 +191,13 @@ public class GroupController extends BaseController {
     public synchronized String dropDiscs(@PathVariable("gid") Long gid,
                                          @PathVariable("did") Long did) {
         Optional<Group> byGid = groupRepository.findById(gid);
-        if (!byGid.isPresent()) {
+        if (byGid.isEmpty()) {
             return paramNotExists("列表ID");
         }
         Group group = byGid.get();
 
         Optional<Disc> byDid = discRepository.findById(did);
-        if (!byDid.isPresent()) {
+        if (byDid.isEmpty()) {
             return paramNotExists("碟片ID");
         }
         Disc disc = byDid.get();

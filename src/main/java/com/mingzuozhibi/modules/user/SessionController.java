@@ -47,7 +47,7 @@ public class SessionController extends BaseController {
     @GetMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionQuery() {
         Optional<Authentication> optional = getAuthentication();
-        if (!optional.isPresent()) {
+        if (optional.isEmpty()) {
             log.debug("sessionQuery: Authentication is null");
             setAuthentication(buildGuestAuthentication());
         } else {
@@ -86,7 +86,7 @@ public class SessionController extends BaseController {
             return errorResult(checks.get());
         }
         Optional<User> byUsername = userRepository.findByUsername(form.username);
-        if (!byUsername.isPresent()) {
+        if (byUsername.isEmpty()) {
             return paramNotExists("用户名称");
         }
         User user = byUsername.get();

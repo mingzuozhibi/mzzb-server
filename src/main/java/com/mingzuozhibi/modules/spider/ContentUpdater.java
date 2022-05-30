@@ -54,7 +54,7 @@ public class ContentUpdater extends BaseSupport {
     private void updateDisc(Content content, Instant updateOn) {
         String asin = content.getAsin();
         Optional<Disc> byAsin = discRepository.findByAsin(asin);
-        if (!byAsin.isPresent()) {
+        if (byAsin.isEmpty()) {
             bind.warning("[应用碟片更新时，发现未知碟片][%s]", asin);
             return;
         }

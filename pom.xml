@@ -12,14 +12,14 @@
 
     <groupId>com.mingzuozhibi</groupId>
     <artifactId>mzzb-server</artifactId>
-    <version>2.6.0</version>
+    <version>2.7.0</version>
     <packaging>jar</packaging>
 
     <name>mzzb-server</name>
     <description>Server for mingzuozhibi.com</description>
 
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>17</java.version>
         <app.profiles>dev</app.profiles>
     </properties>
 

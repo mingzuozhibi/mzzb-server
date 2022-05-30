@@ -47,7 +47,7 @@ public class RedoController extends BaseController {
     @PostMapping(value = "/api/admin/reComputeDisc2/{id}", produces = MEDIA_TYPE)
     public String reComputeDisc2(@PathVariable Long id) {
         Optional<Disc> byId = discRepository.findById(id);
-        if (!byId.isPresent()) {
+        if (byId.isEmpty()) {
             return paramNotExists("碟片ID");
         }
         Disc disc = byId.get();

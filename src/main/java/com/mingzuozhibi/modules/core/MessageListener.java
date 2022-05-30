@@ -32,9 +32,4 @@ public class MessageListener extends BaseSupport {
         }
     }
 
-//    @RabbitListener(queues = "ActiveMQ.DLQ")
-//    public void ActiveMQ_DLQ(String json) {
-//        bind.warning("JMS <- ActiveMQ.DLQ: %s", json);
-//    }
-
 }

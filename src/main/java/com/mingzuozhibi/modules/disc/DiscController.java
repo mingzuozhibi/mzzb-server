@@ -41,7 +41,7 @@ public class DiscController extends BaseController {
     @GetMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
     public String findById(@PathVariable Long id) {
         Optional<Disc> byId = discRepository.findById(id);
-        if (!byId.isPresent()) {
+        if (byId.isEmpty()) {
             return paramNotExists("碟片ID");
         }
         return dataResult(byId.get().toJson());
@@ -51,7 +51,7 @@ public class DiscController extends BaseController {
     @GetMapping(value = "/api/discs/asin/{asin}", produces = MEDIA_TYPE)
     public String findByAsin(@PathVariable String asin) {
         Optional<Disc> byAsin = discRepository.findByAsin(asin);
-        if (!byAsin.isPresent()) {
+        if (byAsin.isEmpty()) {
             return paramNotExists("碟片ASIN");
         }
         return dataResult(byAsin.get().toJson());
@@ -61,7 +61,7 @@ public class DiscController extends BaseController {
     @GetMapping(value = "/api/discs/{id}/records", produces = MEDIA_TYPE)
     public String findRecords(@PathVariable Long id) {
         Optional<Disc> byId = discRepository.findById(id);
-        if (!byId.isPresent()) {
+        if (byId.isEmpty()) {
             return paramNotExists("碟片ID");
         }
         Disc disc = byId.get();
@@ -128,7 +128,7 @@ public class DiscController extends BaseController {
         }
         LocalDate localDate = LocalDate.parse(form.releaseDate, fmtDate);
         Optional<Disc> byId = discRepository.findById(id);
-        if (!byId.isPresent()) {
+        if (byId.isEmpty()) {
             return paramNotExists("碟片ID");
         }
         Disc disc = byId.get();
@@ -153,7 +153,7 @@ public class DiscController extends BaseController {
     public String doUpdateRank(@PathVariable("asin") String asin,
                                @PathVariable("rank") Integer rank) {
         Optional<Disc> byAsin = discRepository.findByAsin(asin);
-        if (!byAsin.isPresent()) {
+        if (byAsin.isEmpty()) {
             return paramNotExists("碟片ASIN");
         }
         Disc disc = byAsin.get();
