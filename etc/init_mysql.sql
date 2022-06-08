@@ -1,7 +1,7 @@
 DROP DATABASE IF EXISTS mzzb_server;
 DROP USER IF EXISTS 'mzzb_server'@'localhost';
 
-CREATE DATABASE mzzb_server CHARSET utf8;
+CREATE DATABASE mzzb_server;
 CREATE USER 'mzzb_server'@'localhost' IDENTIFIED BY 'mzzb_server';
 GRANT ALL PRIVILEGES ON mzzb_server.* TO 'mzzb_server'@'localhost';
 FLUSH PRIVILEGES;

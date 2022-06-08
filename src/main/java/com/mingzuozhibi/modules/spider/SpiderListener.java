@@ -1,6 +1,5 @@
 package com.mingzuozhibi.modules.spider;
 
-import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.mingzuozhibi.commons.amqp.logger.Logger;
 import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
@@ -54,10 +53,9 @@ public class SpiderListener extends BaseSupport {
 
     @RabbitListener(queues = LAST_UPDATE_DISCS)
     public void lastUpdateDiscs(String json) {
-        JsonObject object = gson.fromJson(json, JsonObject.class);
-        LocalDateTime date = gson.fromJson(object.get("date"), LocalDateTime.class);
-        TypeToken<?> token = getParameterized(ArrayList.class, Content.class);
-        List<Content> contents = gson.fromJson(object.get("updatedDiscs"), token.getType());
+        DateResult result = gson.fromJson(json, DateResult.class);
+        LocalDateTime date = result.getDate();
+        List<Content> contents = result.getResult();
         bind.debug("JMS <- %s time=%s, size=%d", LAST_UPDATE_DISCS, date.format(fmtDateTime), contents.size());
         contentUpdater.updateDiscs(contents, toInstant(date));
     }
