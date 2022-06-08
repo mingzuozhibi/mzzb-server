@@ -20,10 +20,9 @@
 
 **安装依赖**
 
-* Install OpenJDK-8
 * Install MySQL-8
-* Install ActiveMQ-5
-* Install RedisServer-6
+* Install OpenJDK-17
+* Install RabbitMQ-3
 
 **初始配置**
 
