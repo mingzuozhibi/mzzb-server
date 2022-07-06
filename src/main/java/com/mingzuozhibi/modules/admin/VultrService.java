@@ -6,33 +6,43 @@ import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.domain.Result;
 import com.mingzuozhibi.commons.utils.ThreadUtils;
+import com.mingzuozhibi.modules.core.VarableService;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.*;
+import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
 @LoggerBind(Name.SERVER_CORE)
 public class VultrService extends BaseController {
 
-    private static final String TARGET = "BCloud";
     private static final String[] REGIONS = {"atl", "dfw", "ewr", "lax", "mia", "ord", "sea", "sjc"};
+    private static final String INDEX_KEY = "VultrService.regionIndex";
+    private static final String TARGET = "BCloud";
 
     @Value("${bcloud.apikey}")
     private String vultrApiKey;
 
+    @Autowired
+    private VarableService varableService;
+
     private int regionIndex;
 
-    {
-        regionIndex = new Random().nextInt(REGIONS.length);
-        log.info("Region = %d (%s)".formatted(regionIndex, REGIONS[regionIndex]));
+    @PostConstruct
+    public void init() {
+        Optional<String> byKey = varableService.findByKey(INDEX_KEY);
+        byKey.ifPresent(varable -> regionIndex = Integer.parseInt(varable) % REGIONS.length);
+        bind.info("Vultr Instance Region = %d (%s)".formatted(regionIndex, REGIONS[regionIndex]));
     }
 
     public Result<String> deleteInstance() {
@@ -66,9 +76,7 @@ public class VultrService extends BaseController {
         try {
             bind.notify("开始创建服务器");
 
-            int keylen = vultrApiKey.length();
-            String keystr = vultrApiKey.substring(0, 2) + "**" + vultrApiKey.substring(keylen - 2);
-            log.info("bcloud.apikey={}, length={}", keystr, keylen);
+            printVultrApiKey();
 
             bind.info("正在检查服务器");
             if (getInstanceId().isPresent()) {
@@ -96,7 +104,7 @@ public class VultrService extends BaseController {
             }
 
             JsonObject payload = new JsonObject();
-            payload.addProperty("region", REGIONS[regionIndex++ % REGIONS.length]);
+            payload.addProperty("region", REGIONS[regionIndex]);
             payload.addProperty("plan", "vc2-1c-1gb");
             payload.addProperty("snapshot_id", snapshotId.get());
             payload.addProperty("backups", "disabled");
@@ -106,6 +114,10 @@ public class VultrService extends BaseController {
             payload.addProperty("hostname", TARGET);
             String payloadAsString = payload.toString();
             bind.info("服务器参数 = " + payloadAsString);
+
+            regionIndex = (regionIndex + 1) % REGIONS.length;
+            varableService.saveOrUpdate(INDEX_KEY, String.valueOf(regionIndex));
+            bind.info("Next Vultr Instance Region = %d (%s)".formatted(regionIndex, REGIONS[regionIndex]));
 
             Response response = jsoup("https://api.vultr.com/v2/instances")
                 .requestBody(payloadAsString)
@@ -122,6 +134,12 @@ public class VultrService extends BaseController {
             bind.error("创建服务器异常：" + e);
             return Result.ofError(e.toString());
         }
+    }
+
+    private void printVultrApiKey() {
+        int keylen = vultrApiKey.length();
+        String keystr = vultrApiKey.substring(0, 2) + "**" + vultrApiKey.substring(keylen - 2);
+        log.info("bcloud.apikey={}, length={}", keystr, keylen);
     }
 
     private Optional<String> getInstanceId() throws IOException {
