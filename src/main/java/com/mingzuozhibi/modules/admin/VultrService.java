@@ -104,7 +104,7 @@ public class VultrService extends BaseController {
             payload.addProperty("firewall_group_id", firewallId.get());
             payload.addProperty("label", TARGET);
             payload.addProperty("hostname", TARGET);
-            String payloadAsString = payload.getAsString();
+            String payloadAsString = payload.toString();
             bind.info("服务器参数 = " + payloadAsString);
 
             Response response = jsoup("https://api.vultr.com/v2/instances")
@@ -156,7 +156,7 @@ public class VultrService extends BaseController {
         String body = jsoup("https://api.vultr.com/v2/firewalls")
             .get().body().text();
         JsonObject root = gson.fromJson(body, JsonObject.class);
-        JsonArray firewalls = root.get("firewalls").getAsJsonArray();
+        JsonArray firewalls = root.get("firewall_groups").getAsJsonArray();
         for (JsonElement e : firewalls) {
             JsonObject firewall = e.getAsJsonObject();
             if (Objects.equals(firewall.get("description").getAsString(), TARGET)) {
