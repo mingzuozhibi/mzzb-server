@@ -25,7 +25,7 @@ public class VultrService extends BaseController {
     private static final String TARGET = "BCloud";
     private static final String[] REGIONS = {"atl", "dfw", "ewr", "lax", "mia", "ord", "sea", "sjc"};
 
-    @Value("${vultr.api.key}")
+    @Value("${bcloud.apikey}")
     private String vultrApiKey;
 
     private int regionIndex;
@@ -68,7 +68,7 @@ public class VultrService extends BaseController {
 
             int keylen = vultrApiKey.length();
             String keystr = vultrApiKey.substring(0, 2) + "**" + vultrApiKey.substring(keylen - 2);
-            log.info("vultr.api.key={}, length={}", keystr, keylen);
+            log.info("bcloud.apikey={}, length={}", keystr, keylen);
 
             bind.info("正在检查服务器");
             if (getInstanceId().isPresent()) {

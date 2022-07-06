@@ -5,4 +5,4 @@ rabbitmq.username=guest
 rabbitmq.password=guest
 rabbitmq.host=127.0.0.1
 rabbitmq.port=5672
-vultr.api.key=<your key>
+bcloud.apikey=<your key>
