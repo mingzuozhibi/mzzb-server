@@ -36,6 +36,11 @@ public class VultrService extends BaseController {
     public Result<String> createInstance() {
         try {
             bind.notify("开始创建服务器");
+
+            int keylen = vultrApiKey.length();
+            String keystr = vultrApiKey.substring(0, 2) + "**" + vultrApiKey.substring(keylen - 2);
+            log.info("vultr.api.key={}, length={}", keystr, keylen);
+
             bind.info("正在检查服务器");
             if (hasInstance()) {
                 bind.info("检查到服务器已存在");
