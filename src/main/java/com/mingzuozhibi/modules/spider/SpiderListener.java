@@ -4,6 +4,7 @@ import com.google.gson.reflect.TypeToken;
 import com.mingzuozhibi.commons.amqp.logger.Logger;
 import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseSupport;
+import com.mingzuozhibi.modules.admin.VultrService;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,9 @@ import static java.util.Collections.synchronizedList;
 @Component
 @LoggerBind(Name.SERVER_DISC)
 public class SpiderListener extends BaseSupport {
+
+    @Autowired
+    private VultrService vultrService;
 
     @Autowired
     private ContentUpdater contentUpdater;
@@ -49,6 +53,7 @@ public class SpiderListener extends BaseSupport {
         List<Content> contents = gson.fromJson(json, token.getType());
         bind.debug("JMS <- %s size=%d", PREV_UPDATE_DISCS, contents.size());
         contentUpdater.updateDiscs(contents, Instant.now());
+        vultrService.deleteInstance();
     }
 
     @RabbitListener(queues = LAST_UPDATE_DISCS)

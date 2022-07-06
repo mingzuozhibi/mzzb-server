@@ -5,8 +5,10 @@ import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
 import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.domain.Result;
+import com.mingzuozhibi.commons.utils.ThreadUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
+import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +35,33 @@ public class VultrService extends BaseController {
         log.info("Region = %d (%s)".formatted(regionIndex, REGIONS[regionIndex]));
     }
 
+    public Result<String> deleteInstance() {
+        try {
+            bind.notify("开始删除服务器");
+
+            bind.info("正在获取实例ID");
+            Optional<String> instanceId = getInstanceId();
+            if (instanceId.isEmpty()) {
+                bind.info("未能获取实例ID");
+                return Result.ofError("Can not find instance " + TARGET);
+            }
+
+            Response response = jsoup("https://api.vultr.com/v2/instances/" + instanceId.get())
+                .method(Method.DELETE)
+                .execute();
+            if (response.statusCode() == 204) {
+                bind.success("删除服务器成功");
+                return Result.ofData("Delete instance success");
+            } else {
+                bind.warning("删除服务器失败：" + response.statusMessage());
+                return Result.ofError("Delete instance error: " + response.statusMessage());
+            }
+        } catch (IOException e) {
+            bind.error("删除服务器异常：" + e);
+            return Result.ofError(e.toString());
+        }
+    }
+
     public Result<String> createInstance() {
         try {
             bind.notify("开始创建服务器");
@@ -42,9 +71,14 @@ public class VultrService extends BaseController {
             log.info("vultr.api.key={}, length={}", keystr, keylen);
 
             bind.info("正在检查服务器");
-            if (hasInstance()) {
+            if (getInstanceId().isPresent()) {
                 bind.info("检查到服务器已存在");
-                return Result.ofError("instance already exists");
+                Result<String> result = deleteInstance();
+                if (result.isSuccess()) {
+                    ThreadUtils.threadSleep(60);
+                } else {
+                    return Result.ofError("Instance can not delete: " + result.getMessage());
+                }
             }
 
             bind.info("正在获取快照ID");
@@ -75,6 +109,7 @@ public class VultrService extends BaseController {
 
             Response response = jsoup("https://api.vultr.com/v2/instances")
                 .requestBody(payloadAsString)
+                .method(Method.POST)
                 .execute();
             if (response.statusCode() == 202) {
                 bind.success("创建服务器成功");
@@ -89,7 +124,7 @@ public class VultrService extends BaseController {
         }
     }
 
-    private boolean hasInstance() throws IOException {
+    private Optional<String> getInstanceId() throws IOException {
         String body = jsoup("https://api.vultr.com/v2/instances")
             .get().body().text();
         JsonObject root = gson.fromJson(body, JsonObject.class);
@@ -97,10 +132,10 @@ public class VultrService extends BaseController {
         for (JsonElement e : instances) {
             JsonObject instance = e.getAsJsonObject();
             if (Objects.equals(instance.get("label").getAsString(), TARGET)) {
-                return true;
+                return Optional.ofNullable(instance.get("id").getAsString());
             }
         }
-        return false;
+        return Optional.empty();
     }
 
     private Optional<String> getSnapshotId() throws IOException {
