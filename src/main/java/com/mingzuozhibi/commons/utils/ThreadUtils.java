@@ -3,6 +3,7 @@ package com.mingzuozhibi.commons.utils;
 import com.mingzuozhibi.commons.amqp.logger.Logger;
 
 import java.time.Instant;
+import java.util.concurrent.TimeUnit;
 
 public abstract class ThreadUtils {
 
@@ -12,6 +13,7 @@ public abstract class ThreadUtils {
                 callback.call();
             } catch (Exception e) {
                 bind.error("runWithDaemon(name=%s): %s", name, e);
+                e.printStackTrace();
             }
         });
         thread.setDaemon(true);
@@ -45,6 +47,13 @@ public abstract class ThreadUtils {
     public static void notifyAll(Object lock) {
         synchronized (lock) {
             lock.notifyAll();
+        }
+    }
+
+    public static void threadSleep(int timeout) {
+        try {
+            TimeUnit.SECONDS.sleep(timeout);
+        } catch (InterruptedException ignored) {
         }
     }
 
