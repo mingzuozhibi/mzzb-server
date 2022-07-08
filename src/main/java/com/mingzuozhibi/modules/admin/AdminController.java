@@ -1,5 +1,6 @@
 package com.mingzuozhibi.modules.admin;
 
+import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
 import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseController;
@@ -52,6 +53,7 @@ public class AdminController extends BaseController {
             Result<String> result = vultrService.createInstance();
             if (result.isSuccess()) {
                 Set<String> asins = groupService.findNeedUpdateAsinsSorted();
+                vultrService.setTaskCount(asins.size());
                 amqpSender.send(NEED_UPDATE_ASINS, gson.toJson(asins));
                 bind.debug("JMS -> %s size=%d", NEED_UPDATE_ASINS, asins.size());
             }
@@ -64,8 +66,8 @@ public class AdminController extends BaseController {
     @GetMapping(value = "/admin/runAutomaticTasks3", produces = MEDIA_TYPE)
     public void runAutomaticTasks3() {
         runWithDaemon(bind, "确认服务器已删除", () -> {
-            Optional<String> instanceId = vultrService.getInstanceId();
-            if (instanceId.isPresent()) {
+            Optional<JsonObject> instance = vultrService.getInstance();
+            if (instance.isPresent()) {
                 vultrService.deleteInstance();
             }
         });

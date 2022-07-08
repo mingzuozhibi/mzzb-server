@@ -7,6 +7,7 @@ import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.domain.Result;
 import com.mingzuozhibi.commons.utils.ThreadUtils;
 import com.mingzuozhibi.modules.core.VarableService;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.Connection.Method;
@@ -18,8 +19,12 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Optional;
+
+import static com.mingzuozhibi.support.FileIoUtils.writeLine;
 
 @Slf4j
 @Service
@@ -43,6 +48,12 @@ public class VultrService extends BaseController {
 
     private int regionIndex;
 
+    @Setter
+    private int taskCount;
+
+    @Setter
+    private int doneCount;
+
     @PostConstruct
     public void init() {
         Optional<String> byKey = varableService.findByKey(INDEX_KEY);
@@ -55,13 +66,16 @@ public class VultrService extends BaseController {
             bind.notify("开始删除服务器");
 
             bind.info("正在获取实例ID");
-            Optional<String> instanceId = getInstanceId();
-            if (instanceId.isEmpty()) {
+            Optional<JsonObject> instance = getInstance();
+            if (instance.isEmpty()) {
                 bind.info("未能获取实例ID");
                 return Result.ofError("Can not find instance " + TARGET);
             }
 
-            Response response = jsoup("https://api.vultr.com/v2/instances/" + instanceId.get())
+            printRegionMainIp(instance.get());
+
+            String instanceId = instance.get().get("id").getAsString();
+            Response response = jsoup("https://api.vultr.com/v2/instances/" + instanceId)
                 .method(Method.DELETE)
                 .execute();
             if (response.statusCode() == 204) {
@@ -84,7 +98,8 @@ public class VultrService extends BaseController {
             printVultrApiKey();
 
             bind.info("正在检查服务器");
-            if (getInstanceId().isPresent()) {
+            Optional<JsonObject> instance = getInstance();
+            if (instance.isPresent()) {
                 bind.info("检查到服务器已存在");
                 Result<String> result = deleteInstance();
                 if (result.isSuccess()) {
@@ -130,9 +145,6 @@ public class VultrService extends BaseController {
                 .execute();
             if (response.statusCode() == 202) {
                 bind.success("创建服务器成功");
-                JsonObject root = gson.fromJson(response.body(), JsonObject.class);
-                JsonObject instance = root.get("instance").getAsJsonObject();
-                printRegionMainIp(instance);
                 return Result.ofData("Create instance success");
             } else {
                 bind.warning("创建服务器失败：" + response.statusMessage());
@@ -151,13 +163,20 @@ public class VultrService extends BaseController {
     }
 
     private void printRegionMainIp(JsonObject instance) {
-        log.info("Create Instance: main_ip = %s, region = %s".formatted(
-            instance.get("main_ip").getAsString(),
-            instance.get("region").getAsString()
+        String mainIp = instance.get("main_ip").getAsString();
+        String region = instance.get("region").getAsString();
+        log.info("Instance Status: mainIp = %s, region = %d(%s), task = %d, done = %d".formatted(
+            mainIp, regionIndex, region, taskCount, doneCount
         ));
+        writeLine("var/instance.log", "[%s] mainIp = %s, region = %d(%s), task = %d, done = %d".formatted(
+            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+            mainIp, regionIndex, region, taskCount, doneCount
+        ));
+        taskCount = 0;
+        doneCount = 0;
     }
 
-    public Optional<String> getInstanceId() throws IOException {
+    public Optional<JsonObject> getInstance() throws IOException {
         String body = jsoup("https://api.vultr.com/v2/instances")
             .get().body().text();
         JsonObject root = gson.fromJson(body, JsonObject.class);
@@ -165,7 +184,7 @@ public class VultrService extends BaseController {
         for (JsonElement e : instances) {
             JsonObject instance = e.getAsJsonObject();
             if (Objects.equals(instance.get("label").getAsString(), TARGET)) {
-                return Optional.ofNullable(instance.get("id").getAsString());
+                return Optional.of(instance);
             }
         }
         return Optional.empty();

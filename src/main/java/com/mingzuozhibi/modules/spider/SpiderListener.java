@@ -53,6 +53,7 @@ public class SpiderListener extends BaseSupport {
         List<Content> contents = gson.fromJson(json, token.getType());
         bind.debug("JMS <- %s size=%d", PREV_UPDATE_DISCS, contents.size());
         contentUpdater.updateDiscs(contents, Instant.now());
+        vultrService.setDoneCount(contents.size());
         vultrService.deleteInstance();
     }
 
