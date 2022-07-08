@@ -26,7 +26,12 @@ import java.util.Optional;
 @LoggerBind(Name.SERVER_CORE)
 public class VultrService extends BaseController {
 
-    private static final String[] REGIONS = {"atl", "dfw", "ewr", "lax", "mia", "ord", "sea", "sjc"};
+    private static final String[] REGIONS =
+        {
+            "atl", "dfw", "ewr", "lax", "mia", "ord", "sea", "sjc", "mex", "yto",
+            "ams", "cdg", "fra", "lhr", "sto", "waw", "mel", "syd", "sgp", "nrt"
+        };
+
     private static final String INDEX_KEY = "VultrService.regionIndex";
     private static final String TARGET = "BCloud";
 
