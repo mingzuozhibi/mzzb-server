@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Optional;
 import java.util.Set;
 
 import static com.mingzuozhibi.commons.amqp.AmqpEnums.NEED_UPDATE_ASINS;
@@ -56,6 +57,17 @@ public class AdminController extends BaseController {
             }
 
             bind.info("每4小时自动任务：完成");
+        });
+    }
+
+    @Scheduled(cron = "0 55 0/4 * * ?")
+    @GetMapping(value = "/admin/runAutomaticTasks3", produces = MEDIA_TYPE)
+    public void runAutomaticTasks3() {
+        runWithDaemon(bind, "确认服务器已删除", () -> {
+            Optional<String> instanceId = vultrService.getInstanceId();
+            if (instanceId.isPresent()) {
+                vultrService.deleteInstance();
+            }
         });
     }
 

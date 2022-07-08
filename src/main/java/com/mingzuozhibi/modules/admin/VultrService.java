@@ -125,6 +125,9 @@ public class VultrService extends BaseController {
                 .execute();
             if (response.statusCode() == 202) {
                 bind.success("创建服务器成功");
+                JsonObject root = gson.fromJson(response.body(), JsonObject.class);
+                JsonObject instance = root.get("instance").getAsJsonObject();
+                printRegionMainIp(instance);
                 return Result.ofData("Create instance success");
             } else {
                 bind.warning("创建服务器失败：" + response.statusMessage());
@@ -142,7 +145,14 @@ public class VultrService extends BaseController {
         log.info("bcloud.apikey={}, length={}", keystr, keylen);
     }
 
-    private Optional<String> getInstanceId() throws IOException {
+    private void printRegionMainIp(JsonObject instance) {
+        log.info("Create Instance: main_ip = %s, region = %s".formatted(
+            instance.get("main_ip").getAsString(),
+            instance.get("region").getAsString()
+        ));
+    }
+
+    public Optional<String> getInstanceId() throws IOException {
         String body = jsoup("https://api.vultr.com/v2/instances")
             .get().body().text();
         JsonObject root = gson.fromJson(body, JsonObject.class);
