@@ -7,6 +7,7 @@ import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.domain.Result;
 import com.mingzuozhibi.commons.utils.ThreadUtils;
 import com.mingzuozhibi.modules.core.VarableService;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.Connection.Method;
@@ -18,15 +19,24 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Optional;
+
+import static com.mingzuozhibi.support.FileIoUtils.writeLine;
 
 @Slf4j
 @Service
 @LoggerBind(Name.SERVER_CORE)
 public class VultrService extends BaseController {
 
-    private static final String[] REGIONS = {"atl", "dfw", "ewr", "lax", "mia", "ord", "sea", "sjc"};
+    private static final String[] REGIONS =
+        {
+            "atl", "dfw", "ewr", "lax", "mia", "ord", "sea", "sjc", "mex", "yto",
+            "ams", "cdg", "fra", "lhr", "sto", "waw", "mel", "syd", "sgp", "nrt"
+        };
+
     private static final String INDEX_KEY = "VultrService.regionIndex";
     private static final String TARGET = "BCloud";
 
@@ -37,6 +47,12 @@ public class VultrService extends BaseController {
     private VarableService varableService;
 
     private int regionIndex;
+
+    @Setter
+    private int taskCount;
+
+    @Setter
+    private int doneCount;
 
     @PostConstruct
     public void init() {
@@ -50,13 +66,16 @@ public class VultrService extends BaseController {
             bind.notify("开始删除服务器");
 
             bind.info("正在获取实例ID");
-            Optional<String> instanceId = getInstanceId();
-            if (instanceId.isEmpty()) {
+            Optional<JsonObject> instance = getInstance();
+            if (instance.isEmpty()) {
                 bind.info("未能获取实例ID");
                 return Result.ofError("Can not find instance " + TARGET);
             }
 
-            Response response = jsoup("https://api.vultr.com/v2/instances/" + instanceId.get())
+            printRegionMainIp(instance.get());
+
+            String instanceId = instance.get().get("id").getAsString();
+            Response response = jsoup("https://api.vultr.com/v2/instances/" + instanceId)
                 .method(Method.DELETE)
                 .execute();
             if (response.statusCode() == 204) {
@@ -79,7 +98,8 @@ public class VultrService extends BaseController {
             printVultrApiKey();
 
             bind.info("正在检查服务器");
-            if (getInstanceId().isPresent()) {
+            Optional<JsonObject> instance = getInstance();
+            if (instance.isPresent()) {
                 bind.info("检查到服务器已存在");
                 Result<String> result = deleteInstance();
                 if (result.isSuccess()) {
@@ -142,7 +162,21 @@ public class VultrService extends BaseController {
         log.info("bcloud.apikey={}, length={}", keystr, keylen);
     }
 
-    private Optional<String> getInstanceId() throws IOException {
+    private void printRegionMainIp(JsonObject instance) {
+        String mainIp = instance.get("main_ip").getAsString();
+        String region = instance.get("region").getAsString();
+        log.info("Instance Status: mainIp = %s, region = %d(%s), task = %d, done = %d".formatted(
+            mainIp, regionIndex, region, taskCount, doneCount
+        ));
+        writeLine("var/instance.log", "[%s] mainIp = %s, region = %d(%s), task = %d, done = %d".formatted(
+            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+            mainIp, regionIndex, region, taskCount, doneCount
+        ));
+        taskCount = 0;
+        doneCount = 0;
+    }
+
+    public Optional<JsonObject> getInstance() throws IOException {
         String body = jsoup("https://api.vultr.com/v2/instances")
             .get().body().text();
         JsonObject root = gson.fromJson(body, JsonObject.class);
@@ -150,7 +184,7 @@ public class VultrService extends BaseController {
         for (JsonElement e : instances) {
             JsonObject instance = e.getAsJsonObject();
             if (Objects.equals(instance.get("label").getAsString(), TARGET)) {
-                return Optional.ofNullable(instance.get("id").getAsString());
+                return Optional.of(instance);
             }
         }
         return Optional.empty();
