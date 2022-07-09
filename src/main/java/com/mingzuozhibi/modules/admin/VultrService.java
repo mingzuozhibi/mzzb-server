@@ -58,7 +58,7 @@ public class VultrService extends BaseController {
     public void init() {
         Optional<String> byKey = varableService.findByKey(INDEX_KEY);
         byKey.ifPresent(varable -> regionIndex = Integer.parseInt(varable) % REGIONS.length);
-        bind.info("Vultr Instance Region = %d (%s)".formatted(regionIndex, REGIONS[regionIndex]));
+        log.info("Vultr Instance Region = %d (%s)".formatted(regionIndex, REGIONS[regionIndex]));
     }
 
     public Result<String> deleteInstance() {
