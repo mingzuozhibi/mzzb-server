@@ -20,10 +20,10 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDateTime2;
 import static com.mingzuozhibi.support.FileIoUtils.writeLine;
 
 @Slf4j
@@ -58,7 +58,7 @@ public class VultrService extends BaseController {
     public void init() {
         Optional<String> byKey = varableService.findByKey(INDEX_KEY);
         byKey.ifPresent(varable -> regionIndex = Integer.parseInt(varable) % REGIONS.length);
-        bind.info("Vultr Instance Region = %d (%s)".formatted(regionIndex, REGIONS[regionIndex]));
+        log.info("Vultr Instance Region = %d (%s)".formatted(regionIndex, REGIONS[regionIndex]));
     }
 
     public Result<String> deleteInstance() {
@@ -163,15 +163,23 @@ public class VultrService extends BaseController {
     }
 
     private void printRegionMainIp(JsonObject instance) {
-        String mainIp = instance.get("main_ip").getAsString();
-        String region = instance.get("region").getAsString();
-        log.info("Instance Status: mainIp = %s, region = %d(%s), task = %d, done = %d".formatted(
-            mainIp, regionIndex, region, taskCount, doneCount
-        ));
-        writeLine("var/instance.log", "[%s] mainIp = %s, region = %d(%s), task = %d, done = %d".formatted(
-            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-            mainIp, regionIndex, region, taskCount, doneCount
-        ));
+        var mainIp = instance.get("main_ip").getAsString();
+        var region = instance.get("region").getAsString();
+        var nextCount = taskCount - doneCount;
+        var status = "mainIp = %s, region = %d(%s), task = %d, done = %d, next = %d".formatted(
+            mainIp, regionIndex, region, taskCount, doneCount, nextCount
+        );
+
+        if (nextCount > 25 && taskCount > 100) {
+            log.warn("Instance Status: %s".formatted(status));
+            bind.warning("抓取状态异常：%s".formatted(status));
+        } else {
+            log.info("Instance Status: %s".formatted(status));
+        }
+
+        var datetime = LocalDateTime.now().format(fmtDateTime2);
+        writeLine("var/instance.log", "[%s] %s".formatted(datetime, status));
+
         taskCount = 0;
         doneCount = 0;
     }
