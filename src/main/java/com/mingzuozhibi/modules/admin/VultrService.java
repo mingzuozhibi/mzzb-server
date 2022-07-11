@@ -170,7 +170,7 @@ public class VultrService extends BaseController {
             mainIp, regionIndex, region, taskCount, doneCount, nextCount
         );
 
-        if (nextCount > 5 && taskCount > 200) {
+        if (nextCount > 25 && taskCount > 100) {
             log.warn("Instance Status: %s".formatted(status));
             bind.warning("抓取状态异常：%s".formatted(status));
         } else {
