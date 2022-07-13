@@ -2,6 +2,7 @@ package com.mingzuozhibi.commons.base;
 
 import com.mingzuozhibi.commons.domain.Result;
 import com.mingzuozhibi.commons.domain.ResultPage;
+import com.mingzuozhibi.commons.utils.LoggerUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
@@ -25,6 +26,7 @@ public abstract class BaseController extends BaseSupport {
         if (e instanceof AuthenticationException) {
             throw e;
         }
+        LoggerUtils.logRequestIfExists();
         log.warn("errorHandler", e);
         return errorResult(e.toString());
     }
