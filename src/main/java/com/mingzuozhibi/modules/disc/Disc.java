@@ -79,7 +79,7 @@ public class Disc extends BaseEntity {
 
     @Transient
     public String getLogName() {
-        if (StringUtils.isNotEmpty(titlePc)) {
+        if (StringUtils.isNotBlank(titlePc)) {
             return "(%s)%s".formatted(asin, titlePc);
         } else {
             return "(%s)%s".formatted(asin, title);
