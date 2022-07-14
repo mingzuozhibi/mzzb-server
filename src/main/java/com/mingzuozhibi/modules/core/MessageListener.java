@@ -22,13 +22,13 @@ public class MessageListener extends BaseSupport {
     public void moduleMessage(String json) {
         Message message = gson.fromJson(json, Message.class);
         if (message.getText().length() > 1000) {
-            log.info("saveMessage({})", message);
+            log.info("moduleMessage(json=%s)".formatted(message));
             message.setText(message.getText().substring(0, 1000));
         }
         try {
             messageRepository.save(message.withAccept());
         } catch (Exception e) {
-            log.warn("saveMessage({}): {}", message, e);
+            log.warn("moduleMessage(json=%s): %s".formatted(message, e));
         }
     }
 

@@ -1,5 +1,6 @@
 package com.mingzuozhibi.configs;
 
+import com.mingzuozhibi.commons.utils.LoggerUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
@@ -14,7 +15,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
 
 import static com.mingzuozhibi.commons.base.BaseSupport.errorResult;
 
@@ -25,25 +25,17 @@ public class SecurityHandler implements AuthenticationEntryPoint, AccessDeniedHa
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request, response));
-        log.info("未登录访问：{} {}", request.getMethod(), request.getServletPath());
-        logRequestHeaders(request);
+        log.info("未登录访问：%s %s".formatted(request.getMethod(), request.getServletPath()));
+        LoggerUtils.logRequestIfExists();
         responseText(response, errorResult("你必须登入才能访问这些资源"));
     }
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request, response));
-        log.info("无权限访问：{} {}", request.getMethod(), request.getServletPath());
-        logRequestHeaders(request);
+        log.info("无权限访问：%s %s".formatted(request.getMethod(), request.getServletPath()));
+        LoggerUtils.logRequestIfExists();
         responseText(response, errorResult("你的权限不足以访问这些资源"));
-    }
-
-    private void logRequestHeaders(HttpServletRequest request) {
-        Enumeration<String> names = request.getHeaderNames();
-        while (names.hasMoreElements()) {
-            String name = names.nextElement();
-            log.debug("{}: {}", name, request.getHeader(name));
-        }
     }
 
     public static void responseText(HttpServletResponse response, String content) throws IOException {

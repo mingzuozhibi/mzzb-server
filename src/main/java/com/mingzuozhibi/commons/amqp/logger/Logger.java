@@ -41,28 +41,4 @@ public class Logger {
         amqpSender.info(name, ERROR, text);
     }
 
-    public void debug(String format, Object... args) {
-        amqpSender.info(name, DEBUG, String.format(format, args));
-    }
-
-    public void info(String format, Object... args) {
-        amqpSender.info(name, INFO, String.format(format, args));
-    }
-
-    public void notify(String format, Object... args) {
-        amqpSender.info(name, NOTIFY, String.format(format, args));
-    }
-
-    public void success(String format, Object... args) {
-        amqpSender.info(name, SUCCESS, String.format(format, args));
-    }
-
-    public void warning(String format, Object... args) {
-        amqpSender.info(name, WARNING, String.format(format, args));
-    }
-
-    public void error(String format, Object... args) {
-        amqpSender.info(name, ERROR, String.format(format, args));
-    }
-
 }

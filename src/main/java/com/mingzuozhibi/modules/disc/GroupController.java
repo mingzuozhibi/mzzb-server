@@ -136,8 +136,7 @@ public class GroupController extends BaseController {
         if (discRepository.countByGroup(group) > 0) {
             bind.warning(logDelete("列表", group.getTitle(), gson.toJson(group)));
             group.getDiscs().forEach(disc -> {
-                String format = "[记录删除的碟片][ASIN=%s][NAME=%s]";
-                bind.debug(String.format(format, disc.getAsin(), disc.getLogName()));
+                bind.debug("[记录删除的碟片][ASIN=%s][NAME=%s]".formatted(disc.getAsin(), disc.getLogName()));
             });
         } else {
             bind.notify(logDelete("列表", group.getTitle(), gson.toJson(group)));

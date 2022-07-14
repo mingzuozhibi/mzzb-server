@@ -159,7 +159,7 @@ public class VultrService extends BaseController {
     private void printVultrApiKey() {
         int keylen = vultrApiKey.length();
         String keystr = vultrApiKey.substring(0, 2) + "**" + vultrApiKey.substring(keylen - 2);
-        log.info("bcloud.apikey={}, length={}", keystr, keylen);
+        log.info("bcloud.apikey=%s, length=%d".formatted(keystr, keylen));
     }
 
     private void printRegionMainIp(JsonObject instance) {

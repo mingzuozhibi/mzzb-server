@@ -56,8 +56,7 @@ public class ContentService extends BaseSupport {
 
         SearchTask<Content> remove = waitMap.remove(uuid);
         if (!remove.isSuccess()) {
-            bind.warning("[%s][查询碟片失败][asin=%s][cost=%d ms][error=%s]",
-                getName(), asin, cost, remove.getMessage());
+            bind.warning("[%s][查询碟片失败][asin=%s][cost=%d ms][error=%s]".formatted(getName(), asin, cost, remove.getMessage()));
         }
         return remove;
     }

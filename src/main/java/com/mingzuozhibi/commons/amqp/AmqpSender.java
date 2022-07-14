@@ -21,7 +21,7 @@ public class AmqpSender {
 
     public void info(Name name, Type type, String text) {
         AmqpLogger amqpLogger = new AmqpLogger(name, type, text);
-        log.info("JMS -> {} msg={}", MODULE_MESSAGE, amqpLogger);
+        log.info("JMS -> %s msg=%s".formatted(MODULE_MESSAGE, amqpLogger));
         send(MODULE_MESSAGE, GSON.toJson(amqpLogger));
     }
 
@@ -31,8 +31,7 @@ public class AmqpSender {
                 template.convertAndSend(destination, json);
                 break;
             } catch (AmqpException e) {
-                String format = "convertAndSend(destination=%s, json=%s)";
-                log.debug(String.format(format, destination, json), e);
+                log.debug("convertAndSend(destination=%s, json=%s)".formatted(destination, json), e);
             }
         }
     }

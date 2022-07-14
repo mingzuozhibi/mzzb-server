@@ -43,7 +43,7 @@ public class SpiderListener extends BaseSupport {
     public void doneUpdateDiscs(String json) {
         TypeToken<?> token = getParameterized(ArrayList.class, Content.class);
         List<Content> contents = gson.fromJson(json, token.getType());
-        bind.debug("JMS <- %s size=%d", DONE_UPDATE_DISCS, contents.size());
+        bind.debug("JMS <- %s size=%d".formatted(DONE_UPDATE_DISCS, contents.size()));
         contentUpdater.updateDiscs(contents, Instant.now());
     }
 
@@ -51,7 +51,7 @@ public class SpiderListener extends BaseSupport {
     public void prevUpdateDiscs(String json) {
         TypeToken<?> token = getParameterized(ArrayList.class, Content.class);
         List<Content> contents = gson.fromJson(json, token.getType());
-        bind.debug("JMS <- %s size=%d", PREV_UPDATE_DISCS, contents.size());
+        bind.debug("JMS <- %s size=%d".formatted(PREV_UPDATE_DISCS, contents.size()));
         contentUpdater.updateDiscs(contents, Instant.now());
         vultrService.setDoneCount(contents.size());
         vultrService.deleteInstance();
@@ -62,7 +62,7 @@ public class SpiderListener extends BaseSupport {
         DateResult result = gson.fromJson(json, DateResult.class);
         LocalDateTime date = result.getDate();
         List<Content> contents = result.getResult();
-        bind.debug("JMS <- %s time=%s, size=%d", LAST_UPDATE_DISCS, date.format(fmtDateTime), contents.size());
+        bind.debug("JMS <- %s time=%s, size=%d".formatted(LAST_UPDATE_DISCS, date.format(fmtDateTime), contents.size()));
         contentUpdater.updateDiscs(contents, toInstant(date));
     }
 
@@ -91,9 +91,9 @@ public class SpiderListener extends BaseSupport {
         ArrayList<History> histories = new ArrayList<>(toReportList);
         histories.forEach(history -> {
             String format = "[发现新碟片][asin=%s][type=%s][title=%s]";
-            logger.success(format, history.getAsin(), history.getType(), history.getTitle());
+            logger.success(format.formatted(history.getAsin(), history.getType(), history.getTitle()));
         });
-        logger.notify("发现新碟片%d个", histories.size());
+        logger.notify("发现新碟片%d个".formatted(histories.size()));
         toReportList.removeAll(histories);
     }
 

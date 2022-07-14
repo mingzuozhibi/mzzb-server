@@ -27,7 +27,7 @@ public class AmqpLogger {
     private Instant createOn;
 
     public String toString() {
-        return String.format("[%s][%s][%s]", type, name, text);
+        return "[%s][%s][%s]".formatted(type, name, text);
     }
 
 }
