@@ -12,7 +12,7 @@ public abstract class ThreadUtils {
             try {
                 callback.call();
             } catch (Exception e) {
-                bind.error("runWithDaemon(name=%s): %s", name, e);
+                bind.error("runWithDaemon(name=%s): %s".formatted(name, e));
                 e.printStackTrace();
             }
         });

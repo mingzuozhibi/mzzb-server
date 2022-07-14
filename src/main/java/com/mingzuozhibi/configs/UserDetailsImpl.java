@@ -52,6 +52,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public String toString() {
-        return String.format("UserDetails[name:%s,enabled:%s]", getUsername(), isEnabled());
+        return "UserDetails[name:%s,enabled:%s]".formatted(getUsername(), isEnabled());
     }
+
 }

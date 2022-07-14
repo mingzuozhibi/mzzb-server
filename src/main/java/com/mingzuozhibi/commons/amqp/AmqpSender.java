@@ -31,8 +31,7 @@ public class AmqpSender {
                 template.convertAndSend(destination, json);
                 break;
             } catch (AmqpException e) {
-                String format = "convertAndSend(destination=%s, json=%s)";
-                log.debug(String.format(format, destination, json), e);
+                log.debug("convertAndSend(destination=%s, json=%s)".formatted(destination, json), e);
             }
         }
     }

@@ -55,7 +55,7 @@ public class AdminController extends BaseController {
                 Set<String> asins = groupService.findNeedUpdateAsinsSorted();
                 vultrService.setTaskCount(asins.size());
                 amqpSender.send(NEED_UPDATE_ASINS, gson.toJson(asins));
-                bind.debug("JMS -> %s size=%d", NEED_UPDATE_ASINS, asins.size());
+                bind.debug("JMS -> %s size=%d".formatted(NEED_UPDATE_ASINS, asins.size()));
             }
 
             bind.info("每4小时自动任务：完成");
