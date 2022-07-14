@@ -26,7 +26,7 @@ public class LoggerAuto implements BeanPostProcessor {
                 Name name = loggerBind != null ? loggerBind.value() : Name.DEFAULT;
                 Method setBind = beanClass.getMethod("setBind", Logger.class);
                 setBind.invoke(bean, amqpSender.bind(name));
-                log.debug("JmsBind: bean={}, name={}", beanName, name.name());
+                log.debug("LoggerBind: bean=%s, name=%s".formatted(beanName, name.name()));
             } catch (Exception ignored) {
             }
         }

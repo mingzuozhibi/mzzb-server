@@ -23,7 +23,7 @@ public class RecordCompute extends BaseSupport {
     public void computeDisc(Disc disc) {
         List<DateRecord> records = recordService.findDateRecords(disc);
         int size = records.size();
-        log.debug("[计算碟片][共{}个][{}]", size, disc.getLogName());
+        log.debug("[计算碟片][共%d个][%s]".formatted(size, disc.getLogName()));
         records.forEach(record0 -> {
             LocalDate date = record0.getDate();
             DateRecord record1 = recordService.getDateRecord(disc, date.minusDays(1));
@@ -43,7 +43,7 @@ public class RecordCompute extends BaseSupport {
     @Transactional
     public void computeDate(LocalDate date) {
         List<DateRecord> records = recordService.findDateRecords(date);
-        log.debug("[计算碟片][共{}个]", records.size());
+        log.debug("[计算碟片][共%d个]".formatted(records.size()));
         records.forEach(record0 -> {
             Disc disc = record0.getDisc();
             DateRecord record1 = recordService.getDateRecord(disc, date.minusDays(1));

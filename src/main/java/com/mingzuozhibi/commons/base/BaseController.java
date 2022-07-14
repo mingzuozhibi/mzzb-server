@@ -27,7 +27,7 @@ public abstract class BaseController extends BaseSupport {
             throw e;
         }
         LoggerUtils.logRequestIfExists();
-        log.warn("errorHandler", e);
+        log.warn("errorHandler(e=%s)".formatted(e), e);
         return errorResult(e.toString());
     }
 

@@ -21,7 +21,7 @@ public class AmqpSender {
 
     public void info(Name name, Type type, String text) {
         AmqpLogger amqpLogger = new AmqpLogger(name, type, text);
-        log.info("JMS -> {} msg={}", MODULE_MESSAGE, amqpLogger);
+        log.info("JMS -> %s msg=%s".formatted(MODULE_MESSAGE, amqpLogger));
         send(MODULE_MESSAGE, GSON.toJson(amqpLogger));
     }
 
