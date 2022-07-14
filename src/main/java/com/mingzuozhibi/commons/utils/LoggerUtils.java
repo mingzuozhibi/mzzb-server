@@ -5,8 +5,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
-import java.util.Enumeration;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
@@ -15,9 +14,11 @@ import java.util.stream.Stream.Builder;
 public abstract class LoggerUtils {
 
     public static void logRequestIfExists() {
-        var attributes = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes());
-        HttpServletRequest request = attributes != null ? attributes.getRequest() : null;
-        if (request == null) return;
+        Optional.ofNullable(((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()))
+            .map(ServletRequestAttributes::getRequest).ifPresent(LoggerUtils::printRequest);
+    }
+
+    public static void printRequest(HttpServletRequest request) {
         String params = request.getParameterMap().entrySet().stream()
             .map(e -> e.getKey() + "=" + printValue(e.getValue()))
             .collect(Collectors.joining(", ", "{", "}"));
