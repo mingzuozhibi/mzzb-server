@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
 import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseController;
-import com.mingzuozhibi.commons.domain.Result;
 import com.mingzuozhibi.modules.disc.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -51,10 +50,10 @@ public class AdminController extends BaseController {
         runWithDaemon(bind, "创建抓取服务器", () -> {
             bind.info("创建抓取服务器：开始");
 
-            Result<String> result = vultrService.createInstance();
-            if (result.isSuccess()) {
+            if (vultrService.createInstance()) {
                 Set<String> asins = groupService.findNeedUpdateAsinsSorted();
                 vultrService.setTaskCount(asins.size());
+                vultrService.setDoneCount(0);
                 amqpSender.send(NEED_UPDATE_ASINS, gson.toJson(asins));
                 bind.debug("JMS -> %s size=%d".formatted(NEED_UPDATE_ASINS, asins.size()));
             }
