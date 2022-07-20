@@ -69,29 +69,41 @@ public class AdminService extends BaseSupport {
 
     @Transactional
     public void cleanupModulesMessages() {
+        int count = 0;
         {
             int c1 = messageRepository.cleanup(Name.SPIDER_CONTENT, 150, Type.INFO, Type.WARNING);
             int c2 = messageRepository.cleanup(Name.SPIDER_CONTENT, 200);
-            bind.info("[清理日志][name=%s][size=%d,%d]".formatted(Name.SPIDER_CONTENT, c1, c2));
+            count += c1 + c2;
+            if (c1 > 0 || c2 > 0)
+                bind.info("[清理日志][name=%s][size=%d,%d]".formatted(Name.SPIDER_CONTENT, c1, c2));
         }
         {
             int c1 = messageRepository.cleanup(Name.SPIDER_HISTORY, 150, Type.INFO);
             int c2 = messageRepository.cleanup(Name.SPIDER_HISTORY, 200);
-            bind.info("[清理日志][name=%s][size=%d,%d]".formatted(Name.SPIDER_HISTORY, c1, c2));
+            count += c1 + c2;
+            if (c1 > 0 || c2 > 0)
+                bind.info("[清理日志][name=%s][size=%d,%d]".formatted(Name.SPIDER_HISTORY, c1, c2));
         }
         {
             int c1 = messageRepository.cleanup(Name.SERVER_DISC, 150, Type.INFO);
             int c2 = messageRepository.cleanup(Name.SERVER_DISC, 200);
-            bind.info("[清理日志][name=%s][size=%d,%d]".formatted(Name.SERVER_DISC, c1, c2));
+            count += c1 + c2;
+            if (c1 > 0 || c2 > 0)
+                bind.info("[清理日志][name=%s][size=%d,%d]".formatted(Name.SERVER_DISC, c1, c2));
         }
         {
             int c1 = messageRepository.cleanup(Name.SERVER_CORE, 200);
-            bind.info("[清理日志][name=%s][size=%d]".formatted(Name.SERVER_CORE, c1));
+            count += c1;
+            if (c1 > 0)
+                bind.info("[清理日志][name=%s][size=%d]".formatted(Name.SERVER_CORE, c1));
         }
         {
             int c1 = messageRepository.cleanup(Name.DEFAULT, 200);
-            bind.info("[清理日志][name=%s][size=%d]".formatted(Name.DEFAULT, c1));
+            count += c1;
+            if (c1 > 0)
+                bind.info("[清理日志][name=%s][size=%d]".formatted(Name.DEFAULT, c1));
         }
+        bind.info("[自动任务][清理日志][共%d条]".formatted(count));
     }
 
 }
