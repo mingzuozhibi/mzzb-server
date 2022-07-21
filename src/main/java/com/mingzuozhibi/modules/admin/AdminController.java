@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
 import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseController;
-import com.mingzuozhibi.commons.domain.Result;
 import com.mingzuozhibi.modules.disc.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -33,43 +32,51 @@ public class AdminController extends BaseController {
     @Scheduled(cron = "0 0 * * * ?")
     @GetMapping(value = "/admin/runAutomaticTasks", produces = MEDIA_TYPE)
     public void runAutomaticTasks() {
-        runWithDaemon(bind, "每1小时自动任务", () -> {
-            bind.info("每1小时自动任务：开始");
+        runWithDaemon(bind, "每小时自动任务", () -> {
+            bind.info("每小时自动任务：开始");
+
+            adminService.deleteExpiredRemembers();
             adminService.moveExpiredHourRecords();
             adminService.recordRankAndComputePt();
-            bind.info("每1小时自动任务：完成");
+            adminService.cleanupModulesMessages();
+
+            bind.info("每小时自动任务：完成");
         });
     }
 
     @Scheduled(cron = "0 2 0/4 * * ?")
     @GetMapping(value = "/admin/runAutomaticTasks2", produces = MEDIA_TYPE)
     public void runAutomaticTasks2() {
-        runWithDaemon(bind, "每4小时自动任务", () -> {
-            bind.info("每4小时自动任务：开始");
+        runWithDaemon(bind, "创建抓取服务器", () -> {
+            bind.info("创建抓取服务器：开始");
 
-            adminService.deleteExpiredRemembers();
-            adminService.cleanupModulesMessages();
-
-            Result<String> result = vultrService.createInstance();
-            if (result.isSuccess()) {
+            if (vultrService.createInstance()) {
                 Set<String> asins = groupService.findNeedUpdateAsinsSorted();
                 vultrService.setTaskCount(asins.size());
+                vultrService.setDoneCount(0);
                 amqpSender.send(NEED_UPDATE_ASINS, gson.toJson(asins));
                 bind.debug("JMS -> %s size=%d".formatted(NEED_UPDATE_ASINS, asins.size()));
             }
 
-            bind.info("每4小时自动任务：完成");
+            bind.info("创建抓取服务器：完成");
         });
     }
 
-    @Scheduled(cron = "0 55 0/4 * * ?")
+    @Scheduled(cron = "0 25 1/4 * * ?")
     @GetMapping(value = "/admin/runAutomaticTasks3", produces = MEDIA_TYPE)
     public void runAutomaticTasks3() {
-        runWithDaemon(bind, "确认服务器已删除", () -> {
+        runWithDaemon(bind, "确认服务器状态", () -> {
+            bind.info("确认服务器状态：开始");
+
             Optional<JsonObject> instance = vultrService.getInstance();
             if (instance.isPresent()) {
+                bind.warning("服务器状态：未正常删除");
                 vultrService.deleteInstance();
+            } else {
+                bind.success("服务器状态：已正常删除");
             }
+
+            bind.info("确认服务器状态：完成");
         });
     }
 

@@ -22,6 +22,11 @@ public class VarableService extends BaseSupport {
     }
 
     @Transactional
+    public Optional<Integer> findIntegerByKey(String key) {
+        return findByKey(key).map(Integer::parseInt);
+    }
+
+    @Transactional
     public void saveOrUpdate(String key, String content) {
         Optional<Varable> byKey = varableRepository.findByKey(key);
         if (byKey.isEmpty()) {

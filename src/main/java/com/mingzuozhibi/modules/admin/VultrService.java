@@ -4,10 +4,8 @@ import com.google.gson.*;
 import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
 import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseController;
-import com.mingzuozhibi.commons.domain.Result;
 import com.mingzuozhibi.commons.utils.ThreadUtils;
 import com.mingzuozhibi.modules.core.VarableService;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.Connection.Method;
@@ -37,7 +35,9 @@ public class VultrService extends BaseController {
             "ams", "cdg", "fra", "lhr", "sto", "waw", "mel", "syd", "sgp", "nrt"
         };
 
-    private static final String INDEX_KEY = "VultrService.regionIndex";
+    private static final String REGION_INDEX = "VultrService.regionIndex";
+    private static final String TASK_COUNT = "VultrService.taskCount";
+    private static final String DONE_COUNT = "VultrService.doneCount";
     private static final String TARGET = "BCloud";
 
     @Value("${bcloud.apikey}")
@@ -48,20 +48,41 @@ public class VultrService extends BaseController {
 
     private int regionIndex;
 
-    @Setter
     private int taskCount;
 
-    @Setter
     private int doneCount;
+
+    public void setRegionIndex(int regionIndex) {
+        this.regionIndex = regionIndex % REGIONS.length;
+        varableService.saveOrUpdate(REGION_INDEX, "%d".formatted(this.regionIndex));
+    }
+
+    public void setTaskCount(int taskCount) {
+        this.taskCount = taskCount;
+        varableService.saveOrUpdate(TASK_COUNT, "%d".formatted(this.taskCount));
+    }
+
+    public void setDoneCount(int doneCount) {
+        this.doneCount = doneCount;
+        varableService.saveOrUpdate(DONE_COUNT, "%d".formatted(this.doneCount));
+    }
 
     @PostConstruct
     public void init() {
-        Optional<String> byKey = varableService.findByKey(INDEX_KEY);
-        byKey.ifPresent(varable -> regionIndex = Integer.parseInt(varable) % REGIONS.length);
-        log.info("Vultr Instance Region = %d (%s)".formatted(regionIndex, REGIONS[regionIndex]));
+        varableService.findIntegerByKey(REGION_INDEX)
+            .ifPresent(this::setRegionIndex);
+        varableService.findIntegerByKey(TASK_COUNT)
+            .ifPresent(this::setTaskCount);
+        varableService.findIntegerByKey(DONE_COUNT)
+            .ifPresent(this::setDoneCount);
+        log.info("Vultr Instance Region = %s".formatted(formatRegion()));
     }
 
-    public Result<String> deleteInstance() {
+    private String formatRegion() {
+        return "%d (%s)".formatted(regionIndex, REGIONS[regionIndex]);
+    }
+
+    public boolean deleteInstance() {
         try {
             bind.notify("开始删除服务器");
 
@@ -69,29 +90,29 @@ public class VultrService extends BaseController {
             Optional<JsonObject> instance = getInstance();
             if (instance.isEmpty()) {
                 bind.info("未能获取实例ID");
-                return Result.ofError("Can not find instance " + TARGET);
+                return false;
             }
 
             printRegionMainIp(instance.get());
 
             String instanceId = instance.get().get("id").getAsString();
-            Response response = jsoup("https://api.vultr.com/v2/instances/" + instanceId)
+            Response response = jsoup("https://api.vultr.com/v2/instances/%s".formatted(instanceId))
                 .method(Method.DELETE)
                 .execute();
             if (response.statusCode() == 204) {
                 bind.success("删除服务器成功");
-                return Result.ofData("Delete instance success");
+                return true;
             } else {
-                bind.warning("删除服务器失败：" + response.statusMessage());
-                return Result.ofError("Delete instance error: " + response.statusMessage());
+                bind.warning("删除服务器失败：%s".formatted(response.statusMessage()));
+                return false;
             }
         } catch (IOException e) {
-            bind.error("删除服务器异常：" + e);
-            return Result.ofError(e.toString());
+            bind.error("删除服务器异常：%s".formatted(e));
+            return false;
         }
     }
 
-    public Result<String> createInstance() {
+    public boolean createInstance() {
         try {
             bind.notify("开始创建服务器");
 
@@ -101,11 +122,10 @@ public class VultrService extends BaseController {
             Optional<JsonObject> instance = getInstance();
             if (instance.isPresent()) {
                 bind.info("检查到服务器已存在");
-                Result<String> result = deleteInstance();
-                if (result.isSuccess()) {
+                if (deleteInstance()) {
                     ThreadUtils.threadSleep(60);
                 } else {
-                    return Result.ofError("Instance can not delete: " + result.getMessage());
+                    return false;
                 }
             }
 
@@ -113,14 +133,14 @@ public class VultrService extends BaseController {
             Optional<String> snapshotId = getSnapshotId();
             if (snapshotId.isEmpty()) {
                 bind.info("未能获取快照ID");
-                return Result.ofError("Can not find snapshot " + TARGET);
+                return false;
             }
 
             bind.info("正在获取防火墙策略ID");
             Optional<String> firewallId = getFirewallId();
             if (firewallId.isEmpty()) {
                 bind.info("未能获取防火墙策略ID");
-                return Result.ofError("Can not find firewall " + TARGET);
+                return false;
             }
 
             JsonObject payload = new JsonObject();
@@ -133,11 +153,10 @@ public class VultrService extends BaseController {
             payload.addProperty("label", TARGET);
             payload.addProperty("hostname", TARGET);
             String payloadAsString = payload.toString();
-            bind.info("服务器参数 = " + payloadAsString);
+            bind.info("服务器参数 = %s".formatted(payloadAsString));
 
-            regionIndex = (regionIndex + 1) % REGIONS.length;
-            varableService.saveOrUpdate(INDEX_KEY, String.valueOf(regionIndex));
-            bind.info("Next Vultr Instance Region = %d (%s)".formatted(regionIndex, REGIONS[regionIndex]));
+            setRegionIndex(regionIndex + 1);
+            bind.info("Next Vultr Instance Region = %s".formatted(formatRegion()));
 
             Response response = jsoup("https://api.vultr.com/v2/instances")
                 .requestBody(payloadAsString)
@@ -145,21 +164,22 @@ public class VultrService extends BaseController {
                 .execute();
             if (response.statusCode() == 202) {
                 bind.success("创建服务器成功");
-                return Result.ofData("Create instance success");
+                return true;
             } else {
-                bind.warning("创建服务器失败：" + response.statusMessage());
-                return Result.ofError("Create instance error: " + response.statusMessage());
+                bind.warning("创建服务器失败：%s".formatted(response.statusMessage()));
+                return false;
             }
         } catch (IOException e) {
-            bind.error("创建服务器异常：" + e);
-            return Result.ofError(e.toString());
+            bind.error("创建服务器异常：%s".formatted(e));
+            return false;
         }
     }
 
     private void printVultrApiKey() {
-        int keylen = vultrApiKey.length();
-        String keystr = vultrApiKey.substring(0, 2) + "**" + vultrApiKey.substring(keylen - 2);
-        log.info("bcloud.apikey=%s, length=%d".formatted(keystr, keylen));
+        var keylen = vultrApiKey.length();
+        var prefix = vultrApiKey.substring(0, 2);
+        var suffix = vultrApiKey.substring(keylen - 2);
+        log.info("bcloud.apikey=%s**%s, length=%d".formatted(prefix, suffix, keylen));
     }
 
     private void printRegionMainIp(JsonObject instance) {
@@ -179,9 +199,6 @@ public class VultrService extends BaseController {
 
         var datetime = LocalDateTime.now().format(fmtDateTime2);
         writeLine("var/instance.log", "[%s] %s".formatted(datetime, status));
-
-        taskCount = 0;
-        doneCount = 0;
     }
 
     public Optional<JsonObject> getInstance() throws IOException {
@@ -228,7 +245,7 @@ public class VultrService extends BaseController {
 
     private Connection jsoup(String url) {
         return Jsoup.connect(url)
-            .header("Authorization", "Bearer " + vultrApiKey)
+            .header("Authorization", "Bearer %s".formatted(vultrApiKey))
             .header("Content-Type", "application/json")
             .ignoreContentType(true);
     }
