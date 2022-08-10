@@ -73,8 +73,8 @@ public class AdminService extends BaseSupport {
     public void cleanupModulesMessages() {
         int count = 0;
         {
-            int c1 = messageRepository.cleanup(Name.SPIDER_CONTENT, 150, Type.INFO, Type.WARNING);
-            int c2 = messageRepository.cleanup(Name.SPIDER_CONTENT, 200);
+            int c1 = messageRepository.cleanup(Name.SPIDER_CONTENT, 600, Type.INFO, Type.WARNING);
+            int c2 = messageRepository.cleanup(Name.SPIDER_CONTENT, 800);
             count += c1 + c2;
             log.info("[清理日志][name=%s][size=%d,%d]".formatted(Name.SPIDER_CONTENT, c1, c2));
         }

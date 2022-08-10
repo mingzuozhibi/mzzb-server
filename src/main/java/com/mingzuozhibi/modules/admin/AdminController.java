@@ -62,7 +62,7 @@ public class AdminController extends BaseController {
         });
     }
 
-    @Scheduled(cron = "0 25 1/4 * * ?")
+    @Scheduled(cron = "0 55 0/4 * * ?")
     @GetMapping(value = "/admin/runAutomaticTasks3", produces = MEDIA_TYPE)
     public void runAutomaticTasks3() {
         runWithDaemon(bind, "确认服务器状态", () -> {
