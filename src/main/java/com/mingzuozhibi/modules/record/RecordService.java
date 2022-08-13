@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -87,7 +89,14 @@ public class RecordService extends BaseSupport {
         object.addProperty("id", record.getId());
         object.addProperty("date", record.getDate().format(fmtDate));
         Optional.ofNullable(record.getAverRank()).ifPresent(rank -> {
-            object.addProperty("averRank", rank.intValue());
+            if (rank < 10) {
+                double doubleValue = BigDecimal.valueOf(rank)
+                    .setScale(1, RoundingMode.HALF_UP)
+                    .doubleValue();
+                object.addProperty("averRank", doubleValue);
+            } else {
+                object.addProperty("averRank", rank.intValue());
+            }
         });
         Optional.ofNullable(record.getTodayPt()).ifPresent(todayPt -> {
             object.addProperty("todayPt", todayPt.intValue());
