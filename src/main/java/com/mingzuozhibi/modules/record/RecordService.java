@@ -24,34 +24,12 @@ public class RecordService extends BaseSupport {
     private DateRecordRepository dateRecordRepository;
 
     @Transactional
-    public HourRecord getOrCreateHourRecord(Disc disc, LocalDate date) {
-        return hourRecordRepository.findByDiscAndDate(disc, date)
-            .orElseGet(() -> hourRecordRepository.save(new HourRecord(disc, date)));
-    }
-
-    @Transactional
-    public List<HourRecord> findHourRecords(LocalDate date) {
-        return hourRecordRepository.findByDateBeforeOrderByDate(date);
-    }
-
-    @Transactional
-    public DateRecord getDateRecord(Disc disc, LocalDate date) {
-        return dateRecordRepository.getByDiscAndDate(disc, date);
-    }
-
-    @Transactional
-    public DateRecord getLastDateRecord(Disc disc, LocalDate date) {
-        return dateRecordRepository.getLastDateRecord(disc, date);
-    }
-
-    @Transactional
-    public List<DateRecord> findDateRecords(Disc disc) {
-        return dateRecordRepository.findByDiscOrderByDate(disc);
-    }
-
-    @Transactional
-    public List<DateRecord> findDateRecords(LocalDate date) {
-        return dateRecordRepository.findByDate(date);
+    public HourRecord buildHourRecord(Disc disc, LocalDate date) {
+        Optional<HourRecord> hourRecords = findHourRecords(disc, date);
+        if (hourRecords.isEmpty()) {
+            return hourRecordRepository.save(new HourRecord(disc, date));
+        }
+        return hourRecords.get();
     }
 
     @Transactional
@@ -61,16 +39,50 @@ public class RecordService extends BaseSupport {
     }
 
     @Transactional
-    public JsonArray buildRecords(Disc disc) {
+    public List<HourRecord> findHourRecords(LocalDate date) {
+        return hourRecordRepository.findByDateBeforeOrderByDate(date);
+    }
+
+    @Transactional
+    public List<DateRecord> findDateRecordsAsc(Disc disc) {
+        return dateRecordRepository.queryBeforeAsc(disc, getPlusDays(disc));
+    }
+
+    @Transactional
+    public List<DateRecord> findDateRecords(LocalDate date) {
+        return dateRecordRepository.findByDate(date);
+    }
+
+    @Transactional
+    public DateRecord findDateRecord(Disc disc, LocalDate date) {
+        return dateRecordRepository.queryLastOne(disc, date);
+    }
+
+    @Transactional
+    public JsonArray buildDiscRecords(Disc disc) {
         JsonArray array = new JsonArray();
-        hourRecordRepository.findByDiscAndDate(disc, LocalDate.now())
-            .ifPresent(record -> array.add(buildRecord(record)));
-        dateRecordRepository.findDateRecords(disc, disc.getReleaseDate().plusDays(7))
-            .forEach(record -> array.add(buildRecord(record)));
+        findHourRecords(disc, LocalDate.now()).ifPresent(record -> {
+            array.add(buildRecord(record));
+        });
+        findDateRecordsDesc(disc).forEach(record -> {
+            array.add(buildRecord(record));
+        });
         return array;
     }
 
-    private static JsonObject buildRecord(Record record) {
+    private Optional<HourRecord> findHourRecords(Disc disc, LocalDate date) {
+        return hourRecordRepository.findByDiscAndDate(disc, date);
+    }
+
+    private List<DateRecord> findDateRecordsDesc(Disc disc) {
+        return dateRecordRepository.queryBeforeDesc(disc, getPlusDays(disc));
+    }
+
+    private LocalDate getPlusDays(Disc disc) {
+        return disc.getReleaseDate().plusDays(7);
+    }
+
+    private JsonObject buildRecord(Record record) {
         JsonObject object = new JsonObject();
         object.addProperty("id", record.getId());
         object.addProperty("date", record.getDate().format(fmtDate));

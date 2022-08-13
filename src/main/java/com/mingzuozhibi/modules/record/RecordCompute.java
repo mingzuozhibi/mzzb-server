@@ -21,15 +21,14 @@ public class RecordCompute extends BaseSupport {
 
     @Transactional
     public void computeDisc(Disc disc) {
-        List<DateRecord> records = recordService.findDateRecords(disc);
+        List<DateRecord> records = recordService.findDateRecordsAsc(disc);
         int size = records.size();
         log.debug("[计算碟片][共%d个][%s]".formatted(size, disc.getLogName()));
         records.forEach(record0 -> {
             LocalDate date = record0.getDate();
-            DateRecord record1 = recordService.getDateRecord(disc, date.minusDays(1));
-            DateRecord record7 = recordService.getDateRecord(disc, date.minusDays(7));
-            DateRecord record$ = recordService.getLastDateRecord(disc, date);
-            computePt(disc, date, record0, record1, record7, record$);
+            DateRecord record1 = recordService.findDateRecord(disc, date.minusDays(1));
+            DateRecord record7 = recordService.findDateRecord(disc, date.minusDays(7));
+            computePt(disc, date, record0, record1, record7);
         });
         LocalDateTime now = LocalDateTime.now();
         LocalDate date = now.toLocalDate();
@@ -46,21 +45,20 @@ public class RecordCompute extends BaseSupport {
         log.debug("[计算碟片][共%d个]".formatted(records.size()));
         records.forEach(record0 -> {
             Disc disc = record0.getDisc();
-            DateRecord record1 = recordService.getDateRecord(disc, date.minusDays(1));
-            DateRecord record7 = recordService.getDateRecord(disc, date.minusDays(7));
-            computePt(disc, date, record0, record1, record7, null);
+            DateRecord record1 = recordService.findDateRecord(disc, date.minusDays(1));
+            DateRecord record7 = recordService.findDateRecord(disc, date.minusDays(7));
+            computePt(disc, date, record0, record1, record7);
         });
     }
 
     @Transactional
     public void computePtNow(Disc disc, LocalDate date, int hour) {
-        HourRecord record0 = recordService.getOrCreateHourRecord(disc, date);
-        DateRecord record1 = recordService.getDateRecord(disc, date.minusDays(1));
-        DateRecord record7 = recordService.getDateRecord(disc, date.minusDays(7));
-        DateRecord record$ = recordService.getLastDateRecord(disc, date);
+        HourRecord record0 = recordService.buildHourRecord(disc, date);
+        DateRecord record1 = recordService.findDateRecord(disc, date.minusDays(1));
+        DateRecord record7 = recordService.findDateRecord(disc, date.minusDays(7));
 
         record0.setRank(hour, disc.getThisRank());
-        computePt(disc, date, record0, record1, record7, record$);
+        computePt(disc, date, record0, record1, record7);
         updateDiscPt(disc, record0);
     }
 
@@ -70,7 +68,7 @@ public class RecordCompute extends BaseSupport {
         disc.setGuessPt(safeIntValue(record.getGuessPt()));
     }
 
-    public static void computePt(Disc disc, LocalDate date, Record record0, Record record1, Record record7, DateRecord record$) {
+    public static void computePt(Disc disc, LocalDate date, Record record0, Record record1, Record record7) {
         if (date.isBefore(disc.getReleaseDate())) {
             computeTodayPt(record0);
             computeTotalPt(record0, record1);
@@ -79,16 +77,12 @@ public class RecordCompute extends BaseSupport {
             record0.setTodayPt(null);
             record0.setTotalPt(record1.getTotalPt());
             record0.setGuessPt(record1.getGuessPt());
-        } else if (record$ != null) {
-            record0.setTodayPt(null);
-            record0.setTotalPt(record$.getTotalPt());
-            record0.setGuessPt(record$.getGuessPt());
         }
     }
 
     private static void computeTodayPt(Record record) {
         Optional.ofNullable(record.getAverRank()).ifPresent(rank -> {
-            record.setTodayPt(24 * computeHourPt(record.getDisc(), rank));
+            record.setTodayPt(computeHourPt(record.getDisc(), rank));
         });
     }
 
@@ -117,26 +111,26 @@ public class RecordCompute extends BaseSupport {
 
     private static double computeHourPt(Disc disc, double rank) {
         return switch (disc.getDiscType()) {
-            case Cd -> computeHourPt(150, 5.25, rank);
+            case Cd -> computeHourPt(3600, 5.25, rank);
             case Auto, Bluray -> computePtOfBD(rank);
-            case Dvd -> computeHourPt(100, 4.2, rank);
+            case Dvd -> computeHourPt(2400, 4.2, rank);
             default -> 0d;
         };
     }
 
     private static double computePtOfBD(double rank) {
         if (rank <= 10) {
-            return computeHourPt(100, 3.2, rank);
+            return computeHourPt(2400, 3.2, rank);
         } else if (rank <= 20) {
-            return computeHourPt(100, 3.3, rank);
+            return computeHourPt(2400, 3.3, rank);
         } else if (rank <= 50) {
-            return computeHourPt(100, 3.4, rank);
+            return computeHourPt(2400, 3.4, rank);
         } else if (rank <= 100) {
-            return computeHourPt(100, 3.6, rank);
+            return computeHourPt(2400, 3.6, rank);
         } else if (rank <= 300) {
-            return computeHourPt(100, 3.8, rank);
+            return computeHourPt(2400, 3.8, rank);
         } else {
-            return computeHourPt(100, 3.9, rank);
+            return computeHourPt(2400, 3.9, rank);
         }
     }
 
