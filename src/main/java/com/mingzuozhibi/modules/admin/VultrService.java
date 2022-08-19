@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
@@ -106,7 +105,7 @@ public class VultrService extends BaseController {
                 bind.warning("删除服务器失败：%s".formatted(response.statusMessage()));
                 return false;
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             bind.error("删除服务器异常：%s".formatted(e));
             return false;
         }
@@ -166,7 +165,7 @@ public class VultrService extends BaseController {
                 bind.warning("创建服务器失败：%s".formatted(response.statusMessage()));
                 return false;
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             bind.error("创建服务器异常：%s".formatted(e));
             return false;
         }
@@ -198,7 +197,7 @@ public class VultrService extends BaseController {
         writeLine("var/instance.log", "[%s] %s".formatted(datetime, status));
     }
 
-    public Optional<JsonObject> getInstance() throws IOException {
+    public Optional<JsonObject> getInstance() throws Exception {
         String body = jsoupGet("https://api.vultr.com/v2/instances");
         JsonObject root = gson.fromJson(body, JsonObject.class);
         JsonArray instances = root.get("instances").getAsJsonArray();
@@ -211,7 +210,7 @@ public class VultrService extends BaseController {
         return Optional.empty();
     }
 
-    private Optional<String> getSnapshotId() throws IOException {
+    private Optional<String> getSnapshotId() throws Exception {
         String body = jsoupGet("https://api.vultr.com/v2/snapshots");
         JsonObject root = gson.fromJson(body, JsonObject.class);
         JsonArray snapshots = root.get("snapshots").getAsJsonArray();
@@ -224,7 +223,7 @@ public class VultrService extends BaseController {
         return Optional.empty();
     }
 
-    private Optional<String> getFirewallId() throws IOException {
+    private Optional<String> getFirewallId() throws Exception {
         String body = jsoupGet("https://api.vultr.com/v2/firewalls");
         JsonObject root = gson.fromJson(body, JsonObject.class);
         JsonArray firewalls = root.get("firewall_groups").getAsJsonArray();
@@ -237,16 +236,16 @@ public class VultrService extends BaseController {
         return Optional.empty();
     }
 
-    private Response jsoupPost(String url, String body) throws IOException {
+    private Response jsoupPost(String url, String body) throws Exception {
         return jsoup(url, connection -> connection.method(Method.POST).requestBody(body));
     }
 
-    private String jsoupGet(String url) throws IOException {
+    private String jsoupGet(String url) throws Exception {
         return jsoup(url, connection -> connection.method(Method.GET)).body();
     }
 
-    private Response jsoup(String url, Consumer<Connection> consumer) throws IOException {
-        IOException lastThrow = null;
+    private Response jsoup(String url, Consumer<Connection> consumer) throws Exception {
+        Exception lastThrow = null;
         int maxCount = 8;
         for (int i = 0; i < maxCount; i++) {
             try {
@@ -257,7 +256,7 @@ public class VultrService extends BaseController {
                     .ignoreContentType(true);
                 consumer.accept(connection);
                 return connection.execute();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 lastThrow = e;
                 bind.debug("jsoup(%s) throws %s (%d/%d)".formatted(url, e, i + 1, maxCount));
                 ThreadUtils.threadSleep(3, 5);
