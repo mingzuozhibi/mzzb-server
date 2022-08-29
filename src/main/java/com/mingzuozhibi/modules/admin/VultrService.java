@@ -57,7 +57,7 @@ public class VultrService extends BaseController {
         ));
         ThreadUtils.runWithDaemon(bind, "检查服务器超时", () -> {
             while (true) {
-                var millis = Instant.now().toEpochMilli() - timeout.toEpochMilli();
+                var millis = timeout.toEpochMilli() - Instant.now().toEpochMilli();
                 if (millis > 0) {
                     ThreadUtils.sleepMillis(millis);
                 } else {
