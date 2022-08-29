@@ -16,10 +16,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDateTime2;
 import static com.mingzuozhibi.support.FileIoUtils.writeLine;
@@ -96,9 +96,8 @@ public class VultrService extends BaseController {
             printRegionMainIp(instance.get());
 
             String instanceId = instance.get().get("id").getAsString();
-            Response response = jsoup("https://api.vultr.com/v2/instances/%s".formatted(instanceId))
-                .method(Method.DELETE)
-                .execute();
+            String url = "https://api.vultr.com/v2/instances/%s".formatted(instanceId);
+            Response response = jsoup(url, connection -> connection.method(Method.DELETE));
             if (response.statusCode() == 204) {
                 bind.success("删除服务器成功");
                 return true;
@@ -106,7 +105,7 @@ public class VultrService extends BaseController {
                 bind.warning("删除服务器失败：%s".formatted(response.statusMessage()));
                 return false;
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             bind.error("删除服务器异常：%s".formatted(e));
             return false;
         }
@@ -152,16 +151,13 @@ public class VultrService extends BaseController {
             payload.addProperty("firewall_group_id", firewallId.get());
             payload.addProperty("label", TARGET);
             payload.addProperty("hostname", TARGET);
-            String payloadAsString = payload.toString();
-            bind.info("服务器参数 = %s".formatted(payloadAsString));
+            String body = payload.toString();
+            bind.info("服务器参数 = %s".formatted(body));
 
             setRegionIndex(regionIndex + 1);
             bind.info("Next Vultr Instance Region = %s".formatted(formatRegion()));
 
-            Response response = jsoup("https://api.vultr.com/v2/instances")
-                .requestBody(payloadAsString)
-                .method(Method.POST)
-                .execute();
+            Response response = jsoupPost("https://api.vultr.com/v2/instances", body);
             if (response.statusCode() == 202) {
                 bind.success("创建服务器成功");
                 return true;
@@ -169,7 +165,7 @@ public class VultrService extends BaseController {
                 bind.warning("创建服务器失败：%s".formatted(response.statusMessage()));
                 return false;
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             bind.error("创建服务器异常：%s".formatted(e));
             return false;
         }
@@ -201,9 +197,8 @@ public class VultrService extends BaseController {
         writeLine("var/instance.log", "[%s] %s".formatted(datetime, status));
     }
 
-    public Optional<JsonObject> getInstance() throws IOException {
-        String body = jsoup("https://api.vultr.com/v2/instances")
-            .get().body().text();
+    public Optional<JsonObject> getInstance() throws Exception {
+        String body = jsoupGet("https://api.vultr.com/v2/instances");
         JsonObject root = gson.fromJson(body, JsonObject.class);
         JsonArray instances = root.get("instances").getAsJsonArray();
         for (JsonElement e : instances) {
@@ -215,9 +210,8 @@ public class VultrService extends BaseController {
         return Optional.empty();
     }
 
-    private Optional<String> getSnapshotId() throws IOException {
-        String body = jsoup("https://api.vultr.com/v2/snapshots")
-            .get().body().text();
+    private Optional<String> getSnapshotId() throws Exception {
+        String body = jsoupGet("https://api.vultr.com/v2/snapshots");
         JsonObject root = gson.fromJson(body, JsonObject.class);
         JsonArray snapshots = root.get("snapshots").getAsJsonArray();
         for (JsonElement e : snapshots) {
@@ -229,9 +223,8 @@ public class VultrService extends BaseController {
         return Optional.empty();
     }
 
-    private Optional<String> getFirewallId() throws IOException {
-        String body = jsoup("https://api.vultr.com/v2/firewalls")
-            .get().body().text();
+    private Optional<String> getFirewallId() throws Exception {
+        String body = jsoupGet("https://api.vultr.com/v2/firewalls");
         JsonObject root = gson.fromJson(body, JsonObject.class);
         JsonArray firewalls = root.get("firewall_groups").getAsJsonArray();
         for (JsonElement e : firewalls) {
@@ -243,11 +236,33 @@ public class VultrService extends BaseController {
         return Optional.empty();
     }
 
-    private Connection jsoup(String url) {
-        return Jsoup.connect(url)
-            .header("Authorization", "Bearer %s".formatted(vultrApiKey))
-            .header("Content-Type", "application/json")
-            .ignoreContentType(true);
+    private Response jsoupPost(String url, String body) throws Exception {
+        return jsoup(url, connection -> connection.method(Method.POST).requestBody(body));
+    }
+
+    private String jsoupGet(String url) throws Exception {
+        return jsoup(url, connection -> connection.method(Method.GET)).body();
+    }
+
+    private Response jsoup(String url, Consumer<Connection> consumer) throws Exception {
+        Exception lastThrow = null;
+        int maxCount = 8;
+        for (int i = 0; i < maxCount; i++) {
+            try {
+                Connection connection = Jsoup.connect(url)
+                    .header("Authorization", "Bearer %s".formatted(vultrApiKey))
+                    .header("Content-Type", "application/json")
+                    .timeout(10000)
+                    .ignoreContentType(true);
+                consumer.accept(connection);
+                return connection.execute();
+            } catch (Exception e) {
+                lastThrow = e;
+                bind.debug("jsoup(%s) throws %s (%d/%d)".formatted(url, e, i + 1, maxCount));
+                ThreadUtils.threadSleep(3, 5);
+            }
+        }
+        throw lastThrow;
     }
 
 }
