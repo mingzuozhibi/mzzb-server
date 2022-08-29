@@ -1,6 +1,5 @@
 package com.mingzuozhibi.modules.admin;
 
-import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
 import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseController;
@@ -10,10 +9,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Optional;
-import java.util.Set;
-
-import static com.mingzuozhibi.commons.amqp.AmqpEnums.NEED_UPDATE_ASINS;
 import static com.mingzuozhibi.commons.utils.ThreadUtils.runWithDaemon;
 
 @RestController
@@ -49,34 +44,8 @@ public class AdminController extends BaseController {
     public void runAutomaticTasks2() {
         runWithDaemon(bind, "创建抓取服务器", () -> {
             bind.info("创建抓取服务器：开始");
-
-            if (vultrService.createInstance()) {
-                Set<String> asins = groupService.findNeedUpdateAsinsSorted();
-                vultrService.setTaskCount(asins.size());
-                vultrService.setDoneCount(0);
-                amqpSender.send(NEED_UPDATE_ASINS, gson.toJson(asins));
-                bind.debug("JMS -> %s size=%d".formatted(NEED_UPDATE_ASINS, asins.size()));
-            }
-
+            vultrService.createServer();
             bind.info("创建抓取服务器：完成");
-        });
-    }
-
-    @Scheduled(cron = "0 55 0/4 * * ?")
-    @GetMapping(value = "/admin/runAutomaticTasks3", produces = MEDIA_TYPE)
-    public void runAutomaticTasks3() {
-        runWithDaemon(bind, "确认服务器状态", () -> {
-            bind.info("确认服务器状态：开始");
-
-            Optional<JsonObject> instance = vultrService.getInstance();
-            if (instance.isPresent()) {
-                bind.warning("服务器状态：未正常删除");
-                vultrService.deleteInstance();
-            } else {
-                bind.success("服务器状态：已正常删除");
-            }
-
-            bind.info("确认服务器状态：完成");
         });
     }
 

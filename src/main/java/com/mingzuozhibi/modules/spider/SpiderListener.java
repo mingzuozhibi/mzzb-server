@@ -53,8 +53,8 @@ public class SpiderListener extends BaseSupport {
         List<Content> contents = gson.fromJson(json, token.getType());
         bind.debug("JMS <- %s size=%d".formatted(PREV_UPDATE_DISCS, contents.size()));
         contentUpdater.updateDiscs(contents, Instant.now());
-        vultrService.setDoneCount(contents.size());
-        vultrService.deleteInstance();
+
+        vultrService.finishServer(contents.size());
     }
 
     @RabbitListener(queues = LAST_UPDATE_DISCS)
@@ -95,6 +95,8 @@ public class SpiderListener extends BaseSupport {
         });
         logger.notify("发现新碟片%d个".formatted(histories.size()));
         toReportList.removeAll(histories);
+
+        vultrService.setStartted(true);
     }
 
 }
