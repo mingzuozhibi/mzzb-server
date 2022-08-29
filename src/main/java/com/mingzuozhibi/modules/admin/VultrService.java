@@ -93,6 +93,12 @@ public class VultrService extends BaseController {
     public void finishServer(int doneCount) {
         vultrContext.setDoneCount(doneCount);
         deleteInstance();
+        var taskCount = vultrContext.getTaskCount();
+        var nextCount = taskCount - doneCount;
+        if (nextCount > 100) {
+            bind.warning("服务器抓取失败，重新开始任务");
+            createServer();
+        }
     }
 
     private boolean deleteInstance() {
