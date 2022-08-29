@@ -4,8 +4,9 @@ import com.google.gson.*;
 import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
 import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseController;
+import com.mingzuozhibi.commons.utils.MyTimeUtils;
 import com.mingzuozhibi.commons.utils.ThreadUtils;
-import com.mingzuozhibi.modules.core.VarableService;
+import com.mingzuozhibi.modules.disc.GroupService;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.Connection.Method;
@@ -16,73 +17,91 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.Optional;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.function.Consumer;
 
+import static com.mingzuozhibi.commons.amqp.AmqpEnums.NEED_UPDATE_ASINS;
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDateTime2;
-import static com.mingzuozhibi.support.FileIoUtils.writeLine;
 
 @Slf4j
 @Service
 @LoggerBind(Name.SERVER_CORE)
 public class VultrService extends BaseController {
 
-    private static final String[] REGIONS =
-        {
-            "atl", "dfw", "ewr", "lax", "mia", "ord", "sea", "sjc", "mex", "yto",
-            "ams", "cdg", "fra", "lhr", "sto", "waw", "mel", "syd", "sgp", "nrt"
-        };
-
-    private static final String REGION_INDEX = "VultrService.regionIndex";
-    private static final String TASK_COUNT = "VultrService.taskCount";
-    private static final String DONE_COUNT = "VultrService.doneCount";
     private static final String TARGET = "BCloud";
 
     @Value("${bcloud.apikey}")
     private String vultrApiKey;
 
     @Autowired
-    private VarableService varableService;
+    private GroupService groupService;
 
-    private int regionIndex;
-
-    private int taskCount;
-
-    private int doneCount;
-
-    public void setRegionIndex(int regionIndex) {
-        this.regionIndex = regionIndex % REGIONS.length;
-        varableService.saveOrUpdate(REGION_INDEX, "%d".formatted(this.regionIndex));
-    }
-
-    public void setTaskCount(int taskCount) {
-        this.taskCount = taskCount;
-        varableService.saveOrUpdate(TASK_COUNT, "%d".formatted(this.taskCount));
-    }
-
-    public void setDoneCount(int doneCount) {
-        this.doneCount = doneCount;
-        varableService.saveOrUpdate(DONE_COUNT, "%d".formatted(this.doneCount));
-    }
+    @Autowired
+    private VultrContext vultrContext;
 
     @PostConstruct
     public void init() {
-        varableService.findIntegerByKey(REGION_INDEX)
-            .ifPresent(this::setRegionIndex);
-        varableService.findIntegerByKey(TASK_COUNT)
-            .ifPresent(this::setTaskCount);
-        varableService.findIntegerByKey(DONE_COUNT)
-            .ifPresent(this::setDoneCount);
-        log.info("Vultr Instance Region = %s".formatted(formatRegion()));
+        vultrContext.init();
+        log.info("Vultr Instance Region = %s".formatted(vultrContext.formatRegion()));
+        log.info("Vultr Instance Startted = %b".formatted(vultrContext.isStartted()));
+        if (!vultrContext.isStartted() && vultrContext.getTimeout() != null) {
+            checkServer(vultrContext.getTimeout());
+        }
     }
 
-    private String formatRegion() {
-        return "%d (%s)".formatted(regionIndex, REGIONS[regionIndex]);
+    private void checkServer(Instant timeout) {
+        log.info("Vultr Instance Timeout = %s".formatted(
+            MyTimeUtils.ofInstant(timeout).format(fmtDateTime2)
+        ));
+        ThreadUtils.runWithDaemon(bind, "检查服务器超时", () -> {
+            while (true) {
+                var millis = Instant.now().toEpochMilli() - timeout.toEpochMilli();
+                if (millis > 0) {
+                    ThreadUtils.sleepMillis(millis);
+                } else {
+                    if (!vultrContext.isStartted()) {
+                        bind.warning("服务器似乎已超时，重新开始任务");
+                        createServer();
+                    } else {
+                        bind.success("服务器正常运行中");
+                    }
+                    break;
+                }
+            }
+        });
     }
 
-    public boolean deleteInstance() {
+    public void createServer() {
+        Set<String> asins = groupService.findNeedUpdateAsinsSorted();
+        if (createInstance()) {
+            vultrContext.setTaskCount(asins.size());
+            vultrContext.setDoneCount(0);
+            vultrContext.setStartted(false);
+            vultrContext.setTimeout(Instant.now().plus(15, ChronoUnit.MINUTES));
+            checkServer(vultrContext.getTimeout());
+            amqpSender.send(NEED_UPDATE_ASINS, gson.toJson(asins));
+            bind.debug("JMS -> %s size=%d".formatted(NEED_UPDATE_ASINS, asins.size()));
+        }
+    }
+
+    public void setStartted(boolean startted) {
+        vultrContext.setStartted(startted);
+    }
+
+    public void finishServer(int doneCount) {
+        vultrContext.setDoneCount(doneCount);
+        deleteInstance();
+        var taskCount = vultrContext.getTaskCount();
+        var nextCount = taskCount - doneCount;
+        if (nextCount > 100) {
+            bind.warning("服务器抓取失败，重新开始任务");
+            createServer();
+        }
+    }
+
+    private boolean deleteInstance() {
         try {
             bind.notify("开始删除服务器");
 
@@ -93,7 +112,7 @@ public class VultrService extends BaseController {
                 return false;
             }
 
-            printRegionMainIp(instance.get());
+            vultrContext.printStatus(instance.get());
 
             String instanceId = instance.get().get("id").getAsString();
             String url = "https://api.vultr.com/v2/instances/%s".formatted(instanceId);
@@ -111,7 +130,7 @@ public class VultrService extends BaseController {
         }
     }
 
-    public boolean createInstance() {
+    private boolean createInstance() {
         try {
             bind.notify("开始创建服务器");
 
@@ -121,9 +140,7 @@ public class VultrService extends BaseController {
             Optional<JsonObject> instance = getInstance();
             if (instance.isPresent()) {
                 bind.info("检查到服务器已存在");
-                if (deleteInstance()) {
-                    ThreadUtils.threadSleep(60);
-                } else {
+                if (!deleteInstance()) {
                     return false;
                 }
             }
@@ -143,7 +160,7 @@ public class VultrService extends BaseController {
             }
 
             JsonObject payload = new JsonObject();
-            payload.addProperty("region", REGIONS[regionIndex]);
+            payload.addProperty("region", vultrContext.nextRegion());
             payload.addProperty("plan", "vc2-1c-1gb");
             payload.addProperty("snapshot_id", snapshotId.get());
             payload.addProperty("backups", "disabled");
@@ -154,8 +171,7 @@ public class VultrService extends BaseController {
             String body = payload.toString();
             bind.info("服务器参数 = %s".formatted(body));
 
-            setRegionIndex(regionIndex + 1);
-            bind.info("Next Vultr Instance Region = %s".formatted(formatRegion()));
+            bind.info("Next Vultr Instance Region = %s".formatted(vultrContext.formatRegion()));
 
             Response response = jsoupPost("https://api.vultr.com/v2/instances", body);
             if (response.statusCode() == 202) {
@@ -176,25 +192,6 @@ public class VultrService extends BaseController {
         var prefix = vultrApiKey.substring(0, 2);
         var suffix = vultrApiKey.substring(keylen - 2);
         log.info("bcloud.apikey=%s**%s, length=%d".formatted(prefix, suffix, keylen));
-    }
-
-    private void printRegionMainIp(JsonObject instance) {
-        var mainIp = instance.get("main_ip").getAsString();
-        var region = instance.get("region").getAsString();
-        var nextCount = taskCount - doneCount;
-        var status = "mainIp = %s, region = %d(%s), task = %d, done = %d, next = %d".formatted(
-            mainIp, regionIndex, region, taskCount, doneCount, nextCount
-        );
-
-        if (nextCount > 25 && taskCount > 100) {
-            log.warn("Instance Status: %s".formatted(status));
-            bind.warning("抓取状态异常：%s".formatted(status));
-        } else {
-            log.info("Instance Status: %s".formatted(status));
-        }
-
-        var datetime = LocalDateTime.now().format(fmtDateTime2);
-        writeLine("var/instance.log", "[%s] %s".formatted(datetime, status));
     }
 
     public Optional<JsonObject> getInstance() throws Exception {
@@ -259,7 +256,7 @@ public class VultrService extends BaseController {
             } catch (Exception e) {
                 lastThrow = e;
                 bind.debug("jsoup(%s) throws %s (%d/%d)".formatted(url, e, i + 1, maxCount));
-                ThreadUtils.threadSleep(3, 5);
+                ThreadUtils.sleepSeconds(3, 5);
             }
         }
         throw lastThrow;

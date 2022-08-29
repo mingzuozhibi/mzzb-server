@@ -4,7 +4,6 @@ import com.mingzuozhibi.commons.amqp.logger.Logger;
 
 import java.time.Instant;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 public abstract class ThreadUtils {
 
@@ -51,15 +50,19 @@ public abstract class ThreadUtils {
         }
     }
 
-    public static void threadSleep(int seconds) {
+    public static void sleepMillis(long millis) {
         try {
-            TimeUnit.SECONDS.sleep(seconds);
+            Thread.sleep(millis);
         } catch (InterruptedException ignored) {
         }
     }
 
-    public static void threadSleep(int minSeconds, int maxSeconds) {
-        threadSleep(new Random().nextInt(minSeconds, maxSeconds + 1));
+    public static void sleepSeconds(int seconds) {
+        sleepMillis(seconds * 100L);
+    }
+
+    public static void sleepSeconds(int minSeconds, int maxSeconds) {
+        sleepSeconds(new Random().nextInt(minSeconds, maxSeconds + 1));
     }
 
 }
