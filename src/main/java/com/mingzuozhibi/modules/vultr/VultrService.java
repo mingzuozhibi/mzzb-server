@@ -1,4 +1,4 @@
-package com.mingzuozhibi.modules.admin;
+package com.mingzuozhibi.modules.vultr;
 
 import com.google.gson.*;
 import com.mingzuozhibi.commons.base.BaseKeys.Name;
@@ -160,7 +160,7 @@ public class VultrService extends BaseController {
             }
 
             JsonObject payload = new JsonObject();
-            payload.addProperty("region", vultrContext.nextRegion());
+            payload.addProperty("region", vultrContext.useCode());
             payload.addProperty("plan", "vc2-1c-1gb");
             payload.addProperty("snapshot_id", snapshotId.get());
             payload.addProperty("backups", "disabled");

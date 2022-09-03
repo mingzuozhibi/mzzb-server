@@ -1,9 +1,9 @@
 package com.mingzuozhibi.modules.admin;
 
+import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import com.mingzuozhibi.commons.logger.LoggerBind;
-import com.mingzuozhibi.commons.base.BaseController;
-import com.mingzuozhibi.modules.disc.GroupService;
+import com.mingzuozhibi.modules.vultr.VultrService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,9 +17,6 @@ public class AdminController extends BaseController {
 
     @Autowired
     private AdminService adminService;
-
-    @Autowired
-    private GroupService groupService;
 
     @Autowired
     private VultrService vultrService;

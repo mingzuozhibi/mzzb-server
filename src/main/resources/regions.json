@@ -1,0 +1,122 @@
+[
+  {
+    "code": "atl",
+    "city": "Atlanta",
+    "nation": "US",
+    "area": "North America"
+  },
+  {
+    "code": "dfw",
+    "city": "Dallas",
+    "nation": "US",
+    "area": "North America"
+  },
+  {
+    "code": "ewr",
+    "city": "New Jersey",
+    "nation": "US",
+    "area": "North America"
+  },
+  {
+    "code": "lax",
+    "city": "Los Angeles",
+    "nation": "US",
+    "area": "North America"
+  },
+  {
+    "code": "mia",
+    "city": "Miami",
+    "nation": "US",
+    "area": "North America"
+  },
+  {
+    "code": "ord",
+    "city": "Chicago",
+    "nation": "US",
+    "area": "North America"
+  },
+  {
+    "code": "sea",
+    "city": "Seattle",
+    "nation": "US",
+    "area": "North America"
+  },
+  {
+    "code": "sjc",
+    "city": "Silicon Valley",
+    "nation": "US",
+    "area": "North America"
+  },
+  {
+    "code": "mex",
+    "city": "Mexico City",
+    "nation": "MX",
+    "area": "North America"
+  },
+  {
+    "code": "yto",
+    "city": "Toronto",
+    "nation": "CA",
+    "area": "North America"
+  },
+  {
+    "code": "ams",
+    "city": "Amsterdam",
+    "nation": "NL",
+    "area": "Europe"
+  },
+  {
+    "code": "cdg",
+    "city": "Paris",
+    "nation": "FR",
+    "area": "Europe"
+  },
+  {
+    "code": "fra",
+    "city": "Frankfurt",
+    "nation": "DE",
+    "area": "Europe"
+  },
+  {
+    "code": "lhr",
+    "city": "London",
+    "nation": "GB",
+    "area": "Europe"
+  },
+  {
+    "code": "sto",
+    "city": "Stockholm",
+    "nation": "SE",
+    "area": "Europe"
+  },
+  {
+    "code": "waw",
+    "city": "Warsaw",
+    "nation": "PL",
+    "area": "Europe"
+  },
+  {
+    "code": "mel",
+    "city": "Melbourne",
+    "nation": "AU",
+    "area": "Australia"
+  },
+  {
+    "code": "syd",
+    "city": "Sydney",
+    "nation": "AU",
+    "area": "Australia"
+  },
+  {
+    "code": "sgp",
+    "city": "Singapore",
+    "nation": "SG",
+    "area": "Asia"
+  },
+  {
+    "code": "nrt",
+    "city": "Tokyo",
+    "nation": "JP",
+    "area": "Asia"
+  }
+]
