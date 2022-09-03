@@ -3,6 +3,7 @@ package com.mingzuozhibi.modules.vultr;
 import com.google.gson.*;
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.logger.LoggerBind;
+import com.mingzuozhibi.commons.utils.MyTimeUtils;
 import com.mingzuozhibi.commons.utils.ThreadUtils;
 import com.mingzuozhibi.modules.disc.GroupService;
 import lombok.extern.slf4j.Slf4j;
@@ -14,11 +15,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.mingzuozhibi.commons.base.BaseKeys.*;
+import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDateTime2;
 
 @Slf4j
 @Service
@@ -36,6 +41,42 @@ public class VultrService extends BaseController {
     @Autowired
     private VultrContext vultrContext;
 
+    @PostConstruct
+    public void init() {
+        vultrContext.init();
+        log.info("Vultr Instance Region = %s".formatted(vultrContext.formatRegion()));
+        log.info("Vultr Instance Startted = %b".formatted(vultrContext.isStartted()));
+        if (!vultrContext.isStartted() && vultrContext.getTimeout() != null) {
+            checkServer(vultrContext.getTimeout());
+        }
+    }
+
+    public void setStartted(boolean startted) {
+        vultrContext.setStartted(startted);
+    }
+
+    private void checkServer(Instant timeout) {
+        log.info("Vultr Instance Timeout = %s".formatted(
+            MyTimeUtils.ofInstant(timeout).format(fmtDateTime2)
+        ));
+        ThreadUtils.runWithDaemon(bind, "检查服务器超时", () -> {
+            while (true) {
+                var millis = timeout.toEpochMilli() - Instant.now().toEpochMilli();
+                if (millis > 0) {
+                    ThreadUtils.sleepMillis(millis);
+                } else {
+                    if (!vultrContext.isStartted()) {
+                        bind.warning("服务器似乎已超时，重新开始任务");
+                        createServer();
+                    } else {
+                        bind.success("服务器正常运行中");
+                    }
+                    break;
+                }
+            }
+        });
+    }
+
     public void createServer() {
         List<TaskOfContent> tasks = groupService.findNeedUpdateDiscs().stream()
             .map(disc -> new TaskOfContent(disc.getAsin(), disc.getThisRank()))
@@ -44,6 +85,9 @@ public class VultrService extends BaseController {
         if (createInstance()) {
             vultrContext.setTaskCount(tasks.size());
             vultrContext.setDoneCount(0);
+            vultrContext.setStartted(false);
+            vultrContext.setTimeout(Instant.now().plus(15, ChronoUnit.MINUTES));
+            checkServer(vultrContext.getTimeout());
             amqpSender.send(FETCH_TASK_START, gson.toJson(tasks));
             bind.debug("JMS -> %s size=%d".formatted(FETCH_TASK_START, tasks.size()));
         }

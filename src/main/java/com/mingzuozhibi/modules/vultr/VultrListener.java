@@ -50,6 +50,7 @@ public class VultrListener extends BaseSupport {
             vultrService.createServer();
         } else {
             bind.warning("更新上架信息成功");
+            vultrService.setStartted(true);
         }
     }
 

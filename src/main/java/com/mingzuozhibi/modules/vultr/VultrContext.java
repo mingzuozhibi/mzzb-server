@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -44,6 +44,12 @@ public class VultrContext extends BaseSupport {
     @Getter
     private int doneCount;
 
+    @Getter
+    private boolean startted;
+
+    @Getter
+    private Instant timeout;
+
     public void setRegionIndex(int regionIndex) {
         this.regionIndex = regionIndex % REGIONS.size();
         varableService.saveOrUpdate(REGION_INDEX, "%d".formatted(this.regionIndex));
@@ -59,7 +65,16 @@ public class VultrContext extends BaseSupport {
         varableService.saveOrUpdate(DONE_COUNT, "%d".formatted(this.doneCount));
     }
 
-    @PostConstruct
+    public void setStartted(boolean startted) {
+        this.startted = startted;
+        varableService.saveOrUpdate(STARTTED, "%b".formatted(this.startted));
+    }
+
+    public void setTimeout(Instant timeout) {
+        this.timeout = timeout;
+        varableService.saveOrUpdate(TIMEOUT, "%d".formatted(this.timeout.toEpochMilli()));
+    }
+
     public void init() {
         varableService.findIntegerByKey(REGION_INDEX)
             .ifPresent(this::setRegionIndex);
@@ -67,7 +82,13 @@ public class VultrContext extends BaseSupport {
             .ifPresent(this::setTaskCount);
         varableService.findIntegerByKey(DONE_COUNT)
             .ifPresent(this::setDoneCount);
-        log.info("Vultr Instance Region = %s".formatted(formatRegion()));
+        varableService.findByKey(STARTTED)
+            .map(Boolean::valueOf)
+            .ifPresent(this::setStartted);
+        varableService.findByKey(TIMEOUT)
+            .map(Long::valueOf)
+            .map(Instant::ofEpochMilli)
+            .ifPresent(this::setTimeout);
     }
 
     public String useCode() {
