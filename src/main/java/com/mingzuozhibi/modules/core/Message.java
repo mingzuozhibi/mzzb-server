@@ -1,8 +1,8 @@
 package com.mingzuozhibi.modules.core;
 
+import com.mingzuozhibi.commons.base.BaseEntity;
 import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import com.mingzuozhibi.commons.base.BaseKeys.Type;
-import com.mingzuozhibi.commons.base.BaseEntity;
 import lombok.*;
 
 import javax.persistence.*;

@@ -1,8 +1,8 @@
 package com.mingzuozhibi.modules.spider;
 
 import com.mingzuozhibi.commons.base.BaseKeys.Name;
-import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseSupport;
+import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.modules.disc.*;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,12 +28,12 @@ public class ContentUpdater extends BaseSupport {
     private DiscRepository discRepository;
 
     @Transactional
-    public void updateDiscs(List<Content> contents, Instant updateOn) {
+    public void updateAllContent(List<Content> contents, Instant updateOn) {
         try {
             bind.notify("开始更新日亚排名");
             for (Content content : contents) {
                 try {
-                    updateDisc(content, updateOn);
+                    updateContent(content, updateOn);
                 } catch (Exception e) {
                     String format = "更新碟片遇到错误：%s, json=%s";
                     bind.warning(format.formatted(e, gson.toJson(content)));
@@ -51,7 +51,7 @@ public class ContentUpdater extends BaseSupport {
         }
     }
 
-    private void updateDisc(Content content, Instant updateOn) {
+    private void updateContent(Content content, Instant updateOn) {
         String asin = content.getAsin();
         Optional<Disc> byAsin = discRepository.findByAsin(asin);
         if (byAsin.isEmpty()) {

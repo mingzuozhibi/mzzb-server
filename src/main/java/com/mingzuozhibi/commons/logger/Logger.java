@@ -1,7 +1,7 @@
 package com.mingzuozhibi.commons.logger;
 
-import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import com.mingzuozhibi.commons.amqp.AmqpSender;
+import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import lombok.extern.slf4j.Slf4j;
 
 import static com.mingzuozhibi.commons.base.BaseKeys.Type.*;

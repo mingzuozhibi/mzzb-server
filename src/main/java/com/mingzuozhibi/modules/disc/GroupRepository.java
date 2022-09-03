@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.*;
 
 import javax.persistence.criteria.Predicate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public interface GroupRepository extends JpaRepository<Group, Long>, JpaSpecificationExecutor<Group> {
 
@@ -29,5 +30,11 @@ public interface GroupRepository extends JpaRepository<Group, Long>, JpaSpecific
         "where enabled = true " +
         "order by `key` desc", nativeQuery = true)
     List<Group> findActiveDiscGroups();
+
+    default List<Disc> findActiveDiscs() {
+        return findActiveDiscGroups().stream()
+            .flatMap(discGroup -> discGroup.getDiscs().stream())
+            .collect(Collectors.toList());
+    }
 
 }

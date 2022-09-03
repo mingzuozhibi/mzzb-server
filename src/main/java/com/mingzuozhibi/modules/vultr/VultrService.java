@@ -1,10 +1,8 @@
 package com.mingzuozhibi.modules.vultr;
 
 import com.google.gson.*;
-import com.mingzuozhibi.commons.base.BaseKeys.Name;
-import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseController;
-import com.mingzuozhibi.commons.utils.MyTimeUtils;
+import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.commons.utils.ThreadUtils;
 import com.mingzuozhibi.modules.disc.GroupService;
 import lombok.extern.slf4j.Slf4j;
@@ -16,14 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
-import static com.mingzuozhibi.commons.base.BaseKeys.NEED_UPDATE_ASINS;
-import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDateTime2;
+import static com.mingzuozhibi.commons.base.BaseKeys.*;
 
 @Slf4j
 @Service
@@ -41,67 +36,31 @@ public class VultrService extends BaseController {
     @Autowired
     private VultrContext vultrContext;
 
-    @PostConstruct
-    public void init() {
-        vultrContext.init();
-        log.info("Vultr Instance Region = %s".formatted(vultrContext.formatRegion()));
-        log.info("Vultr Instance Startted = %b".formatted(vultrContext.isStartted()));
-        if (!vultrContext.isStartted() && vultrContext.getTimeout() != null) {
-            checkServer(vultrContext.getTimeout());
-        }
-    }
-
-    private void checkServer(Instant timeout) {
-        log.info("Vultr Instance Timeout = %s".formatted(
-            MyTimeUtils.ofInstant(timeout).format(fmtDateTime2)
-        ));
-        ThreadUtils.runWithDaemon(bind, "检查服务器超时", () -> {
-            while (true) {
-                var millis = timeout.toEpochMilli() - Instant.now().toEpochMilli();
-                if (millis > 0) {
-                    ThreadUtils.sleepMillis(millis);
-                } else {
-                    if (!vultrContext.isStartted()) {
-                        bind.warning("服务器似乎已超时，重新开始任务");
-                        createServer();
-                    } else {
-                        bind.success("服务器正常运行中");
-                    }
-                    break;
-                }
-            }
-        });
-    }
-
     public void createServer() {
-        Set<String> asins = groupService.findNeedUpdateAsinsSorted();
-        if (createInstance()) {
-            vultrContext.setTaskCount(asins.size());
-            vultrContext.setDoneCount(0);
-            vultrContext.setStartted(false);
-            vultrContext.setTimeout(Instant.now().plus(15, ChronoUnit.MINUTES));
-            checkServer(vultrContext.getTimeout());
-            amqpSender.send(NEED_UPDATE_ASINS, gson.toJson(asins));
-            bind.debug("JMS -> %s size=%d".formatted(NEED_UPDATE_ASINS, asins.size()));
-        }
-    }
+        List<TaskOfContent> tasks = groupService.findNeedUpdateDiscs().stream()
+            .map(disc -> new TaskOfContent(disc.getAsin(), disc.getThisRank()))
+            .collect(Collectors.toList());
 
-    public void setStartted(boolean startted) {
-        vultrContext.setStartted(startted);
+        if (createInstance()) {
+            vultrContext.setTaskCount(tasks.size());
+            vultrContext.setDoneCount(0);
+            amqpSender.send(FETCH_TASK_START, gson.toJson(tasks));
+            bind.debug("JMS -> %s size=%d".formatted(FETCH_TASK_START, tasks.size()));
+        }
     }
 
     public void finishServer(int doneCount) {
         vultrContext.setDoneCount(doneCount);
         deleteInstance();
         var taskCount = vultrContext.getTaskCount();
-        var nextCount = taskCount - doneCount;
-        if (nextCount > 100) {
+        var skipCount = taskCount - doneCount;
+        if (skipCount > 100) {
             bind.warning("服务器抓取失败，重新开始任务");
             createServer();
         }
     }
 
-    private boolean deleteInstance() {
+    public boolean deleteInstance() {
         try {
             bind.notify("开始删除服务器");
 

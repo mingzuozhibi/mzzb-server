@@ -1,10 +1,10 @@
 package com.mingzuozhibi.modules.spider;
 
 import com.google.gson.reflect.TypeToken;
-import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.commons.domain.Result;
 import com.mingzuozhibi.commons.domain.SearchTask;
+import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.commons.utils.ThreadUtils;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;

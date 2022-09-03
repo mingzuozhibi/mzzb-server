@@ -2,9 +2,9 @@ package com.mingzuozhibi.modules.disc;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import com.mingzuozhibi.commons.logger.LoggerBind;
-import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.modules.disc.Group.ViewType;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;

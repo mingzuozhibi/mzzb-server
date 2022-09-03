@@ -1,8 +1,8 @@
 package com.mingzuozhibi.modules.core;
 
 import com.mingzuozhibi.commons.base.BaseKeys.Name;
-import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseSupport;
+import com.mingzuozhibi.commons.logger.LoggerBind;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;

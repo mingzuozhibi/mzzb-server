@@ -1,7 +1,7 @@
 package com.mingzuozhibi;
 
-import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import com.mingzuozhibi.commons.amqp.AmqpSender;
+import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

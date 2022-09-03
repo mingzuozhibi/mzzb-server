@@ -22,8 +22,8 @@ public class AdminController extends BaseController {
     private VultrService vultrService;
 
     @Scheduled(cron = "0 0 * * * ?")
-    @GetMapping(value = "/admin/runAutomaticTasks", produces = MEDIA_TYPE)
-    public void runAutomaticTasks() {
+    @GetMapping(value = "/admin/startAutoTask", produces = MEDIA_TYPE)
+    public void startAutoTask() {
         runWithDaemon(bind, "每小时自动任务", () -> {
             bind.info("每小时自动任务：开始");
 
@@ -37,8 +37,8 @@ public class AdminController extends BaseController {
     }
 
     @Scheduled(cron = "0 2 0/4 * * ?")
-    @GetMapping(value = "/admin/runAutomaticTasks2", produces = MEDIA_TYPE)
-    public void runAutomaticTasks2() {
+    @GetMapping(value = "/admin/createServer", produces = MEDIA_TYPE)
+    public void createServer() {
         runWithDaemon(bind, "创建抓取服务器", () -> {
             bind.info("创建抓取服务器：开始");
             vultrService.createServer();
