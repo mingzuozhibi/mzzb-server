@@ -28,23 +28,21 @@ public class GroupService {
 
     @Transactional
     public Set<Disc> findNeedUpdateDiscs() {
-        Set<Disc> result = new LinkedHashSet<>();
-
         List<Disc> discs = groupRepository.findActiveDiscs();
 
-        Instant h6ago = Instant.now().minus(6, ChronoUnit.HOURS);
-        Predicate<Disc> isNeedQuickFetch = disc ->
-            disc.getUpdateTime() == null || disc.getUpdateTime().isBefore(h6ago);
-        discs.stream().filter(isNeedQuickFetch)
+        Predicate<Disc> isNeedQuick = disc -> disc.getUpdateTime() == null ||
+            disc.getUpdateTime().isBefore(Instant.now().minus(5, ChronoUnit.HOURS));
+        Predicate<Disc> isNeedFetch = disc -> disc.getUpdateTime() != null &&
+            disc.getUpdateTime().isBefore(Instant.now().minus(1, ChronoUnit.HOURS));
+
+        Set<Disc> result = new LinkedHashSet<>();
+        discs.stream()
+            .filter(isNeedQuick)
             .sorted(comparing(Disc::getUpdateTime, nullsLast(naturalOrder())))
             .forEach(result::add);
-
-        Instant h2ago = Instant.now().minus(2, ChronoUnit.HOURS);
-        Predicate<Disc> isNeedAfterFetch = disc ->
-            disc.getUpdateTime() != null && disc.getUpdateTime().isBefore(h2ago);
-        discs.stream().filter(isNeedAfterFetch)
+        discs.stream()
+            .filter(isNeedFetch)
             .forEach(result::add);
-
         return result;
     }
 
