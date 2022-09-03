@@ -1,7 +1,8 @@
 package com.mingzuozhibi.modules.spider;
 
 import com.mingzuozhibi.commons.base.BaseEntity;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,7 +12,6 @@ import java.time.Instant;
 @Entity
 @Setter
 @Getter
-@NoArgsConstructor
 public class History extends BaseEntity {
 
     @Serial

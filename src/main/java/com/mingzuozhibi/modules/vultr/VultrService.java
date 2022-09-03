@@ -62,17 +62,16 @@ public class VultrService extends BaseController {
         ThreadUtils.runWithDaemon(bind, "检查服务器超时", () -> {
             while (true) {
                 var millis = timeout.toEpochMilli() - Instant.now().toEpochMilli();
-                if (millis > 0) {
-                    ThreadUtils.sleepMillis(millis);
-                } else {
-                    if (!vultrContext.isStartted()) {
+                if (millis <= 0) {
+                    if (vultrContext.isStartted()) {
+                        bind.success("服务器正常运行中");
+                    } else {
                         bind.warning("服务器似乎已超时，重新开始任务");
                         createServer();
-                    } else {
-                        bind.success("服务器正常运行中");
                     }
                     break;
                 }
+                ThreadUtils.sleepMillis(millis);
             }
         });
     }
@@ -98,9 +97,17 @@ public class VultrService extends BaseController {
         deleteInstance();
         var taskCount = vultrContext.getTaskCount();
         var skipCount = taskCount - doneCount;
-        if (skipCount > 100) {
-            bind.warning("服务器抓取失败，重新开始任务");
-            createServer();
+        if (skipCount <= 100) {
+            bind.success("更新日亚排名成功");
+        } else {
+            bind.warning("更新日亚排名失败");
+            Optional.ofNullable(vultrContext.getTimeout()).ifPresent(timeout -> {
+                if (Instant.now().isBefore(timeout)) {
+                    vultrContext.setStartted(false);
+                } else {
+                    createServer();
+                }
+            });
         }
     }
 
@@ -146,6 +153,8 @@ public class VultrService extends BaseController {
                 if (!deleteInstance()) {
                     return false;
                 }
+                ThreadUtils.sleepSeconds(60);
+                bind.info("等待60秒以重新开始任务");
             }
 
             bind.info("正在获取快照ID");

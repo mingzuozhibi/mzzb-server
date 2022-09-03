@@ -8,9 +8,10 @@ public abstract class PageController extends BaseController {
 
     protected <T> String pageResult(Page<T> page) {
         Pageable p = page.getPageable();
-        return pageResult(page.getContent(), new ResultPage(
-            p.getPageSize(), p.getPageNumber() + 1, page.getTotalElements()
-        ));
+        int pageSize = p.getPageSize();
+        int currentPage = p.getPageNumber() + 1;
+        long totalElements = page.getTotalElements();
+        return pageResult(page.getContent(), new ResultPage(pageSize, currentPage, totalElements));
     }
 
 }
