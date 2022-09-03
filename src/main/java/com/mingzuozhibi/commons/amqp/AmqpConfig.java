@@ -4,10 +4,35 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import static com.mingzuozhibi.commons.amqp.AmqpEnums.*;
+import static com.mingzuozhibi.commons.base.BaseKeys.*;
 
 @Configuration
 public class AmqpConfig {
+
+    @Bean
+    public Queue fetchTaskStart() {
+        return new Queue(FETCH_TASK_START);
+    }
+
+    @Bean
+    public Queue fetchTaskDone1() {
+        return new Queue(FETCH_TASK_DONE1);
+    }
+
+    @Bean
+    public Queue fetchTaskDone2() {
+        return new Queue(FETCH_TASK_DONE2);
+    }
+
+    @Bean
+    public Queue historyFinish() {
+        return new Queue(HISTORY_FINISH);
+    }
+
+    @Bean
+    public Queue contentFinish() {
+        return new Queue(CONTENT_FINISH);
+    }
 
     @Bean
     public Queue moduleMessage() {
@@ -22,36 +47,6 @@ public class AmqpConfig {
     @Bean
     public Queue contentReturn() {
         return new Queue(CONTENT_RETURN);
-    }
-
-    @Bean
-    public Queue historyUpdate() {
-        return new Queue(HISTORY_UPDATE);
-    }
-
-    @Bean
-    public Queue historyFinish() {
-        return new Queue(HISTORY_FINISH);
-    }
-
-    @Bean
-    public Queue needUpdateAsins() {
-        return new Queue(NEED_UPDATE_ASINS);
-    }
-
-    @Bean
-    public Queue doneUpdateDiscs() {
-        return new Queue(DONE_UPDATE_DISCS);
-    }
-
-    @Bean
-    public Queue prevUpdateDiscs() {
-        return new Queue(PREV_UPDATE_DISCS);
-    }
-
-    @Bean
-    public Queue lastUpdateDiscs() {
-        return new Queue(LAST_UPDATE_DISCS);
     }
 
 }

@@ -1,9 +1,9 @@
 package com.mingzuozhibi.modules.spider;
 
-import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
-import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
+import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import com.mingzuozhibi.commons.base.PageController;
 import com.mingzuozhibi.commons.domain.Result;
+import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.modules.disc.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.Set;
 
 import static com.mingzuozhibi.support.ModifyUtils.logCreate;
 
@@ -50,8 +49,7 @@ public class SpiderController extends PageController {
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping(value = "/api/spider/fetchCount", produces = MEDIA_TYPE)
     public String getFetchCount() {
-        Set<String> needUpdateAsins = groupService.findNeedUpdateAsins();
-        return dataResult(needUpdateAsins.size());
+        return dataResult(groupService.getFetchCount());
     }
 
     @Transactional

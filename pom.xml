@@ -12,7 +12,7 @@
 
     <groupId>com.mingzuozhibi</groupId>
     <artifactId>mzzb-server</artifactId>
-    <version>3.7.0</version>
+    <version>3.8.0</version>
     <packaging>jar</packaging>
 
     <name>mzzb-server</name>
@@ -56,10 +56,11 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.15.2</version>
+            <version>1.15.3</version>
         </dependency>
 
         <dependency>

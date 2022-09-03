@@ -4,7 +4,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 @Getter
 @NoArgsConstructor
@@ -30,42 +31,44 @@ public class Result<T> {
         return page != null;
     }
 
-    public Result<T> withError(String message) {
-        this.success = false;
-        this.message = message;
-        return this;
+    public boolean isData(Predicate<T> predicate) {
+        return hasData() && predicate.test(data);
     }
 
-    public Result<T> withData(T data) {
-        this.success = true;
-        this.data = data;
-        return this;
-    }
-
-    public Result<T> withPage(T data, ResultPage page) {
-        this.success = true;
-        this.data = data;
-        this.page = page;
-        return this;
-    }
-
-    public Result<T> ifSuccess(BiConsumer<T, Result<T>> consumer) {
+    public Result<T> ifSuccess(Consumer<T> consumer) {
         if (success) {
-            consumer.accept(data, this);
+            consumer.accept(data);
+        }
+        return this;
+    }
+
+    public Result<T> ifFailure(Consumer<String> consumer) {
+        if (success) {
+            consumer.accept(message);
         }
         return this;
     }
 
     public static <T> Result<T> ofError(String message) {
-        return new Result<T>().withError(message);
+        var result = new Result<T>();
+        result.success = false;
+        result.message = message;
+        return result;
     }
 
     public static <T> Result<T> ofData(T data) {
-        return new Result<T>().withData(data);
+        var result = new Result<T>();
+        result.success = true;
+        result.data = data;
+        return result;
     }
 
     public static <T> Result<List<T>> ofPage(List<T> data, ResultPage page) {
-        return new Result<List<T>>().withPage(data, page);
+        var result = new Result<List<T>>();
+        result.success = true;
+        result.data = data;
+        result.page = page;
+        return result;
     }
 
     public static <T> Result<T> ofTask(SearchTask<T> task) {

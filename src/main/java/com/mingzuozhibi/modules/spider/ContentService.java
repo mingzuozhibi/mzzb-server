@@ -1,10 +1,10 @@
 package com.mingzuozhibi.modules.spider;
 
 import com.google.gson.reflect.TypeToken;
-import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.commons.domain.Result;
 import com.mingzuozhibi.commons.domain.SearchTask;
+import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.commons.utils.ThreadUtils;
 import com.mingzuozhibi.modules.disc.Disc;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
@@ -15,7 +15,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 
-import static com.mingzuozhibi.commons.amqp.AmqpEnums.*;
+import static com.mingzuozhibi.commons.base.BaseKeys.*;
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 import static com.mingzuozhibi.support.ModifyUtils.getName;
 
@@ -26,12 +26,12 @@ public class ContentService extends BaseSupport {
     private final Map<String, SearchTask<Content>> waitMap = Collections.synchronizedMap(new HashMap<>());
 
     public Result<Content> doGet(String asin) {
-        SearchTask<Content> task = contentSearch(asin);
-        return Result.ofTask(task).ifSuccess((data, result) -> {
-            if (data.isOffTheShelf()) {
-                result.withError("可能该碟片已下架");
-            }
-        });
+        var task = contentSearch(asin);
+        var result = Result.ofTask(task);
+        if (result.isData(Content::isOffTheShelf)) {
+            return Result.ofError("可能该碟片已下架");
+        }
+        return result;
     }
 
     public Disc createWith(Content content) {

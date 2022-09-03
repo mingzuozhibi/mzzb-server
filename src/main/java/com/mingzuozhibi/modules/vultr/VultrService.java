@@ -1,9 +1,8 @@
-package com.mingzuozhibi.modules.admin;
+package com.mingzuozhibi.modules.vultr;
 
 import com.google.gson.*;
-import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
-import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseController;
+import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.commons.utils.MyTimeUtils;
 import com.mingzuozhibi.commons.utils.ThreadUtils;
 import com.mingzuozhibi.modules.disc.GroupService;
@@ -21,8 +20,9 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
-import static com.mingzuozhibi.commons.amqp.AmqpEnums.NEED_UPDATE_ASINS;
+import static com.mingzuozhibi.commons.base.BaseKeys.*;
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDateTime2;
 
 @Slf4j
@@ -51,13 +51,17 @@ public class VultrService extends BaseController {
         }
     }
 
+    public void setStartted(boolean startted) {
+        vultrContext.setStartted(startted);
+    }
+
     private void checkServer(Instant timeout) {
         log.info("Vultr Instance Timeout = %s".formatted(
             MyTimeUtils.ofInstant(timeout).format(fmtDateTime2)
         ));
         ThreadUtils.runWithDaemon(bind, "检查服务器超时", () -> {
             while (true) {
-                var millis = Instant.now().toEpochMilli() - timeout.toEpochMilli();
+                var millis = timeout.toEpochMilli() - Instant.now().toEpochMilli();
                 if (millis > 0) {
                     ThreadUtils.sleepMillis(millis);
                 } else {
@@ -74,34 +78,33 @@ public class VultrService extends BaseController {
     }
 
     public void createServer() {
-        Set<String> asins = groupService.findNeedUpdateAsinsSorted();
+        List<TaskOfContent> tasks = groupService.findNeedUpdateDiscs().stream()
+            .map(disc -> new TaskOfContent(disc.getAsin(), disc.getThisRank()))
+            .collect(Collectors.toList());
+
         if (createInstance()) {
-            vultrContext.setTaskCount(asins.size());
+            vultrContext.setTaskCount(tasks.size());
             vultrContext.setDoneCount(0);
             vultrContext.setStartted(false);
             vultrContext.setTimeout(Instant.now().plus(15, ChronoUnit.MINUTES));
             checkServer(vultrContext.getTimeout());
-            amqpSender.send(NEED_UPDATE_ASINS, gson.toJson(asins));
-            bind.debug("JMS -> %s size=%d".formatted(NEED_UPDATE_ASINS, asins.size()));
+            amqpSender.send(FETCH_TASK_START, gson.toJson(tasks));
+            bind.debug("JMS -> %s size=%d".formatted(FETCH_TASK_START, tasks.size()));
         }
-    }
-
-    public void setStartted(boolean startted) {
-        vultrContext.setStartted(startted);
     }
 
     public void finishServer(int doneCount) {
         vultrContext.setDoneCount(doneCount);
         deleteInstance();
         var taskCount = vultrContext.getTaskCount();
-        var nextCount = taskCount - doneCount;
-        if (nextCount > 100) {
+        var skipCount = taskCount - doneCount;
+        if (skipCount > 100) {
             bind.warning("服务器抓取失败，重新开始任务");
             createServer();
         }
     }
 
-    private boolean deleteInstance() {
+    public boolean deleteInstance() {
         try {
             bind.notify("开始删除服务器");
 
@@ -160,7 +163,7 @@ public class VultrService extends BaseController {
             }
 
             JsonObject payload = new JsonObject();
-            payload.addProperty("region", vultrContext.nextRegion());
+            payload.addProperty("region", vultrContext.useCode());
             payload.addProperty("plan", "vc2-1c-1gb");
             payload.addProperty("snapshot_id", snapshotId.get());
             payload.addProperty("backups", "disabled");

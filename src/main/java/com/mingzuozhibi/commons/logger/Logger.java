@@ -1,10 +1,10 @@
-package com.mingzuozhibi.commons.amqp.logger;
+package com.mingzuozhibi.commons.logger;
 
-import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
 import com.mingzuozhibi.commons.amqp.AmqpSender;
+import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.mingzuozhibi.commons.amqp.AmqpEnums.Type.*;
+import static com.mingzuozhibi.commons.base.BaseKeys.Type.*;
 
 @Slf4j
 public class Logger {
