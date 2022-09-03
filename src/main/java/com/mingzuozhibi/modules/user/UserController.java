@@ -1,7 +1,7 @@
 package com.mingzuozhibi.modules.user;
 
-import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
-import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
+import com.mingzuozhibi.commons.base.BaseKeys.Name;
+import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseController;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;

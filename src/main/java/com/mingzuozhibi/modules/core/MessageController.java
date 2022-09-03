@@ -1,7 +1,7 @@
 package com.mingzuozhibi.modules.core;
 
-import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
-import com.mingzuozhibi.commons.amqp.AmqpEnums.Type;
+import com.mingzuozhibi.commons.base.BaseKeys.Name;
+import com.mingzuozhibi.commons.base.BaseKeys.Type;
 import com.mingzuozhibi.commons.base.PageController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;

@@ -1,6 +1,6 @@
-package com.mingzuozhibi.commons.amqp;
+package com.mingzuozhibi.commons.base;
 
-public abstract class AmqpEnums {
+public abstract class BaseKeys {
 
     public static final String MODULE_MESSAGE = "module.message";
     public static final String CONTENT_SEARCH = "content.search";

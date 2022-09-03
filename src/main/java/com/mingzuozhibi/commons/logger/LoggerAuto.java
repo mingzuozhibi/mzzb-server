@@ -1,6 +1,6 @@
-package com.mingzuozhibi.commons.amqp.logger;
+package com.mingzuozhibi.commons.logger;
 
-import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
+import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import com.mingzuozhibi.commons.amqp.AmqpSender;
 import com.mingzuozhibi.commons.base.BaseSupport;
 import lombok.extern.slf4j.Slf4j;

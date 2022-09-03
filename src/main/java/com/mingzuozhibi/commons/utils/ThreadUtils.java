@@ -1,6 +1,6 @@
 package com.mingzuozhibi.commons.utils;
 
-import com.mingzuozhibi.commons.amqp.logger.Logger;
+import com.mingzuozhibi.commons.logger.Logger;
 
 import java.time.Instant;
 import java.util.Random;

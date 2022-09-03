@@ -1,6 +1,6 @@
-package com.mingzuozhibi.commons.amqp.logger;
+package com.mingzuozhibi.commons.logger;
 
-import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
+import com.mingzuozhibi.commons.base.BaseKeys.Name;
 
 import java.lang.annotation.*;
 

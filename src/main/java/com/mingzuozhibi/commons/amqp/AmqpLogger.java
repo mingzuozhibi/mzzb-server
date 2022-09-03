@@ -1,7 +1,7 @@
 package com.mingzuozhibi.commons.amqp;
 
-import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
-import com.mingzuozhibi.commons.amqp.AmqpEnums.Type;
+import com.mingzuozhibi.commons.base.BaseKeys.Name;
+import com.mingzuozhibi.commons.base.BaseKeys.Type;
 import lombok.*;
 
 import java.time.Instant;

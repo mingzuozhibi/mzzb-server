@@ -1,8 +1,8 @@
 package com.mingzuozhibi.modules.admin;
 
 import com.google.gson.*;
-import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
-import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
+import com.mingzuozhibi.commons.base.BaseKeys.Name;
+import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.utils.MyTimeUtils;
 import com.mingzuozhibi.commons.utils.ThreadUtils;
@@ -22,7 +22,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static com.mingzuozhibi.commons.amqp.AmqpEnums.NEED_UPDATE_ASINS;
+import static com.mingzuozhibi.commons.base.BaseKeys.NEED_UPDATE_ASINS;
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDateTime2;
 
 @Slf4j

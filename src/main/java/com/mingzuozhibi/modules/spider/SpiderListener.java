@@ -1,8 +1,8 @@
 package com.mingzuozhibi.modules.spider;
 
 import com.google.gson.reflect.TypeToken;
-import com.mingzuozhibi.commons.amqp.logger.Logger;
-import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
+import com.mingzuozhibi.commons.logger.Logger;
+import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.modules.admin.VultrService;
 import com.mingzuozhibi.modules.disc.DiscRepository;
@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static com.google.gson.reflect.TypeToken.getParameterized;
-import static com.mingzuozhibi.commons.amqp.AmqpEnums.*;
+import static com.mingzuozhibi.commons.base.BaseKeys.*;
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDateTime;
 import static com.mingzuozhibi.commons.utils.MyTimeUtils.toInstant;
 import static java.util.Collections.synchronizedList;

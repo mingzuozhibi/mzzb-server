@@ -1,8 +1,8 @@
 package com.mingzuozhibi.modules.admin;
 
 import com.google.gson.JsonObject;
-import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
-import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
+import com.mingzuozhibi.commons.base.BaseKeys.Name;
+import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.modules.core.VarableService;
 import lombok.Getter;

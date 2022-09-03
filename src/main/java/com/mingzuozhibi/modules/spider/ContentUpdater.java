@@ -1,7 +1,7 @@
 package com.mingzuozhibi.modules.spider;
 
-import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
-import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
+import com.mingzuozhibi.commons.base.BaseKeys.Name;
+import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.modules.disc.*;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;

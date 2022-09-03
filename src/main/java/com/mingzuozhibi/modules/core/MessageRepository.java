@@ -1,8 +1,8 @@
 package com.mingzuozhibi.modules.core;
 
-import com.mingzuozhibi.commons.amqp.AmqpEnums;
-import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
-import com.mingzuozhibi.commons.amqp.AmqpEnums.Type;
+import com.mingzuozhibi.commons.base.BaseKeys;
+import com.mingzuozhibi.commons.base.BaseKeys.Name;
+import com.mingzuozhibi.commons.base.BaseKeys.Type;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +18,7 @@ public interface MessageRepository extends JpaRepository<Message, Long>, JpaSpec
         return findAll((Specification<Message>) (root, query, cb) -> {
             ArrayList<Predicate> array = new ArrayList<>();
             array.add(cb.equal(root.get("name"), name));
-            if (types != null && !types.isEmpty() && types.size() < AmqpEnums.Type.values().length) {
+            if (types != null && !types.isEmpty() && types.size() < BaseKeys.Type.values().length) {
                 array.add(cb.in(root.get("type")).value(types));
             }
             if (StringUtils.isNotBlank(search)) {

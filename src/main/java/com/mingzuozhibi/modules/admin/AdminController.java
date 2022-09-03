@@ -1,7 +1,7 @@
 package com.mingzuozhibi.modules.admin;
 
-import com.mingzuozhibi.commons.amqp.AmqpEnums.Name;
-import com.mingzuozhibi.commons.amqp.logger.LoggerBind;
+import com.mingzuozhibi.commons.base.BaseKeys.Name;
+import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.modules.disc.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
