@@ -46,10 +46,10 @@ public class VultrListener extends BaseSupport {
     @RabbitListener(queues = FETCH_TASK_DONE1)
     public void fetchTaskDone1(String json) {
         if (Boolean.parseBoolean(json)) {
-            bind.warning("更新上架信息失败");
+            bind.warning("更新上架信息失败，重新开始任务");
             vultrService.createServer();
         } else {
-            bind.warning("更新上架信息成功");
+            bind.success("更新上架信息成功");
             vultrService.setStartted(true);
         }
     }

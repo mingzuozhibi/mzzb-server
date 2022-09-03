@@ -99,8 +99,10 @@ public class VultrService extends BaseController {
         var taskCount = vultrContext.getTaskCount();
         var skipCount = taskCount - doneCount;
         if (skipCount > 100) {
-            bind.warning("服务器抓取失败，重新开始任务");
+            bind.warning("更新日亚排名失败，重新开始任务");
             createServer();
+        } else {
+            bind.success("更新日亚排名成功");
         }
     }
 
