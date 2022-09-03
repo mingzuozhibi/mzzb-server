@@ -1,4 +1,14 @@
 package com.mingzuozhibi.commons.domain;
 
-public record ResultPage(int pageSize, int currentPage, long totalElements) {
+import lombok.*;
+
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public class ResultPage {
+
+    private int pageSize;
+    private int currentPage;
+    private long totalElements;
+
 }

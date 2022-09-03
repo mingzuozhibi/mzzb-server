@@ -1,4 +1,13 @@
 package com.mingzuozhibi.modules.vultr;
 
-public record TaskOfContent(String asin, Integer rank) {
+import lombok.*;
+
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public class TaskOfContent {
+
+    private String asin;
+    private Integer rank;
+
 }
