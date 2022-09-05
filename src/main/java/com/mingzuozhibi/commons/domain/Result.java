@@ -1,52 +1,41 @@
 package com.mingzuozhibi.commons.domain;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 @Getter
-@NoArgsConstructor
 public class Result<T> {
 
     private boolean success;
-
     private String message;
-
     private T data;
-
     private ResultPage page;
 
     public boolean hasError() {
-        return message != null;
+        return !isSuccess();
     }
 
-    public boolean hasData() {
-        return data != null;
+    public boolean testData(Predicate<T> predicate) {
+        return isSuccess() && predicate.test(getData());
     }
 
-    public boolean hasPage() {
-        return page != null;
-    }
-
-    public boolean isData(Predicate<T> predicate) {
-        return hasData() && predicate.test(data);
-    }
-
-    public Result<T> ifSuccess(Consumer<T> consumer) {
-        if (success) {
-            consumer.accept(data);
+    public <R> Result<R> thenData(Function<T, R> function) {
+        if (isSuccess()) {
+            return ofData(function.apply(getData()));
+        } else {
+            return ofError(getMessage());
         }
-        return this;
     }
 
-    public Result<T> ifFailure(Consumer<String> consumer) {
-        if (success) {
-            consumer.accept(message);
+    public static <T> Result<T> ofTask(SearchTask<T> task) {
+        if (task.isSuccess()) {
+            return ofData(task.getData());
+        } else {
+            return ofError(task.getMessage());
         }
-        return this;
     }
 
     public static <T> Result<T> ofError(String message) {
@@ -69,14 +58,6 @@ public class Result<T> {
         result.data = data;
         result.page = page;
         return result;
-    }
-
-    public static <T> Result<T> ofTask(SearchTask<T> task) {
-        if (task.isSuccess()) {
-            return ofData(task.getData());
-        } else {
-            return ofError(task.getMessage());
-        }
     }
 
 }
