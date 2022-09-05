@@ -12,7 +12,7 @@
 
     <groupId>com.mingzuozhibi</groupId>
     <artifactId>mzzb-server</artifactId>
-    <version>3.9.0</version>
+    <version>4.0.0</version>
     <packaging>jar</packaging>
 
     <name>mzzb-server</name>
