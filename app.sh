@@ -103,7 +103,7 @@ qt | stop)
     fi
     ;;
 rt | restart)
-    build_if -f
+    build_if
     try_stop -f
     java_jar
     ;;
