@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import static com.mingzuozhibi.commons.base.BaseKeys.*;
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDateTime2;
+import static com.mingzuozhibi.commons.utils.ThreadUtils.runWithDaemon;
 
 @Slf4j
 @Service
@@ -59,7 +60,7 @@ public class VultrService extends BaseController {
         log.info("Vultr Instance Timeout = %s".formatted(
             MyTimeUtils.ofInstant(timeout).format(fmtDateTime2)
         ));
-        ThreadUtils.runWithDaemon(bind, "检查服务器超时", () -> {
+        runWithDaemon(bind, "检查服务器超时", () -> {
             while (true) {
                 var millis = timeout.toEpochMilli() - Instant.now().toEpochMilli();
                 if (millis <= 0) {
