@@ -25,10 +25,10 @@ public abstract class LoggerUtils {
     }
 
     public static void printRequest(HttpServletRequest request) {
-        String params = request.getParameterMap().entrySet().stream()
+        var params = request.getParameterMap().entrySet().stream()
             .map(e -> e.getKey() + "=" + printValue(e.getValue()))
             .collect(Collectors.joining(", ", "{", "}"));
-        String headers = streamOf(request.getHeaderNames())
+        var headers = streamOf(request.getHeaderNames())
             .map(key -> key + "=" + printValue(request.getHeaders(key)))
             .collect(Collectors.joining(", ", "{", "}"));
         log.debug("Request: uri=%s %s, params=%s, headers=%s".formatted(
