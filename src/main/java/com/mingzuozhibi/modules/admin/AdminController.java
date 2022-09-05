@@ -25,14 +25,10 @@ public class AdminController extends BaseController {
     @GetMapping(value = "/admin/startAutoTask", produces = MEDIA_TYPE)
     public void startAutoTask() {
         runWithDaemon(bind, "每小时自动任务", () -> {
-            bind.info("每小时自动任务：开始");
-
             adminService.deleteExpiredRemembers();
             adminService.moveExpiredHourRecords();
             adminService.recordRankAndComputePt();
             adminService.cleanupModulesMessages();
-
-            bind.info("每小时自动任务：完成");
         });
     }
 
@@ -40,9 +36,7 @@ public class AdminController extends BaseController {
     @GetMapping(value = "/admin/createServer", produces = MEDIA_TYPE)
     public void createServer() {
         runWithDaemon(bind, "创建抓取服务器", () -> {
-            bind.info("创建抓取服务器：开始");
             vultrService.createServer();
-            bind.info("创建抓取服务器：完成");
         });
     }
 

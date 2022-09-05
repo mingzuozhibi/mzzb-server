@@ -1,5 +1,6 @@
 package com.mingzuozhibi.commons.utils;
 
+import com.mingzuozhibi.commons.logger.Logger;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -12,6 +13,11 @@ import java.util.stream.Stream.Builder;
 
 @Slf4j
 public abstract class LoggerUtils {
+
+    public static void logError(Logger logger, String message, Exception e) {
+        logger.error("%s：%s".formatted(message, e.toString()));
+        log.warn(message, e);
+    }
 
     public static void logRequestIfExists() {
         Optional.ofNullable(((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()))

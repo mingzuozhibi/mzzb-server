@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import static com.mingzuozhibi.commons.base.BaseKeys.*;
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDateTime2;
+import static com.mingzuozhibi.commons.utils.ThreadUtils.runWithDaemon;
 
 @Slf4j
 @Service
@@ -59,7 +60,7 @@ public class VultrService extends BaseController {
         log.info("Vultr Instance Timeout = %s".formatted(
             MyTimeUtils.ofInstant(timeout).format(fmtDateTime2)
         ));
-        ThreadUtils.runWithDaemon(bind, "检查服务器超时", () -> {
+        runWithDaemon(bind, "检查服务器超时", () -> {
             while (true) {
                 var millis = timeout.toEpochMilli() - Instant.now().toEpochMilli();
                 if (millis <= 0) {
@@ -115,10 +116,10 @@ public class VultrService extends BaseController {
         try {
             bind.notify("开始删除服务器");
 
-            bind.info("正在获取实例ID");
+            bind.debug("正在获取实例ID");
             Optional<JsonObject> instance = getInstance();
             if (instance.isEmpty()) {
-                bind.info("未能获取实例ID");
+                bind.warning("未能获取实例ID");
                 return false;
             }
 
@@ -146,28 +147,28 @@ public class VultrService extends BaseController {
 
             printVultrApiKey();
 
-            bind.info("正在检查服务器");
+            bind.debug("正在检查服务器");
             Optional<JsonObject> instance = getInstance();
             if (instance.isPresent()) {
-                bind.info("检查到服务器已存在");
+                bind.debug("检查到服务器已存在");
                 if (!deleteInstance()) {
                     return false;
                 }
                 ThreadUtils.sleepSeconds(60);
-                bind.info("等待60秒以重新开始任务");
+                bind.debug("等待60秒以重新开始任务");
             }
 
-            bind.info("正在获取快照ID");
+            bind.debug("正在获取快照ID");
             Optional<String> snapshotId = getSnapshotId();
             if (snapshotId.isEmpty()) {
-                bind.info("未能获取快照ID");
+                bind.warning("未能获取快照ID");
                 return false;
             }
 
-            bind.info("正在获取防火墙策略ID");
+            bind.debug("正在获取防火墙策略ID");
             Optional<String> firewallId = getFirewallId();
             if (firewallId.isEmpty()) {
-                bind.info("未能获取防火墙策略ID");
+                bind.warning("未能获取防火墙策略ID");
                 return false;
             }
 
@@ -181,9 +182,9 @@ public class VultrService extends BaseController {
             payload.addProperty("label", TARGET);
             payload.addProperty("hostname", TARGET);
             String body = payload.toString();
-            bind.info("服务器参数 = %s".formatted(body));
+            bind.debug("服务器参数 = %s".formatted(body));
 
-            bind.info("Next Vultr Instance Region = %s".formatted(vultrContext.formatRegion()));
+            bind.debug("Next Vultr Instance Region = %s".formatted(vultrContext.formatRegion()));
 
             Response response = jsoupPost("https://api.vultr.com/v2/instances", body);
             if (response.statusCode() == 202) {
@@ -203,7 +204,7 @@ public class VultrService extends BaseController {
         var keylen = vultrApiKey.length();
         var prefix = vultrApiKey.substring(0, 2);
         var suffix = vultrApiKey.substring(keylen - 2);
-        log.info("bcloud.apikey=%s**%s, length=%d".formatted(prefix, suffix, keylen));
+        log.debug("bcloud.apikey=%s**%s, length=%d".formatted(prefix, suffix, keylen));
     }
 
     public Optional<JsonObject> getInstance() throws Exception {

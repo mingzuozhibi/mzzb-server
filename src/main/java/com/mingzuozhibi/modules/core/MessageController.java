@@ -4,8 +4,7 @@ import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import com.mingzuozhibi.commons.base.BaseKeys.Type;
 import com.mingzuozhibi.commons.base.PageController;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +24,8 @@ public class MessageController extends PageController {
                           @RequestParam(defaultValue = "20") int size) {
 
         PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by(Order.desc("id")));
-        return pageResult(messageRepository.findBy(name, types, search, pageRequest));
+        Page<Message> messages = messageRepository.findBy(name, types, search, pageRequest);
+        return pageResult(messages);
 
     }
 

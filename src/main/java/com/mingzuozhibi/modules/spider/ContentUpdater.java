@@ -5,18 +5,23 @@ import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.modules.disc.*;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 import static com.mingzuozhibi.modules.disc.DiscUtils.updateRank;
 
+@Slf4j
 @Component
 @LoggerBind(Name.SERVER_DISC)
 public class ContentUpdater extends BaseSupport {
@@ -28,47 +33,42 @@ public class ContentUpdater extends BaseSupport {
     private DiscRepository discRepository;
 
     @Transactional
-    public void updateAllContent(List<Content> contents, Instant updateOn) {
-        try {
-            bind.notify("开始更新日亚排名");
-            for (Content content : contents) {
-                try {
-                    updateContent(content, updateOn);
-                } catch (Exception e) {
-                    String format = "更新碟片遇到错误：%s, json=%s";
-                    bind.warning(format.formatted(e, gson.toJson(content)));
-                }
+    public long updateAllContent(List<Content> contents, Instant updateOn) {
+        var proxy = (ContentUpdater) AopContext.currentProxy();
+        var updateCount = new AtomicLong(0);
+        for (Content content : contents) {
+            try {
+                proxy.updateContent(content, updateOn);
+                updateCount.incrementAndGet();
+            } catch (Exception e) {
+                bind.warning("updateContent(content=%s) throws %s".formatted(
+                    gson.toJson(content), e.toString()));
+                log.debug("updateContent", e);
             }
-
-            if (contents.size() > 0) {
-                groupService.updateGroupModifyTime();
-                bind.success("成功更新日亚排名：共%d个".formatted(contents.size()));
-            } else {
-                bind.warning("未能更新日亚排名：无数据");
-            }
-        } catch (Exception e) {
-            bind.warning("未能更新日亚排名: %s".formatted(e.getMessage()));
         }
+        groupService.updateUpdateOn();
+        return updateCount.get();
     }
 
-    private void updateContent(Content content, Instant updateOn) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateContent(Content content, Instant updateOn) {
         String asin = content.getAsin();
+        if (content.isOffTheShelf()) {
+            bind.warning("[碟片可能已下架][%s]".formatted(asin));
+            return;
+        }
+
         Optional<Disc> byAsin = discRepository.findByAsin(asin);
         if (byAsin.isEmpty()) {
             bind.warning("[应用碟片更新时，发现未知碟片][%s]".formatted(asin));
             return;
         }
-        if (content.isOffTheShelf()) {
-            bind.warning("[碟片可能已下架][%s]".formatted(asin));
-            return;
-        }
+
         Disc disc = byAsin.get();
         updateTitle(disc, content);
         updateType(disc, content);
         updateDate(disc, content);
-        if (disc.getModifyTime() == null || updateOn.isAfter(disc.getModifyTime())) {
-            updateRank(disc, content.getRank(), updateOn);
-        }
+        updateRank(disc, content.getRank(), updateOn);
     }
 
     private void updateTitle(Disc disc, Content content) {

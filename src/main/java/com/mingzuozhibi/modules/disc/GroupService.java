@@ -55,7 +55,7 @@ public class GroupService {
     }
 
     @Transactional
-    public void updateGroupModifyTime() {
+    public void updateUpdateOn() {
         groupRepository.findByEnabled(true).forEach(group -> {
             findLastUpdate(group).ifPresent(disc -> {
                 group.setModifyTime(disc.getUpdateTime());

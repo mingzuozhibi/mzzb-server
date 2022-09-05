@@ -13,6 +13,7 @@ import java.util.List;
 
 import static com.google.gson.reflect.TypeToken.getParameterized;
 import static com.mingzuozhibi.commons.base.BaseKeys.*;
+import static com.mingzuozhibi.commons.utils.ThreadUtils.*;
 
 @Component
 @LoggerBind(Name.SERVER_CORE)
@@ -29,18 +30,22 @@ public class VultrListener extends BaseSupport {
 
     @RabbitListener(queues = HISTORY_FINISH)
     public void historyFinish(String json) {
+        var logger = amqpSender.bind(Name.SPIDER_HISTORY);
         var token = TypeToken.getParameterized(List.class, History.class);
         List<History> histories = gson.fromJson(json, token.getType());
-        bind.debug("JMS <- %s size=%d".formatted(HISTORY_FINISH, histories.size()));
-        historyUpdater.updateAllHistory(histories);
+        logger.debug("JMS <- %s size=%d".formatted(HISTORY_FINISH, histories.size()));
+        runWithAction(logger, "分析上架信息", () ->
+            historyUpdater.updateAllHistory(histories));
     }
 
     @RabbitListener(queues = CONTENT_FINISH)
     public void contentFinish(String json) {
+        var logger = amqpSender.bind(Name.SPIDER_CONTENT);
         TypeToken<?> token = getParameterized(List.class, Content.class);
         List<Content> contents = gson.fromJson(json, token.getType());
-        bind.debug("JMS <- %s size=%d".formatted(CONTENT_FINISH, contents.size()));
-        contentUpdater.updateAllContent(contents, Instant.now());
+        logger.debug("JMS <- %s size=%d".formatted(CONTENT_FINISH, contents.size()));
+        logWithAction(logger, "更新碟片信息", () ->
+            contentUpdater.updateAllContent(contents, Instant.now()));
     }
 
     @RabbitListener(queues = FETCH_TASK_DONE1)

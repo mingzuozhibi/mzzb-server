@@ -28,7 +28,7 @@ public class ContentService extends BaseSupport {
     public Result<Content> doGet(String asin) {
         var task = contentSearch(asin);
         var result = Result.ofTask(task);
-        if (result.isData(Content::isOffTheShelf)) {
+        if (result.testData(Content::isOffTheShelf)) {
             return Result.ofError("可能该碟片已下架");
         }
         return result;

@@ -41,7 +41,9 @@ public class AdminService extends BaseSupport {
     @Transactional
     public void deleteExpiredRemembers() {
         long count = rememberRepository.deleteByExpiredBefore(Instant.now());
-        bind.info("[自动任务][清理自动登入][共%d个]".formatted(count));
+        if (count > 0) {
+            bind.debug("[自动任务][清理自动登入][共%d个]".formatted(count));
+        }
     }
 
     @Transactional
@@ -55,7 +57,9 @@ public class AdminService extends BaseSupport {
             dateRecord.setGuessPt(hourRecord.getGuessPt());
             recordService.moveRecord(hourRecord, dateRecord);
         });
-        bind.info("[自动任务][转存昨日排名][共%d个]".formatted(records.size()));
+        if (records.size() > 0) {
+            bind.debug("[自动任务][转存昨日排名][共%d个]".formatted(records.size()));
+        }
     }
 
     @Transactional
@@ -66,41 +70,41 @@ public class AdminService extends BaseSupport {
         int hour = now.getHour();
         Set<Disc> discs = groupService.findNeedRecordDiscs();
         discs.forEach(disc -> recordCompute.computePtNow(disc, date, hour));
-        bind.info("[自动任务][记录计算排名][共%d个]".formatted(discs.size()));
+        bind.debug("[自动任务][记录计算排名][共%d个]".formatted(discs.size()));
     }
 
     @Transactional
     public void cleanupModulesMessages() {
         int count = 0;
         {
-            int c1 = messageRepository.cleanup(Name.SPIDER_CONTENT, 600, Type.INFO, Type.WARNING);
-            int c2 = messageRepository.cleanup(Name.SPIDER_CONTENT, 800);
+            int c1 = messageRepository.cleanup(Name.SPIDER_CONTENT, 300, Type.DEBUG);
+            int c2 = messageRepository.cleanup(Name.SPIDER_CONTENT, 400);
             count += c1 + c2;
-            log.info("[清理日志][name=%s][size=%d,%d]".formatted(Name.SPIDER_CONTENT, c1, c2));
+            log.debug("[清理日志][name=%s][size=%d,%d]".formatted(Name.SPIDER_CONTENT, c1, c2));
         }
         {
-            int c1 = messageRepository.cleanup(Name.SPIDER_HISTORY, 150, Type.INFO);
+            int c1 = messageRepository.cleanup(Name.SPIDER_HISTORY, 150, Type.DEBUG);
             int c2 = messageRepository.cleanup(Name.SPIDER_HISTORY, 200);
             count += c1 + c2;
-            log.info("[清理日志][name=%s][size=%d,%d]".formatted(Name.SPIDER_HISTORY, c1, c2));
+            log.debug("[清理日志][name=%s][size=%d,%d]".formatted(Name.SPIDER_HISTORY, c1, c2));
         }
         {
-            int c1 = messageRepository.cleanup(Name.SERVER_DISC, 150, Type.INFO);
+            int c1 = messageRepository.cleanup(Name.SERVER_DISC, 150, Type.DEBUG);
             int c2 = messageRepository.cleanup(Name.SERVER_DISC, 200);
             count += c1 + c2;
-            log.info("[清理日志][name=%s][size=%d,%d]".formatted(Name.SERVER_DISC, c1, c2));
+            log.debug("[清理日志][name=%s][size=%d,%d]".formatted(Name.SERVER_DISC, c1, c2));
         }
         {
             int c1 = messageRepository.cleanup(Name.SERVER_CORE, 200);
             count += c1;
-            log.info("[清理日志][name=%s][size=%d]".formatted(Name.SERVER_CORE, c1));
+            log.debug("[清理日志][name=%s][size=%d]".formatted(Name.SERVER_CORE, c1));
         }
         {
             int c1 = messageRepository.cleanup(Name.DEFAULT, 200);
             count += c1;
-            log.info("[清理日志][name=%s][size=%d]".formatted(Name.DEFAULT, c1));
+            log.debug("[清理日志][name=%s][size=%d]".formatted(Name.DEFAULT, c1));
         }
-        bind.info("[自动任务][清理日志][共%d条]".formatted(count));
+        bind.debug("[自动任务][清理日志][共%d条]".formatted(count));
     }
 
 }
