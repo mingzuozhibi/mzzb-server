@@ -74,7 +74,7 @@ public class ContentUpdater extends BaseSupport {
     private void updateTitle(Disc disc, Content content) {
         String title = content.getTitle();
         if (!Objects.equals(title, disc.getTitle())) {
-            bind.info("[碟片标题更新][%s => %s][%s]".formatted(disc.getTitle(), title, disc.getAsin()));
+            bind.debug("[碟片标题更新][%s => %s][%s]".formatted(disc.getTitle(), title, disc.getAsin()));
             disc.setTitle(title);
         }
     }
@@ -91,7 +91,7 @@ public class ContentUpdater extends BaseSupport {
 
     private void updateDate(Disc disc, Content content) {
         if (!StringUtils.hasLength(content.getDate())) {
-            bind.info("[发售时间为空][当前设置为%s][%s]".formatted(disc.getReleaseDate(), disc.getAsin()));
+            bind.debug("[发售时间为空][当前设置为%s][%s]".formatted(disc.getReleaseDate(), disc.getAsin()));
             return;
         }
         LocalDate date = LocalDate.parse(content.getDate(), fmtDate);
@@ -102,7 +102,7 @@ public class ContentUpdater extends BaseSupport {
         }
         if (!Objects.equals(date, disc.getReleaseDate())) {
             if (buyset) {
-                bind.info("[发售时间不符][%s => %s][%s][套装=true]".formatted(disc.getReleaseDate(), date, disc.getAsin()));
+                bind.debug("[发售时间不符][%s => %s][%s][套装=true]".formatted(disc.getReleaseDate(), date, disc.getAsin()));
             } else {
                 bind.warning("[发售时间不符][%s => %s][%s][套装=false]".formatted(disc.getReleaseDate(), date, disc.getAsin()));
             }

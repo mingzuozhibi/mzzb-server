@@ -89,7 +89,7 @@ public class VultrService extends BaseController {
             vultrContext.setTimeout(Instant.now().plus(15, ChronoUnit.MINUTES));
             checkServer(vultrContext.getTimeout());
             amqpSender.send(FETCH_TASK_START, gson.toJson(tasks));
-            bind.debug("JMS -> %s size=%d".formatted(FETCH_TASK_START, tasks.size()));
+            bind.info("JMS -> %s size=%d".formatted(FETCH_TASK_START, tasks.size()));
         }
     }
 
