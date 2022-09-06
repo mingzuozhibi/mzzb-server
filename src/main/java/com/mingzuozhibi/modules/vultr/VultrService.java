@@ -68,7 +68,7 @@ public class VultrService extends BaseController {
                         bind.success("服务器正常运行中");
                     } else {
                         bind.warning("服务器似乎已超时，重新开始任务");
-                        createServer();
+                        tryRedoTask();
                     }
                     break;
                 }
@@ -95,21 +95,35 @@ public class VultrService extends BaseController {
 
     public void finishServer(int doneCount) {
         vultrContext.setDoneCount(doneCount);
-        deleteInstance();
         var taskCount = vultrContext.getTaskCount();
         var skipCount = taskCount - doneCount;
         if (skipCount <= 100) {
             bind.success("更新日亚排名成功");
+            deleteInstance();
         } else {
             bind.warning("更新日亚排名失败");
             Optional.ofNullable(vultrContext.getTimeout()).ifPresent(timeout -> {
                 if (Instant.now().isBefore(timeout)) {
                     vultrContext.setStartted(false);
                 } else {
-                    createServer();
+                    tryRedoTask();
                 }
             });
         }
+    }
+
+    private void tryRedoTask() {
+        if (deleteInstance()) {
+            waitForDelete();
+            createServer();
+        } else {
+            bind.warning("未能重新开始任务");
+        }
+    }
+
+    private void waitForDelete() {
+        ThreadUtils.sleepSeconds(60);
+        bind.debug("等待60秒以重新开始任务");
     }
 
     public boolean deleteInstance() {
@@ -123,13 +137,12 @@ public class VultrService extends BaseController {
                 return false;
             }
 
-            vultrContext.printStatus(instance.get());
-
             String instanceId = instance.get().get("id").getAsString();
             String url = "https://api.vultr.com/v2/instances/%s".formatted(instanceId);
             Response response = jsoup(url, connection -> connection.method(Method.DELETE));
             if (response.statusCode() == 204) {
                 bind.success("删除服务器成功");
+                vultrContext.printStatus(instance.get());
                 return true;
             } else {
                 bind.warning("删除服务器失败：%s".formatted(response.statusMessage()));
@@ -151,11 +164,11 @@ public class VultrService extends BaseController {
             Optional<JsonObject> instance = getInstance();
             if (instance.isPresent()) {
                 bind.debug("检查到服务器已存在");
-                if (!deleteInstance()) {
+                if (deleteInstance()) {
+                    waitForDelete();
+                } else {
                     return false;
                 }
-                ThreadUtils.sleepSeconds(60);
-                bind.debug("等待60秒以重新开始任务");
             }
 
             bind.debug("正在获取快照ID");
