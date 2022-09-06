@@ -35,7 +35,6 @@ public class HistoryUpdater extends BaseSupport {
                 if (proxy.updateHistory(history)) {
                     addNewCount.incrementAndGet();
                 }
-                addNewCount.incrementAndGet();
             } catch (Exception e) {
                 bind.warning("updateHistory(history=%s) throws %s".formatted(
                     gson.toJson(history), e.toString()

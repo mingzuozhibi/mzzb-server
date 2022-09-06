@@ -19,7 +19,7 @@ public abstract class ThreadUtils {
     }
 
     public static void runWithDaemon(Logger logger, String action, Callback callback) {
-        Thread thread = new Thread(() -> {
+        var thread = new Thread(() -> {
             runWithAction(logger, action, callback);
         });
         thread.setDaemon(true);
@@ -37,7 +37,7 @@ public abstract class ThreadUtils {
     }
 
     public static void logWithDaemon(Logger logger, String action, Supplier<Long> supplier) {
-        Thread thread = new Thread(() -> {
+        var thread = new Thread(() -> {
             logWithAction(logger, action, supplier);
         });
         thread.setDaemon(true);
@@ -51,9 +51,9 @@ public abstract class ThreadUtils {
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     public static void waitSecond(Object lock, int seconds) {
         synchronized (lock) {
-            long target = Instant.now().plusSeconds(seconds).toEpochMilli();
+            var target = Instant.now().plusSeconds(seconds).toEpochMilli();
             while (true) {
-                long timeout = target - Instant.now().toEpochMilli();
+                var timeout = target - Instant.now().toEpochMilli();
                 if (timeout > 0) {
                     try {
                         lock.wait(timeout);
@@ -78,11 +78,12 @@ public abstract class ThreadUtils {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
         }
     }
 
     public static void sleepSeconds(int seconds) {
-        sleepMillis(seconds * 100L);
+        sleepMillis(seconds * 1000L);
     }
 
     public static void sleepSeconds(int minSeconds, int maxSeconds) {

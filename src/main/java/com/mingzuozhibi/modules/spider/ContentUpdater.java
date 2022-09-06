@@ -74,7 +74,7 @@ public class ContentUpdater extends BaseSupport {
     private void updateTitle(Disc disc, Content content) {
         String title = content.getTitle();
         if (!Objects.equals(title, disc.getTitle())) {
-            bind.info("[碟片标题更新][%s => %s][%s]".formatted(disc.getTitle(), title, disc.getAsin()));
+            bind.debug("[碟片标题更新][%s => %s][%s]".formatted(disc.getTitle(), title, disc.getAsin()));
             disc.setTitle(title);
         }
     }
@@ -90,22 +90,32 @@ public class ContentUpdater extends BaseSupport {
     }
 
     private void updateDate(Disc disc, Content content) {
+        String asin = disc.getAsin();
+        boolean buyset = content.isBuyset();
+
         if (!StringUtils.hasLength(content.getDate())) {
-            bind.info("[发售时间为空][当前设置为%s][%s]".formatted(disc.getReleaseDate(), disc.getAsin()));
+            logBuyset(buyset, "[发售时间为空][当前设置为%s][%s][套装=%b]".formatted(
+                disc.getReleaseDate(), asin, buyset));
             return;
         }
+
         LocalDate date = LocalDate.parse(content.getDate(), fmtDate);
-        boolean buyset = content.isBuyset();
         if (date.isAfter(disc.getReleaseDate()) && !buyset) {
-            bind.notify("[发售时间更新][%s => %s][%s]".formatted(disc.getReleaseDate(), date, disc.getAsin()));
+            bind.notify("[发售时间更新][%s => %s][%s]".formatted(disc.getReleaseDate(), date, asin));
             disc.setReleaseDate(date);
         }
+
         if (!Objects.equals(date, disc.getReleaseDate())) {
-            if (buyset) {
-                bind.info("[发售时间不符][%s => %s][%s][套装=true]".formatted(disc.getReleaseDate(), date, disc.getAsin()));
-            } else {
-                bind.warning("[发售时间不符][%s => %s][%s][套装=false]".formatted(disc.getReleaseDate(), date, disc.getAsin()));
-            }
+            logBuyset(buyset, "[发售时间不符][%s => %s][%s][套装=%b]".formatted(
+                disc.getReleaseDate(), date, asin, buyset));
+        }
+    }
+
+    private void logBuyset(boolean buyset, String formatted) {
+        if (buyset) {
+            bind.debug(formatted);
+        } else {
+            bind.warning(formatted);
         }
     }
 

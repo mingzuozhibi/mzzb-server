@@ -33,17 +33,17 @@ public class VultrListener extends BaseSupport {
         var logger = amqpSender.bind(Name.SPIDER_HISTORY);
         var token = TypeToken.getParameterized(List.class, History.class);
         List<History> histories = gson.fromJson(json, token.getType());
-        logger.debug("JMS <- %s size=%d".formatted(HISTORY_FINISH, histories.size()));
+        logger.info("JMS <- %s size=%d".formatted(HISTORY_FINISH, histories.size()));
         runWithAction(logger, "分析上架信息", () ->
             historyUpdater.updateAllHistory(histories));
     }
 
     @RabbitListener(queues = CONTENT_FINISH)
     public void contentFinish(String json) {
-        var logger = amqpSender.bind(Name.SPIDER_CONTENT);
+        var logger = amqpSender.bind(Name.SERVER_DISC);
         TypeToken<?> token = getParameterized(List.class, Content.class);
         List<Content> contents = gson.fromJson(json, token.getType());
-        logger.debug("JMS <- %s size=%d".formatted(CONTENT_FINISH, contents.size()));
+        logger.info("JMS <- %s size=%d".formatted(CONTENT_FINISH, contents.size()));
         logWithAction(logger, "更新碟片信息", () ->
             contentUpdater.updateAllContent(contents, Instant.now()));
     }
