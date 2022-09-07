@@ -94,19 +94,19 @@ public class ContentUpdater extends BaseSupport {
         boolean buyset = content.isBuyset();
 
         if (!StringUtils.hasLength(content.getDate())) {
-            logBuyset(buyset, "[发售时间为空][当前设置为%s][%s][套装=%b]".formatted(
-                disc.getReleaseDate(), asin, buyset));
+            logBuyset(buyset, "[发售时间为空][当前设置为%s][%s][套装=%b][类型=%s]".formatted(
+                disc.getReleaseDate(), asin, buyset, disc.getDiscType()));
             return;
         }
 
         LocalDate date = LocalDate.parse(content.getDate(), fmtDate);
-        if (date.isAfter(disc.getReleaseDate()) && !buyset) {
+        if (date.isAfter(disc.getReleaseDate())) {
             bind.notify("[发售时间更新][%s => %s][%s]".formatted(disc.getReleaseDate(), date, asin));
             disc.setReleaseDate(date);
         }
 
         if (!Objects.equals(date, disc.getReleaseDate())) {
-            logBuyset(buyset, "[发售时间不符][%s => %s][%s][套装=%b]".formatted(
+            bind.warning("[发售时间不符][%s => %s][%s][套装=%b]".formatted(
                 disc.getReleaseDate(), date, asin, buyset));
         }
     }
