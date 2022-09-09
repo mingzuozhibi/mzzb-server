@@ -4,7 +4,6 @@ import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import com.mingzuozhibi.commons.base.BaseKeys.Type;
 import com.mingzuozhibi.commons.logger.Logger;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -30,7 +29,7 @@ public class AmqpSender {
             try {
                 template.convertAndSend(destination, json);
                 break;
-            } catch (AmqpException e) {
+            } catch (Exception e) {
                 log.debug("convertAndSend(destination=%s, json=%s)".formatted(destination, json), e);
             }
         }
