@@ -11,12 +11,16 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDateTime2;
+import static com.mingzuozhibi.commons.utils.LoggerUtils.findRealIp;
 import static com.mingzuozhibi.modules.user.SessionUtils.*;
 import static com.mingzuozhibi.support.ChecksUtils.*;
+import static com.mingzuozhibi.support.FileIoUtils.writeLine;
 
 @Slf4j
 @RestController
@@ -91,6 +95,7 @@ public class SessionController extends BaseController {
         }
         User user = byUsername.get();
         if (!Objects.equals(user.getPassword(), form.password)) {
+            logLoginFailed(form.username);
             return errorResult("用户密码错误");
         }
         if (!user.isEnabled()) {
@@ -98,6 +103,13 @@ public class SessionController extends BaseController {
         }
         onSessionLogin(user, true);
         return buildSessionAndCount();
+    }
+
+    private void logLoginFailed(String username) {
+        findRealIp().ifPresent(realIp -> {
+            writeLine("var/ban.log", "%s %s %s".formatted(
+                LocalDateTime.now().format(fmtDateTime2), realIp, username));
+        });
     }
 
     @Transactional

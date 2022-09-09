@@ -3,8 +3,7 @@ package com.mingzuozhibi.modules.vultr;
 import com.google.gson.*;
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.logger.LoggerBind;
-import com.mingzuozhibi.commons.utils.MyTimeUtils;
-import com.mingzuozhibi.commons.utils.ThreadUtils;
+import com.mingzuozhibi.commons.utils.*;
 import com.mingzuozhibi.modules.disc.GroupService;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
@@ -48,6 +47,10 @@ public class VultrService extends BaseController {
         log.info("Vultr Instance Region = %s".formatted(vultrContext.formatRegion()));
         log.info("Vultr Instance Startted = %b".formatted(vultrContext.isStartted()));
         if (!vultrContext.isStartted() && vultrContext.getTimeout() != null) {
+            if (EnvLoader.isDevMode()) {
+                log.info("In development mode, stop checkServer()");
+                return;
+            }
             checkServer(vultrContext.getTimeout());
         }
     }
