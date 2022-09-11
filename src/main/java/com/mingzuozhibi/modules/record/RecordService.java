@@ -14,7 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
+import static com.mingzuozhibi.commons.utils.MyTimeUtils.fmtDate;
 
 @Service
 public class RecordService extends BaseSupport {

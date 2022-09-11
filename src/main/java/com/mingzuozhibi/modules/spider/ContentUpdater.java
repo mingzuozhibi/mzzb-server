@@ -18,7 +18,8 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
+import static com.mingzuozhibi.commons.utils.LoggerUtils.logWarn;
+import static com.mingzuozhibi.commons.utils.MyTimeUtils.fmtDate;
 import static com.mingzuozhibi.modules.disc.DiscUtils.updateRank;
 
 @Slf4j
@@ -81,11 +82,12 @@ public class ContentUpdater extends BaseSupport {
 
     private void updateType(Disc disc, Content content) {
         DiscType type = DiscType.valueOf(content.getType());
-        if (disc.getDiscType() == DiscType.Auto || disc.getDiscType() == DiscType.Other) {
+        if (type != disc.getDiscType() && disc.getDiscType() == DiscType.Auto) {
             disc.setDiscType(type);
         }
-        if (!Objects.equals(type, disc.getDiscType())) {
-            bind.warning("[碟片类型不符][%s => %s][%s]".formatted(disc.getDiscType(), type, disc.getAsin()));
+        if (type != disc.getDiscType()) {
+            logWarn(bind, type == DiscType.Auto, "[碟片类型不符][%s => %s][%s]".formatted(
+                disc.getDiscType(), type, disc.getAsin()));
         }
     }
 
@@ -94,7 +96,7 @@ public class ContentUpdater extends BaseSupport {
         boolean buyset = content.isBuyset();
 
         if (!StringUtils.hasLength(content.getDate())) {
-            logBuyset(buyset, "[发售时间为空][当前设置为%s][%s][套装=%b][类型=%s]".formatted(
+            logWarn(bind, buyset, "[发售时间为空][当前设置为%s][%s][套装=%b][类型=%s]".formatted(
                 disc.getReleaseDate(), asin, buyset, disc.getDiscType()));
             return;
         }
@@ -108,14 +110,6 @@ public class ContentUpdater extends BaseSupport {
         if (!Objects.equals(date, disc.getReleaseDate())) {
             bind.warning("[发售时间不符][%s => %s][%s][套装=%b]".formatted(
                 disc.getReleaseDate(), date, asin, buyset));
-        }
-    }
-
-    private void logBuyset(boolean buyset, String formatted) {
-        if (buyset) {
-            bind.debug(formatted);
-        } else {
-            bind.warning(formatted);
         }
     }
 

@@ -19,7 +19,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
+import static com.mingzuozhibi.commons.utils.MyTimeUtils.fmtDate;
 import static com.mingzuozhibi.modules.disc.DiscUtils.updateRank;
 import static com.mingzuozhibi.support.ChecksUtils.*;
 import static com.mingzuozhibi.support.ModifyUtils.*;

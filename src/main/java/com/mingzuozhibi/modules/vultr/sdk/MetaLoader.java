@@ -1,4 +1,4 @@
-package com.mingzuozhibi.modules.vultr;
+package com.mingzuozhibi.modules.vultr.sdk;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 
-public abstract class VultrLoader {
+public abstract class MetaLoader {
 
     @Getter
     @Setter
@@ -22,7 +22,7 @@ public abstract class VultrLoader {
     }
 
     public static List<Region> loadRegions() {
-        var loader = VultrLoader.class.getClassLoader();
+        var loader = MetaLoader.class.getClassLoader();
         try (var in = Objects.requireNonNull(loader.getResourceAsStream("regions.json"));
              var br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
             StringBuilder sb = new StringBuilder();

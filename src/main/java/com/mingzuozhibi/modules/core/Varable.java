@@ -14,7 +14,7 @@ import java.io.Serial;
 public class Varable extends BaseEntity {
 
     @Serial
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 100L;
 
     public Varable(String key, String content) {
         this.key = key;

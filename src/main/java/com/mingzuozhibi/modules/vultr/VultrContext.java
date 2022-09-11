@@ -4,8 +4,10 @@ import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.commons.logger.LoggerBind;
+import com.mingzuozhibi.modules.core.VarBean;
 import com.mingzuozhibi.modules.core.VarableService;
-import com.mingzuozhibi.modules.vultr.VultrLoader.Region;
+import com.mingzuozhibi.modules.vultr.sdk.MetaLoader;
+import com.mingzuozhibi.modules.vultr.sdk.MetaLoader.Region;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
-import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDateTime2;
+import static com.mingzuozhibi.commons.utils.MyTimeUtils.fmtDateTime;
 import static com.mingzuozhibi.support.FileIoUtils.writeLine;
 
 @Slf4j
@@ -24,80 +26,51 @@ import static com.mingzuozhibi.support.FileIoUtils.writeLine;
 @LoggerBind(Name.SERVER_CORE)
 public class VultrContext extends BaseSupport {
 
-    private static final List<Region> REGIONS = VultrLoader.loadRegions();
-
-    private static final String REGION_INDEX = "VultrService.regionIndex";
-    private static final String TASK_COUNT = "VultrService.taskCount";
-    private static final String DONE_COUNT = "VultrService.doneCount";
-    private static final String STARTTED = "VultrService.startted";
-    private static final String TIMEOUT = "VultrService.timeout";
+    private static final List<Region> REGIONS = MetaLoader.loadRegions();
+    private static final String KEY_REGION_IDX = "VultrService.regionIndex";
+    private static final String KEY_TASK_COUNT = "VultrService.taskCount";
+    private static final String KEY_DONE_COUNT = "VultrService.doneCount";
+    private static final String KEY_STARTTED = "VultrService.startted";
+    private static final String KEY_TIMEOUT = "VultrService.timeout";
 
     @Autowired
     private VarableService varableService;
 
     @Getter
-    private int regionIndex;
-
+    private VarBean<Integer> regionIdx;
     @Getter
-    private int taskCount;
-
+    private VarBean<Integer> taskCount;
     @Getter
-    private int doneCount;
-
+    private VarBean<Integer> doneCount;
     @Getter
-    private boolean startted;
-
+    private VarBean<Boolean> startted;
     @Getter
-    private Instant timeout;
-
-    public void setRegionIndex(int regionIndex) {
-        this.regionIndex = regionIndex % REGIONS.size();
-        varableService.saveOrUpdate(REGION_INDEX, "%d".formatted(this.regionIndex));
-    }
-
-    public void setTaskCount(int taskCount) {
-        this.taskCount = taskCount;
-        varableService.saveOrUpdate(TASK_COUNT, "%d".formatted(this.taskCount));
-    }
-
-    public void setDoneCount(int doneCount) {
-        this.doneCount = doneCount;
-        varableService.saveOrUpdate(DONE_COUNT, "%d".formatted(this.doneCount));
-    }
-
-    public void setStartted(boolean startted) {
-        this.startted = startted;
-        varableService.saveOrUpdate(STARTTED, "%b".formatted(this.startted));
-    }
-
-    public void setTimeout(Instant timeout) {
-        this.timeout = timeout;
-        varableService.saveOrUpdate(TIMEOUT, "%d".formatted(this.timeout.toEpochMilli()));
-    }
+    private VarBean<Instant> timeout;
 
     public void init() {
-        varableService.findIntegerByKey(REGION_INDEX)
-            .ifPresent(this::setRegionIndex);
-        varableService.findIntegerByKey(TASK_COUNT)
-            .ifPresent(this::setTaskCount);
-        varableService.findIntegerByKey(DONE_COUNT)
-            .ifPresent(this::setDoneCount);
-        varableService.findByKey(STARTTED)
-            .map(Boolean::valueOf)
-            .ifPresent(this::setStartted);
-        varableService.findByKey(TIMEOUT)
-            .map(Long::valueOf)
-            .map(Instant::ofEpochMilli)
-            .ifPresent(this::setTimeout);
+        regionIdx = varableService.createInteger(KEY_REGION_IDX, 0);
+        taskCount = varableService.createInteger(KEY_TASK_COUNT, 0);
+        doneCount = varableService.createInteger(KEY_DONE_COUNT, 0);
+        startted = varableService.createBoolean(KEY_STARTTED, true);
+        timeout = varableService.create(KEY_TIMEOUT, Instant.now(),
+            instant -> String.valueOf(instant.toEpochMilli()),
+            string -> Instant.ofEpochMilli(Long.parseLong(string)));
+
+        log.info("Vultr Instance Region = %s".formatted(formatRegion()));
+        log.info("Vultr Instance Startted = %b".formatted(startted.getValue()));
     }
 
-    public String useCode() {
-        String region = REGIONS.get(regionIndex).getCode();
-        setRegionIndex(regionIndex + 1);
-        return region;
+    public String nextCode() {
+        int regionIdx = this.regionIdx.getValue();
+        int nextIndex = (regionIdx + 1) % REGIONS.size();
+        this.regionIdx.setValue(nextIndex);
+        return REGIONS.get(regionIdx).getCode();
     }
 
     public void printStatus(JsonObject instance) {
+        var taskCount = this.taskCount.getValue();
+        var doneCount = this.doneCount.getValue();
+
         var mainIp = instance.get("main_ip").getAsString();
         var region = instance.get("region").getAsString();
         var skipCount = taskCount - doneCount;
@@ -112,12 +85,13 @@ public class VultrContext extends BaseSupport {
             log.info("Instance Status: %s".formatted(status));
         }
 
-        var datetime = LocalDateTime.now().format(fmtDateTime2);
+        var datetime = LocalDateTime.now().format(fmtDateTime);
         writeLine("var/instance.log", "[%s] %s".formatted(datetime, status));
     }
 
     public String formatRegion() {
-        return formatRegion(regionIndex, REGIONS.get(regionIndex));
+        var regionIdx = this.regionIdx.getValue();
+        return formatRegion(regionIdx, REGIONS.get(regionIdx));
     }
 
     private String formatRegion(String code) {

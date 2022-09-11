@@ -2,12 +2,12 @@ package com.mingzuozhibi.support;
 
 import java.security.Principal;
 
-import static com.mingzuozhibi.modules.user.SessionUtils.getAuthentication;
+import static com.mingzuozhibi.modules.user.SessionUtils.findAuthentication;
 
 public abstract class ModifyUtils {
 
     public static String getName() {
-        return getAuthentication().map(Principal::getName).orElse("*system*");
+        return findAuthentication().map(Principal::getName).orElse("*system*");
     }
 
     public static String logCreate(String entryName, String name, String json) {

@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
 import java.io.IOException;
 import java.time.*;
 
-import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 import static com.mingzuozhibi.commons.utils.MyTimeUtils.*;
 
 @Slf4j

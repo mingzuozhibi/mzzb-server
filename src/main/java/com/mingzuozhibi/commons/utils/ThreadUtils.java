@@ -14,7 +14,7 @@ public abstract class ThreadUtils {
         try {
             callback.call();
         } catch (Exception e) {
-            logError(logger, "%s失败".formatted(action), e);
+            logError(logger, e, "%s失败".formatted(action));
         }
     }
 
@@ -32,7 +32,7 @@ public abstract class ThreadUtils {
             var count = supplier.get();
             logger.success("%s成功：共%d个".formatted(action, count));
         } catch (Exception e) {
-            logError(logger, "%s失败".formatted(action), e);
+            logError(logger, e, "%s失败".formatted(action));
         }
     }
 
@@ -44,6 +44,7 @@ public abstract class ThreadUtils {
         thread.start();
     }
 
+    @SuppressWarnings("RedundantThrows")
     public interface Callback {
         void call() throws Exception;
     }
