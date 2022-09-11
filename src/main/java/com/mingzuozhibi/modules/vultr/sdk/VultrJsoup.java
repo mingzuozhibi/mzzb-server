@@ -1,4 +1,4 @@
-package com.mingzuozhibi.modules.vultr;
+package com.mingzuozhibi.modules.vultr.sdk;
 
 import com.mingzuozhibi.commons.logger.Logger;
 import com.mingzuozhibi.commons.utils.ThreadUtils;
@@ -11,14 +11,14 @@ import org.jsoup.Jsoup;
 import java.util.function.Consumer;
 
 @Slf4j
-public abstract class VultrUtils {
+public abstract class VultrJsoup {
 
     private static String apiKey;
     private static Logger logger;
 
     public static void init(Logger logger, String apiKey) {
-        VultrUtils.logger = logger;
-        VultrUtils.apiKey = apiKey;
+        VultrJsoup.logger = logger;
+        VultrJsoup.apiKey = apiKey;
         var keylen = apiKey.length();
         var prefix = apiKey.substring(0, 2);
         var suffix = apiKey.substring(keylen - 2);

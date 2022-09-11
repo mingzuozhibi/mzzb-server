@@ -4,6 +4,7 @@ import com.google.gson.*;
 import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.commons.logger.LoggerBind;
+import com.mingzuozhibi.modules.vultr.sdk.VultrJsoup;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,7 +14,7 @@ import javax.annotation.PostConstruct;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.mingzuozhibi.modules.vultr.VultrUtils.*;
+import static com.mingzuozhibi.modules.vultr.sdk.VultrJsoup.*;
 
 @Component
 @LoggerBind(Name.SERVER_CORE)
@@ -26,7 +27,7 @@ public class VultrApi extends BaseSupport {
 
     @PostConstruct
     public void init() {
-        VultrUtils.init(bind, apiKey);
+        VultrJsoup.init(bind, apiKey);
     }
 
     public boolean createInstance(String code, String snapshotId, String firewallId) throws Exception {

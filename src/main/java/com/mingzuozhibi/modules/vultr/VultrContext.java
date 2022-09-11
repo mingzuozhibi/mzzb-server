@@ -6,7 +6,8 @@ import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.modules.core.VarBean;
 import com.mingzuozhibi.modules.core.VarableService;
-import com.mingzuozhibi.modules.vultr.VultrLoader.Region;
+import com.mingzuozhibi.modules.vultr.sdk.MetaLoader;
+import com.mingzuozhibi.modules.vultr.sdk.MetaLoader.Region;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ import static com.mingzuozhibi.support.FileIoUtils.writeLine;
 @LoggerBind(Name.SERVER_CORE)
 public class VultrContext extends BaseSupport {
 
-    private static final List<Region> REGIONS = VultrLoader.loadRegions();
+    private static final List<Region> REGIONS = MetaLoader.loadRegions();
     private static final String KEY_REGION_IDX = "VultrService.regionIndex";
     private static final String KEY_TASK_COUNT = "VultrService.taskCount";
     private static final String KEY_DONE_COUNT = "VultrService.doneCount";
