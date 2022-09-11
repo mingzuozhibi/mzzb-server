@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 @Service
 @LoggerBind(Name.DEFAULT)
@@ -17,23 +18,23 @@ public class VarableService extends BaseSupport {
     private VarableRepository varableRepository;
 
     @Transactional
-    public Optional<String> findByKey(String key) {
-        return varableRepository.findByKey(key).map(Varable::getContent);
-    }
-
-    @Transactional
-    public Optional<Integer> findIntegerByKey(String key) {
-        return findByKey(key).map(Integer::parseInt);
-    }
-
-    @Transactional
-    public void saveOrUpdate(String key, String content) {
-        Optional<Varable> byKey = varableRepository.findByKey(key);
-        if (byKey.isEmpty()) {
-            varableRepository.save(new Varable(key, content));
+    public <T> VarBean<T> create(String key, T value, Function<T, String> format, Function<String, T> parse) {
+        Optional<Varable> byKey = this.varableRepository.findByKey(key);
+        if (byKey.isPresent()) {
+            T load = parse.apply(byKey.get().getContent());
+            return new VarBean<>(key, load, format, varableRepository);
         } else {
-            byKey.get().setContent(content);
+            varableRepository.save(new Varable(key, format.apply(value)));
+            return new VarBean<>(key, value, format, varableRepository);
         }
+    }
+
+    public VarBean<Integer> createInteger(String key, int value) {
+        return create(key, value, String::valueOf, Integer::valueOf);
+    }
+
+    public VarBean<Boolean> createBoolean(String key, boolean value) {
+        return create(key, value, String::valueOf, Boolean::valueOf);
     }
 
 }

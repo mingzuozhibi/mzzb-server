@@ -29,28 +29,26 @@ public class VultrService extends BaseController {
     private VultrApi vultrApi;
 
     @Autowired
-    private GroupService groupService;
+    private VultrContext vultrContext;
 
     @Autowired
-    private VultrContext vultrContext;
+    private GroupService groupService;
 
     @PostConstruct
     public void init() {
         vultrApi.init();
         vultrContext.init();
-        log.info("Vultr Instance Region = %s".formatted(vultrContext.formatRegion()));
-        log.info("Vultr Instance Startted = %b".formatted(vultrContext.isStartted()));
-        if (!vultrContext.isStartted() && vultrContext.getTimeout() != null) {
-            if (EnvLoader.isDevMode()) {
-                log.info("In development mode, stop checkServer()");
-                return;
-            }
-            checkServer(vultrContext.getTimeout());
-        }
+        initCheck();
     }
 
-    public void setStartted(boolean startted) {
-        vultrContext.setStartted(startted);
+    private void initCheck() {
+        if (!vultrContext.getStartted().getValue()) {
+            if (EnvLoader.isDevMode()) {
+                log.info("In development mode, stop checkServer()");
+            } else {
+                checkServer(vultrContext.getTimeout().getValue());
+            }
+        }
     }
 
     private void checkServer(Instant timeout) {
@@ -61,7 +59,7 @@ public class VultrService extends BaseController {
             while (true) {
                 var millis = timeout.toEpochMilli() - Instant.now().toEpochMilli();
                 if (millis <= 0) {
-                    if (vultrContext.isStartted()) {
+                    if (vultrContext.getStartted().getValue()) {
                         bind.success("服务器正常运行中");
                     } else {
                         bind.warning("服务器似乎已超时，重新开始任务");
@@ -80,19 +78,19 @@ public class VultrService extends BaseController {
             .collect(Collectors.toList());
 
         if (createInstance()) {
-            vultrContext.setTaskCount(tasks.size());
-            vultrContext.setDoneCount(0);
-            vultrContext.setStartted(false);
-            vultrContext.setTimeout(Instant.now().plus(15, ChronoUnit.MINUTES));
-            checkServer(vultrContext.getTimeout());
+            vultrContext.getTaskCount().setValue(tasks.size());
+            vultrContext.getDoneCount().setValue(0);
+            vultrContext.getStartted().setValue(false);
+            vultrContext.getTimeout().setValue(Instant.now().plus(15, ChronoUnit.MINUTES));
+            checkServer(vultrContext.getTimeout().getValue());
             amqpSender.send(FETCH_TASK_START, gson.toJson(tasks));
             bind.info("JMS -> %s size=%d".formatted(FETCH_TASK_START, tasks.size()));
         }
     }
 
     public void finishServer(int doneCount) {
-        vultrContext.setDoneCount(doneCount);
-        var taskCount = vultrContext.getTaskCount();
+        vultrContext.getDoneCount().setValue(doneCount);
+        var taskCount = vultrContext.getTaskCount().getValue();
         var skipCount = taskCount - doneCount;
         if (skipCount <= 100) {
             bind.success("更新日亚排名成功");
@@ -100,14 +98,18 @@ public class VultrService extends BaseController {
             bind.debug("Next Vultr Instance Region = %s".formatted(vultrContext.formatRegion()));
         } else {
             bind.warning("更新日亚排名失败");
-            Optional.ofNullable(vultrContext.getTimeout()).ifPresent(timeout -> {
+            Optional.ofNullable(vultrContext.getTimeout().getValue()).ifPresent(timeout -> {
                 if (Instant.now().isBefore(timeout)) {
-                    vultrContext.setStartted(false);
+                    setStartted(false);
                 } else {
                     tryRedoTask();
                 }
             });
         }
+    }
+
+    public void setStartted(boolean startted) {
+        vultrContext.getStartted().setValue(startted);
     }
 
     private void tryRedoTask() {
@@ -154,7 +156,7 @@ public class VultrService extends BaseController {
             }
 
             bind.debug("This Vultr Instance Region = %s".formatted(vultrContext.formatRegion()));
-            return vultrApi.createInstance(snapshotId.get(), firewallId.get());
+            return vultrApi.createInstance(vultrContext.nextCode(), snapshotId.get(), firewallId.get());
         } catch (Exception e) {
             bind.error("创建服务器异常：%s".formatted(e));
             return false;
@@ -180,6 +182,5 @@ public class VultrService extends BaseController {
             return false;
         }
     }
-
 
 }

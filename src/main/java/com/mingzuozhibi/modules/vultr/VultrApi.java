@@ -6,7 +6,6 @@ import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.commons.logger.LoggerBind;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -25,17 +24,14 @@ public class VultrApi extends BaseSupport {
     @Value("${bcloud.apikey}")
     private String apiKey;
 
-    @Autowired
-    private VultrContext vultrContext;
-
     @PostConstruct
     public void init() {
         VultrUtils.init(bind, apiKey);
     }
 
-    public boolean createInstance(String snapshotId, String firewallId) throws Exception {
+    public boolean createInstance(String code, String snapshotId, String firewallId) throws Exception {
         JsonObject payload = new JsonObject();
-        payload.addProperty("region", vultrContext.useCode());
+        payload.addProperty("region", code);
         payload.addProperty("plan", "vc2-1c-1gb");
         payload.addProperty("snapshot_id", snapshotId);
         payload.addProperty("backups", "disabled");
