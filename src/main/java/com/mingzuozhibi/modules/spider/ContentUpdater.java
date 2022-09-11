@@ -82,11 +82,12 @@ public class ContentUpdater extends BaseSupport {
 
     private void updateType(Disc disc, Content content) {
         DiscType type = DiscType.valueOf(content.getType());
-        if (disc.getDiscType() == DiscType.Auto || disc.getDiscType() == DiscType.Other) {
+        if (type != disc.getDiscType() && disc.getDiscType() == DiscType.Auto) {
             disc.setDiscType(type);
         }
-        if (!Objects.equals(type, disc.getDiscType())) {
-            bind.warning("[碟片类型不符][%s => %s][%s]".formatted(disc.getDiscType(), type, disc.getAsin()));
+        if (type != disc.getDiscType()) {
+            logWarn(bind, type == DiscType.Auto, "[碟片类型不符][%s => %s][%s]".formatted(
+                disc.getDiscType(), type, disc.getAsin()));
         }
     }
 
