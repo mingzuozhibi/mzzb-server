@@ -31,9 +31,17 @@ public abstract class LoggerUtils {
         return Optional.ofNullable(request.getHeader("x-real-ip"));
     }
 
-    public static void logError(Logger logger, String message, Exception e) {
-        logger.error("%s：%s".formatted(message, e.toString()));
-        log.warn(message, e);
+    public static void logWarn(Logger logger, boolean isDebug, String formatted) {
+        if (isDebug) {
+            logger.debug(formatted);
+        } else {
+            logger.warning(formatted);
+        }
+    }
+
+    public static void logError(Logger logger, Exception e, String formatted) {
+        logger.error("%s：%s".formatted(formatted, e.toString()));
+        log.warn(formatted, e);
     }
 
     public static void logRequestIfExists() {
@@ -72,4 +80,5 @@ public abstract class LoggerUtils {
     private static String printValue(String[] value) {
         return value.length == 1 ? value[0] : Arrays.toString(value);
     }
+
 }

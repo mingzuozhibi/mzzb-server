@@ -19,6 +19,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
+import static com.mingzuozhibi.commons.utils.LoggerUtils.logWarn;
 import static com.mingzuozhibi.modules.disc.DiscUtils.updateRank;
 
 @Slf4j
@@ -94,7 +95,7 @@ public class ContentUpdater extends BaseSupport {
         boolean buyset = content.isBuyset();
 
         if (!StringUtils.hasLength(content.getDate())) {
-            logBuyset(buyset, "[发售时间为空][当前设置为%s][%s][套装=%b][类型=%s]".formatted(
+            logWarn(bind, buyset, "[发售时间为空][当前设置为%s][%s][套装=%b][类型=%s]".formatted(
                 disc.getReleaseDate(), asin, buyset, disc.getDiscType()));
             return;
         }
@@ -108,14 +109,6 @@ public class ContentUpdater extends BaseSupport {
         if (!Objects.equals(date, disc.getReleaseDate())) {
             bind.warning("[发售时间不符][%s => %s][%s][套装=%b]".formatted(
                 disc.getReleaseDate(), date, asin, buyset));
-        }
-    }
-
-    private void logBuyset(boolean buyset, String formatted) {
-        if (buyset) {
-            bind.debug(formatted);
-        } else {
-            bind.warning(formatted);
         }
     }
 
