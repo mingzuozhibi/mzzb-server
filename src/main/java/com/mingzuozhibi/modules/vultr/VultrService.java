@@ -103,6 +103,7 @@ public class VultrService extends BaseController {
         if (skipCount <= 100) {
             bind.success("更新日亚排名成功");
             deleteInstance();
+            bind.debug("Next Vultr Instance Region = %s".formatted(vultrContext.formatRegion()));
         } else {
             bind.warning("更新日亚排名失败");
             Optional.ofNullable(vultrContext.getTimeout()).ifPresent(timeout -> {
@@ -188,6 +189,8 @@ public class VultrService extends BaseController {
                 return false;
             }
 
+            bind.debug("This Vultr Instance Region = %s".formatted(vultrContext.formatRegion()));
+
             JsonObject payload = new JsonObject();
             payload.addProperty("region", vultrContext.useCode());
             payload.addProperty("plan", "vc2-1c-1gb");
@@ -199,8 +202,6 @@ public class VultrService extends BaseController {
             payload.addProperty("hostname", TARGET);
             String body = payload.toString();
             bind.debug("服务器参数 = %s".formatted(body));
-
-            bind.debug("Next Vultr Instance Region = %s".formatted(vultrContext.formatRegion()));
 
             Response response = jsoupPost("https://api.vultr.com/v2/instances", body);
             if (response.statusCode() == 202) {
