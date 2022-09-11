@@ -1,37 +1,32 @@
 package com.mingzuozhibi.modules.vultr;
 
-import com.google.gson.*;
+import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.commons.utils.*;
 import com.mingzuozhibi.modules.disc.GroupService;
 import lombok.extern.slf4j.Slf4j;
-import org.jsoup.Connection.Method;
-import org.jsoup.Connection.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.mingzuozhibi.commons.base.BaseKeys.*;
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDateTime2;
 import static com.mingzuozhibi.commons.utils.ThreadUtils.runWithDaemon;
-import static com.mingzuozhibi.modules.vultr.VultrUtils.*;
 
 @Slf4j
 @Service
 @LoggerBind(Name.SERVER_CORE)
 public class VultrService extends BaseController {
 
-    private static final String TARGET = "BCloud";
-
-    @Value("${bcloud.apikey}")
-    private String apiKey;
+    @Autowired
+    private VultrApi vultrApi;
 
     @Autowired
     private GroupService groupService;
@@ -41,7 +36,7 @@ public class VultrService extends BaseController {
 
     @PostConstruct
     public void init() {
-        VultrUtils.init(bind, apiKey);
+        vultrApi.init();
         vultrContext.init();
         log.info("Vultr Instance Region = %s".formatted(vultrContext.formatRegion()));
         log.info("Vultr Instance Startted = %b".formatted(vultrContext.isStartted()));
@@ -129,40 +124,12 @@ public class VultrService extends BaseController {
         bind.debug("等待60秒以重新开始任务");
     }
 
-    public boolean deleteInstance() {
-        try {
-            bind.notify("开始删除服务器");
-
-            bind.debug("正在获取实例ID");
-            Optional<JsonObject> instance = getInstance();
-            if (instance.isEmpty()) {
-                bind.warning("未能获取实例ID");
-                return false;
-            }
-
-            String instanceId = instance.get().get("id").getAsString();
-            String url = "https://api.vultr.com/v2/instances/%s".formatted(instanceId);
-            Response response = jsoup(url, connection -> connection.method(Method.DELETE));
-            if (response.statusCode() == 204) {
-                bind.success("删除服务器成功");
-                vultrContext.printStatus(instance.get());
-                return true;
-            } else {
-                bind.warning("删除服务器失败：%s".formatted(response.statusMessage()));
-                return false;
-            }
-        } catch (Exception e) {
-            bind.error("删除服务器异常：%s".formatted(e));
-            return false;
-        }
-    }
-
     private boolean createInstance() {
         try {
             bind.notify("开始创建服务器");
 
             bind.debug("正在检查服务器");
-            Optional<JsonObject> instance = getInstance();
+            Optional<JsonObject> instance = vultrApi.getInstance();
             if (instance.isPresent()) {
                 bind.debug("检查到服务器已存在");
                 if (deleteInstance()) {
@@ -173,84 +140,46 @@ public class VultrService extends BaseController {
             }
 
             bind.debug("正在获取快照ID");
-            Optional<String> snapshotId = getSnapshotId();
+            Optional<String> snapshotId = vultrApi.getSnapshotId();
             if (snapshotId.isEmpty()) {
                 bind.warning("未能获取快照ID");
                 return false;
             }
 
             bind.debug("正在获取防火墙策略ID");
-            Optional<String> firewallId = getFirewallId();
+            Optional<String> firewallId = vultrApi.getFirewallId();
             if (firewallId.isEmpty()) {
                 bind.warning("未能获取防火墙策略ID");
                 return false;
             }
 
             bind.debug("This Vultr Instance Region = %s".formatted(vultrContext.formatRegion()));
-
-            JsonObject payload = new JsonObject();
-            payload.addProperty("region", vultrContext.useCode());
-            payload.addProperty("plan", "vc2-1c-1gb");
-            payload.addProperty("snapshot_id", snapshotId.get());
-            payload.addProperty("backups", "disabled");
-            payload.addProperty("enable_ipv6", false);
-            payload.addProperty("firewall_group_id", firewallId.get());
-            payload.addProperty("label", TARGET);
-            payload.addProperty("hostname", TARGET);
-            String body = payload.toString();
-            bind.debug("服务器参数 = %s".formatted(body));
-
-            Response response = jsoupPost("https://api.vultr.com/v2/instances", body);
-            if (response.statusCode() == 202) {
-                bind.success("创建服务器成功");
-                return true;
-            } else {
-                bind.warning("创建服务器失败：%s".formatted(response.statusMessage()));
-                return false;
-            }
+            return vultrApi.createInstance(snapshotId.get(), firewallId.get());
         } catch (Exception e) {
             bind.error("创建服务器异常：%s".formatted(e));
             return false;
         }
     }
 
-    public Optional<JsonObject> getInstance() throws Exception {
-        String body = jsoupGet("https://api.vultr.com/v2/instances");
-        JsonObject root = gson.fromJson(body, JsonObject.class);
-        JsonArray instances = root.get("instances").getAsJsonArray();
-        for (JsonElement e : instances) {
-            JsonObject instance = e.getAsJsonObject();
-            if (Objects.equals(instance.get("label").getAsString(), TARGET)) {
-                return Optional.of(instance);
+    private boolean deleteInstance() {
+        try {
+            bind.notify("开始删除服务器");
+
+            bind.debug("正在获取实例ID");
+            Optional<JsonObject> instance = vultrApi.getInstance();
+            if (instance.isEmpty()) {
+                bind.warning("未能获取实例ID");
+                return false;
             }
+
+            vultrContext.printStatus(instance.get());
+            String instanceId = instance.get().get("id").getAsString();
+            return vultrApi.deleteInstance(instanceId);
+        } catch (Exception e) {
+            bind.error("删除服务器异常：%s".formatted(e));
+            return false;
         }
-        return Optional.empty();
     }
 
-    private Optional<String> getSnapshotId() throws Exception {
-        String body = jsoupGet("https://api.vultr.com/v2/snapshots");
-        JsonObject root = gson.fromJson(body, JsonObject.class);
-        JsonArray snapshots = root.get("snapshots").getAsJsonArray();
-        for (JsonElement e : snapshots) {
-            JsonObject snapshot = e.getAsJsonObject();
-            if (Objects.equals(snapshot.get("description").getAsString(), TARGET)) {
-                return Optional.ofNullable(snapshot.get("id").getAsString());
-            }
-        }
-        return Optional.empty();
-    }
-
-    private Optional<String> getFirewallId() throws Exception {
-        String body = jsoupGet("https://api.vultr.com/v2/firewalls");
-        JsonObject root = gson.fromJson(body, JsonObject.class);
-        JsonArray firewalls = root.get("firewall_groups").getAsJsonArray();
-        for (JsonElement e : firewalls) {
-            JsonObject firewall = e.getAsJsonObject();
-            if (Objects.equals(firewall.get("description").getAsString(), TARGET)) {
-                return Optional.ofNullable(firewall.get("id").getAsString());
-            }
-        }
-        return Optional.empty();
-    }
 
 }
