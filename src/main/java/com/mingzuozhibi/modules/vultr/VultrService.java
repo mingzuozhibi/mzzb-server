@@ -6,10 +6,8 @@ import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.commons.utils.*;
 import com.mingzuozhibi.modules.disc.GroupService;
 import lombok.extern.slf4j.Slf4j;
-import org.jsoup.Connection;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
-import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,12 +16,12 @@ import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.mingzuozhibi.commons.base.BaseKeys.*;
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDateTime2;
 import static com.mingzuozhibi.commons.utils.ThreadUtils.runWithDaemon;
+import static com.mingzuozhibi.modules.vultr.VultrUtils.*;
 
 @Slf4j
 @Service
@@ -33,7 +31,7 @@ public class VultrService extends BaseController {
     private static final String TARGET = "BCloud";
 
     @Value("${bcloud.apikey}")
-    private String vultrApiKey;
+    private String apiKey;
 
     @Autowired
     private GroupService groupService;
@@ -43,6 +41,7 @@ public class VultrService extends BaseController {
 
     @PostConstruct
     public void init() {
+        VultrUtils.init(bind, apiKey);
         vultrContext.init();
         log.info("Vultr Instance Region = %s".formatted(vultrContext.formatRegion()));
         log.info("Vultr Instance Startted = %b".formatted(vultrContext.isStartted()));
@@ -162,8 +161,6 @@ public class VultrService extends BaseController {
         try {
             bind.notify("开始创建服务器");
 
-            printVultrApiKey();
-
             bind.debug("正在检查服务器");
             Optional<JsonObject> instance = getInstance();
             if (instance.isPresent()) {
@@ -217,13 +214,6 @@ public class VultrService extends BaseController {
         }
     }
 
-    private void printVultrApiKey() {
-        var keylen = vultrApiKey.length();
-        var prefix = vultrApiKey.substring(0, 2);
-        var suffix = vultrApiKey.substring(keylen - 2);
-        log.debug("bcloud.apikey=%s**%s, length=%d".formatted(prefix, suffix, keylen));
-    }
-
     public Optional<JsonObject> getInstance() throws Exception {
         String body = jsoupGet("https://api.vultr.com/v2/instances");
         JsonObject root = gson.fromJson(body, JsonObject.class);
@@ -261,35 +251,6 @@ public class VultrService extends BaseController {
             }
         }
         return Optional.empty();
-    }
-
-    private Response jsoupPost(String url, String body) throws Exception {
-        return jsoup(url, connection -> connection.method(Method.POST).requestBody(body));
-    }
-
-    private String jsoupGet(String url) throws Exception {
-        return jsoup(url, connection -> connection.method(Method.GET)).body();
-    }
-
-    private Response jsoup(String url, Consumer<Connection> consumer) throws Exception {
-        Exception lastThrow = null;
-        int maxCount = 8;
-        for (int i = 0; i < maxCount; i++) {
-            try {
-                Connection connection = Jsoup.connect(url)
-                    .header("Authorization", "Bearer %s".formatted(vultrApiKey))
-                    .header("Content-Type", "application/json")
-                    .timeout(10000)
-                    .ignoreContentType(true);
-                consumer.accept(connection);
-                return connection.execute();
-            } catch (Exception e) {
-                lastThrow = e;
-                bind.debug("jsoup(%s) throws %s (%d/%d)".formatted(url, e, i + 1, maxCount));
-                ThreadUtils.sleepSeconds(3, 5);
-            }
-        }
-        throw lastThrow;
     }
 
 }
