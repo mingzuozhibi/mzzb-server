@@ -96,7 +96,7 @@ public class ContentUpdater extends BaseSupport {
         boolean buyset = content.isBuyset();
 
         if (!StringUtils.hasLength(content.getDate())) {
-            logWarn(bind, buyset, "[发售时间为空][当前设置为%s][%s][套装=%b][类型=%s]".formatted(
+            bind.debug("[发售时间为空][当前设置为%s][%s][套装=%b][类型=%s]".formatted(
                 disc.getReleaseDate(), asin, buyset, disc.getDiscType()));
             return;
         }
