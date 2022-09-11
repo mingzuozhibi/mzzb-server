@@ -44,6 +44,7 @@ public abstract class ThreadUtils {
         thread.start();
     }
 
+    @SuppressWarnings("RedundantThrows")
     public interface Callback {
         void call() throws Exception;
     }

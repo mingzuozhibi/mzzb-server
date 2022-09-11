@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDateTime2;
+import static com.mingzuozhibi.commons.utils.MyTimeUtils.fmtDateTime;
 import static com.mingzuozhibi.commons.utils.sdk.RealIpUtils.findRealIp;
 import static com.mingzuozhibi.modules.user.SessionUtils.*;
 import static com.mingzuozhibi.support.ChecksUtils.*;
@@ -98,7 +98,7 @@ public class SessionController extends BaseController {
     private void logLoginFailed(String username) {
         findRealIp().ifPresent(realIp -> {
             writeLine("var/ban.log", "%s %s %s".formatted(
-                LocalDateTime.now().format(fmtDateTime2), realIp, username));
+                LocalDateTime.now().format(fmtDateTime), realIp, username));
         });
     }
 

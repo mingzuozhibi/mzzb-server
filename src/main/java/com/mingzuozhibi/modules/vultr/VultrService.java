@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.mingzuozhibi.commons.base.BaseKeys.*;
-import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDateTime2;
+import static com.mingzuozhibi.commons.utils.MyTimeUtils.fmtDateTime;
 import static com.mingzuozhibi.commons.utils.ThreadUtils.runWithDaemon;
 
 @Slf4j
@@ -53,7 +53,7 @@ public class VultrService extends BaseController {
 
     private void checkServer(Instant timeout) {
         log.info("Vultr Instance Timeout = %s".formatted(
-            MyTimeUtils.ofInstant(timeout).format(fmtDateTime2)
+            MyTimeUtils.ofInstant(timeout).format(fmtDateTime)
         ));
         runWithDaemon(bind, "检查服务器超时", () -> {
             while (true) {

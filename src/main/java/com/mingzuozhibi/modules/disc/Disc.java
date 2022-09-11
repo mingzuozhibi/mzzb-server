@@ -23,6 +23,7 @@ public class Disc extends BaseEntity {
     @Serial
     private static final long serialVersionUID = 100L;
 
+    @SuppressWarnings("unused")
     public enum DiscType {
         Cd, Dvd, Bluray, Auto, Other
     }

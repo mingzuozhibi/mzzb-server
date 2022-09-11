@@ -1,15 +1,16 @@
 package com.mingzuozhibi.commons.utils.sdk;
 
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.*;
 import java.util.Optional;
 
+import static org.springframework.web.context.request.RequestContextHolder.getRequestAttributes;
+
 public abstract class ServletUtils {
 
     public static Optional<ServletRequestAttributes> findAttributes() {
-        return Optional.ofNullable((ServletRequestAttributes) RequestContextHolder.getRequestAttributes());
+        return Optional.ofNullable((ServletRequestAttributes) getRequestAttributes());
     }
 
     public static Optional<HttpServletRequest> findRequest() {

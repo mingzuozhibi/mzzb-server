@@ -18,8 +18,8 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDate;
 import static com.mingzuozhibi.commons.utils.LoggerUtils.logWarn;
+import static com.mingzuozhibi.commons.utils.MyTimeUtils.fmtDate;
 import static com.mingzuozhibi.modules.disc.DiscUtils.updateRank;
 
 @Slf4j

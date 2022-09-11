@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
-import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDateTime2;
+import static com.mingzuozhibi.commons.utils.MyTimeUtils.fmtDateTime;
 import static com.mingzuozhibi.support.FileIoUtils.writeLine;
 
 @Slf4j
@@ -84,7 +84,7 @@ public class VultrContext extends BaseSupport {
             log.info("Instance Status: %s".formatted(status));
         }
 
-        var datetime = LocalDateTime.now().format(fmtDateTime2);
+        var datetime = LocalDateTime.now().format(fmtDateTime);
         writeLine("var/instance.log", "[%s] %s".formatted(datetime, status));
     }
 

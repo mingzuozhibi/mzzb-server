@@ -19,6 +19,7 @@ public class Group extends BaseEntity {
     @Serial
     private static final long serialVersionUID = 100L;
 
+    @SuppressWarnings("unused")
     public enum ViewType {
         SakuraList, PublicList, PrivateList
     }
