@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,10 +13,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 import static com.mingzuozhibi.commons.utils.FormatUtils.fmtDateTime2;
-import static com.mingzuozhibi.commons.utils.LoggerUtils.findRealIp;
+import static com.mingzuozhibi.commons.utils.sdk.RealIpUtils.findRealIp;
 import static com.mingzuozhibi.modules.user.SessionUtils.*;
 import static com.mingzuozhibi.support.ChecksUtils.*;
 import static com.mingzuozhibi.support.FileIoUtils.writeLine;
@@ -36,7 +34,7 @@ public class SessionController extends BaseController {
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping(value = "/api/session/current", produces = MEDIA_TYPE)
     public String sessionCurrent() {
-        Optional<Authentication> optional = SessionUtils.getAuthentication();
+        Optional<Authentication> optional = findAuthentication();
         if (optional.isPresent()) {
             String name = optional.get().getName();
             Optional<User> byUsername = userRepository.findByUsername(name);
@@ -50,25 +48,17 @@ public class SessionController extends BaseController {
     @Transactional
     @GetMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionQuery() {
-        Optional<Authentication> optional = getAuthentication();
+        Optional<Authentication> optional = findAuthentication();
         if (optional.isEmpty()) {
             log.debug("sessionQuery: Authentication is null");
             setAuthentication(buildGuestAuthentication());
-        } else {
-            if (!isLogged(optional.get())) {
-                String token = getSessionTokenFromHeader();
-                sessionService.vaildSession(token).ifPresent(remember -> {
-                    onSessionLogin(remember.getUser(), false);
-                });
-            }
+        } else if (!isLogged(optional.get())) {
+            String token = getSessionTokenFromHeader();
+            sessionService.vaildSession(token).ifPresent(remember -> {
+                onSessionLogin(remember.getUser(), false);
+            });
         }
         return buildSessionAndCount();
-    }
-
-    private boolean isLogged(Authentication authentication) {
-        return authentication.getAuthorities().stream()
-            .map(GrantedAuthority::getAuthority)
-            .anyMatch(Predicate.isEqual("ROLE_BASIC"));
     }
 
     @Setter
@@ -124,7 +114,7 @@ public class SessionController extends BaseController {
 
     private String buildSessionAndCount() {
         Long count = sessionService.countSession();
-        Optional<Authentication> optional = getAuthentication();
+        Optional<Authentication> optional = findAuthentication();
         if (optional.isPresent()) {
             return dataResult(new SessionAndCount(optional.get(), count));
         } else {

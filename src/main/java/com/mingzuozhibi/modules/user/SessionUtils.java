@@ -9,24 +9,31 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.mingzuozhibi.commons.utils.sdk.ServletUtils.*;
 
 public abstract class SessionUtils {
 
     public static final Set<GrantedAuthority> GUEST_AUTHORITIES = Stream.of("NONE")
         .map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
 
-    public static Optional<Authentication> getAuthentication() {
+    public static Optional<Authentication> findAuthentication() {
         return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication());
     }
 
     public static void setAuthentication(Authentication authentication) {
         SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    public static boolean isLogged(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .anyMatch(Predicate.isEqual("ROLE_BASIC"));
     }
 
     public static Authentication buildGuestAuthentication() {
@@ -43,23 +50,19 @@ public abstract class SessionUtils {
     }
 
     public static String getSessionTokenFromHeader() {
-        return getAttributes().getRequest().getHeader("session-token");
+        return getRequest().getHeader("session-token");
     }
 
     public static void setSessionTokenToHeader(String token) {
-        Objects.requireNonNull(getAttributes().getResponse()).addHeader("session-token", token);
+        getResponse().addHeader("session-token", token);
     }
 
     public static Long getSessionIdFromHttpSession() {
-        return (Long) getAttributes().getRequest().getSession().getAttribute("session-id");
+        return (Long) getSession(true).getAttribute("session-id");
     }
 
     public static void setSessionIdToHttpSession(Long sessionId) {
-        getAttributes().getRequest().getSession().setAttribute("session-id", sessionId);
-    }
-
-    private static ServletRequestAttributes getAttributes() {
-        return ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes());
+        getRequest().getSession().setAttribute("session-id", sessionId);
     }
 
 }
