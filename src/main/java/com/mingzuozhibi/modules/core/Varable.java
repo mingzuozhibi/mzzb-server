@@ -22,9 +22,9 @@ public class Varable extends BaseEntity {
     }
 
     @Column(nullable = false, unique = true)
-    public String key;
+    private String key;
 
     @Column
-    public String content;
+    private String content;
 
 }

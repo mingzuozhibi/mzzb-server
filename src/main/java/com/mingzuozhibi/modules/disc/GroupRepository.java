@@ -26,6 +26,12 @@ public interface GroupRepository extends JpaRepository<Group, Long>, JpaSpecific
 
     Optional<Group> findByKey(String key);
 
+    @Query(value = "Select g " +
+        "From Group g " +
+        "Join g.discs d " +
+        "Where d.asin = :asin")
+    List<Group> findByAsin(String asin);
+
     @Query(value = "select * from `group` " +
         "where enabled = true " +
         "order by `key` desc", nativeQuery = true)

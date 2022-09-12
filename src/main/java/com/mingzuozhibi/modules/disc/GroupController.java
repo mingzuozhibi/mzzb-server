@@ -56,6 +56,12 @@ public class GroupController extends BaseController {
         return dataResult(byKey.get());
     }
 
+    @Transactional
+    @GetMapping(value = "/api/discGroups/asin/{asin}", produces = MEDIA_TYPE)
+    public String findByAsin(@PathVariable String asin) {
+        return dataResult(groupRepository.findByAsin(asin));
+    }
+
     @Setter
     private static class EntityForm {
         private String key;
@@ -82,7 +88,7 @@ public class GroupController extends BaseController {
         }
         Group group = new Group(form.key, form.title, form.enabled, form.viewType);
         groupRepository.save(group);
-        bind.notify(logCreate("列表", group.getTitle(), gson.toJson(group)));
+        bind.success(logCreate("列表", group.getTitle(), gson.toJson(group)));
         return dataResult(group);
     }
 

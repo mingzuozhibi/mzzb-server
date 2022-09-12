@@ -22,11 +22,18 @@ public class VarableService extends BaseSupport {
         Optional<Varable> byKey = this.varableRepository.findByKey(key);
         if (byKey.isPresent()) {
             T load = parse.apply(byKey.get().getContent());
-            return new VarBean<>(key, load, format, varableRepository);
+            return new VarBean<>(key, load, format, this);
         } else {
             varableRepository.save(new Varable(key, format.apply(value)));
-            return new VarBean<>(key, value, format, varableRepository);
+            return new VarBean<>(key, value, format, this);
         }
+    }
+
+    @Transactional
+    public void update(String key, String content) {
+        varableRepository.findByKey(key).ifPresent(varable -> {
+            varable.setContent(content);
+        });
     }
 
     public VarBean<Integer> createInteger(String key, int value) {

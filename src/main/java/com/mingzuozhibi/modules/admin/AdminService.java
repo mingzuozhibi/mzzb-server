@@ -95,14 +95,16 @@ public class AdminService extends BaseSupport {
             log.debug("[清理日志][name=%s][size=%d,%d]".formatted(Name.SERVER_DISC, c1, c2));
         }
         {
-            int c1 = messageRepository.cleanup(Name.SERVER_CORE, 200);
-            count += c1;
-            log.debug("[清理日志][name=%s][size=%d]".formatted(Name.SERVER_CORE, c1));
+            int c1 = messageRepository.cleanup(Name.SERVER_CORE, 150, Type.DEBUG);
+            int c2 = messageRepository.cleanup(Name.SERVER_CORE, 200);
+            count += c1 + c2;
+            log.debug("[清理日志][name=%s][size=%d,%d]".formatted(Name.SERVER_CORE, c1, c2));
         }
         {
-            int c1 = messageRepository.cleanup(Name.DEFAULT, 200);
-            count += c1;
-            log.debug("[清理日志][name=%s][size=%d]".formatted(Name.DEFAULT, c1));
+            int c1 = messageRepository.cleanup(Name.DEFAULT, 150, Type.DEBUG);
+            int c2 = messageRepository.cleanup(Name.DEFAULT, 200);
+            count += c1 + c2;
+            log.debug("[清理日志][name=%s][size=%d,%d]".formatted(Name.DEFAULT, c1, c2));
         }
         bind.debug("[自动任务][清理日志][共%d条]".formatted(count));
     }
