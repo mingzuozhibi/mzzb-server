@@ -56,6 +56,12 @@ public class GroupController extends BaseController {
         return dataResult(byKey.get());
     }
 
+    @Transactional
+    @GetMapping(value = "/api/discGroups/asin/{asin}", produces = MEDIA_TYPE)
+    public String findByAsin(@PathVariable String asin) {
+        return dataResult(groupRepository.findByAsin(asin));
+    }
+
     @Setter
     private static class EntityForm {
         private String key;
