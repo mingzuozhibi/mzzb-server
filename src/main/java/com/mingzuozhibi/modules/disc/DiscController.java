@@ -147,6 +147,27 @@ public class DiscController extends BaseController {
         return dataResult(disc.toJson());
     }
 
+    private static class PatchForm {
+        Integer rank;
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('BASIC')")
+    @PatchMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
+    public String doPatch(@PathVariable Long id, @RequestBody PatchForm form) {
+        Optional<Disc> byId = discRepository.findById(id);
+        if (byId.isEmpty()) {
+            return paramNotExists("碟片ID");
+        }
+        Disc disc = byId.get();
+        if (form.rank != null && !(Objects.equals(form.rank, disc.getThisRank()))) {
+            updateRank(disc, form.rank, Instant.now());
+            amqpSender.bind(Name.DEFAULT).debug(logUpdate("碟片排名",
+                disc.getPrevRank(), disc.getThisRank(), disc.getLogName()));
+        }
+        return dataResult(disc.toJson());
+    }
+
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/api/updateRank/{asin}/{rank}", produces = MEDIA_TYPE)
