@@ -27,20 +27,6 @@ public class RedoController extends BaseController {
     private DiscRepository discRepository;
 
     @Transactional
-    @GetMapping(value = "/admin/reComputeDate/{date}", produces = MEDIA_TYPE)
-    public void reComputeDate(@PathVariable String date) {
-        recordCompute.computeDate(LocalDate.parse(date, fmtDate));
-    }
-
-    @Transactional
-    @GetMapping(value = "/admin/reComputeDisc/{id}", produces = MEDIA_TYPE)
-    public void reComputeDisc(@PathVariable Long id) {
-        discRepository.findById(id).ifPresent(disc -> {
-            recordCompute.computeDisc(disc);
-        });
-    }
-
-    @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/api/admin/reComputeDisc2/{id}", produces = MEDIA_TYPE)
     public String reComputeDisc2(@PathVariable Long id) {

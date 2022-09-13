@@ -4,13 +4,18 @@ import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.commons.utils.EnvLoader;
+import com.mingzuozhibi.modules.disc.DiscRepository;
+import com.mingzuozhibi.modules.record.RecordCompute;
 import com.mingzuozhibi.modules.vultr.VultrService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
+import static com.mingzuozhibi.commons.utils.MyTimeUtils.fmtDate;
 import static com.mingzuozhibi.commons.utils.ThreadUtils.runWithDaemon;
 
 @Slf4j
@@ -23,6 +28,12 @@ public class AdminController extends BaseController {
 
     @Autowired
     private VultrService vultrService;
+
+    @Autowired
+    private RecordCompute recordCompute;
+
+    @Autowired
+    private DiscRepository discRepository;
 
     @Scheduled(cron = "0 0 * * * ?")
     @GetMapping(value = "/admin/startAutoTask", produces = MEDIA_TYPE)
@@ -44,6 +55,20 @@ public class AdminController extends BaseController {
         }
         runWithDaemon(bind, "创建抓取服务器", () -> {
             vultrService.createServer();
+        });
+    }
+
+    @Transactional
+    @GetMapping(value = "/admin/reComputeDate/{date}", produces = MEDIA_TYPE)
+    public void reComputeDate(@PathVariable String date) {
+        recordCompute.computeDate(LocalDate.parse(date, fmtDate));
+    }
+
+    @Transactional
+    @GetMapping(value = "/admin/reComputeDisc/{id}", produces = MEDIA_TYPE)
+    public void reComputeDisc(@PathVariable Long id) {
+        discRepository.findById(id).ifPresent(disc -> {
+            recordCompute.computeDisc(disc);
         });
     }
 

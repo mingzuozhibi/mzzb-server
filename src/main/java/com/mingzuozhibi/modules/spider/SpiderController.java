@@ -5,6 +5,7 @@ import com.mingzuozhibi.commons.base.PageController;
 import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.disc.GroupService;
+import com.mingzuozhibi.modules.record.RecordCompute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -15,7 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
-import static com.mingzuozhibi.support.ModifyUtils.logCreate;
+import static com.mingzuozhibi.support.ChecksUtils.paramNotExists;
+import static com.mingzuozhibi.support.ModifyUtils.*;
 
 @RestController
 @LoggerBind(Name.SERVER_USER)
@@ -23,6 +25,9 @@ public class SpiderController extends PageController {
 
     @Autowired
     private GroupService groupService;
+
+    @Autowired
+    private RecordCompute recordCompute;
 
     @Autowired
     private ContentService contentService;
@@ -35,8 +40,8 @@ public class SpiderController extends PageController {
 
     @Transactional
     @GetMapping(value = "/api/spider/discShelfs", produces = MEDIA_TYPE)
-    public String findHistory(@RequestParam(defaultValue = "1") int page,
-                              @RequestParam(defaultValue = "20") int size) {
+    public String discShelfs(@RequestParam(defaultValue = "1") int page,
+                             @RequestParam(defaultValue = "20") int size) {
         if (size > 40) {
             return errorResult("Size不能大于40");
         }
@@ -48,7 +53,7 @@ public class SpiderController extends PageController {
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping(value = "/api/spider/fetchCount", produces = MEDIA_TYPE)
-    public String getFetchCount() {
+    public String fetchCount() {
         return dataResult(groupService.getFetchCount());
     }
 
@@ -77,6 +82,22 @@ public class SpiderController extends PageController {
         historyRepository.setTracked(asin, true);
         bind.success(logCreate("碟片(查询)", disc.getLogName(), disc.toJson().toString()));
         return dataResult(disc.toJson());
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('BASIC')")
+    @PostMapping(value = "/api/spider/computePt/{id}", produces = MEDIA_TYPE)
+    public String computePt(@PathVariable Long id) {
+        var byId = discRepository.findById(id);
+        if (byId.isEmpty()) {
+            return paramNotExists("碟片ID");
+        }
+        var disc = byId.get();
+        var pt1 = disc.getTotalPt();
+        recordCompute.computeDisc(disc);
+        var pt2 = disc.getTotalPt();
+        bind.info(logUpdate("碟片PT", pt1, pt2, disc.getLogName()));
+        return dataResult("compute: " + pt1 + "->" + pt2);
     }
 
 }
