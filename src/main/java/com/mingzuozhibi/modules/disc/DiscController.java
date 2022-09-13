@@ -145,6 +145,7 @@ public class DiscController extends BaseController {
         return dataResult(disc.toJson());
     }
 
+    @Setter
     private static class PatchForm {
         Integer rank;
     }
