@@ -168,20 +168,4 @@ public class DiscController extends BaseController {
         return dataResult(disc.toJson());
     }
 
-    @Transactional
-    @PreAuthorize("hasRole('BASIC')")
-    @PostMapping(value = "/api/updateRank/{asin}/{rank}", produces = MEDIA_TYPE)
-    public String doUpdateRank(@PathVariable("asin") String asin,
-                               @PathVariable("rank") Integer rank) {
-        Optional<Disc> byAsin = discRepository.findByAsin(asin);
-        if (byAsin.isEmpty()) {
-            return paramNotExists("碟片ASIN");
-        }
-        Disc disc = byAsin.get();
-        updateRank(disc, rank, Instant.now());
-        amqpSender.bind(Name.DEFAULT).debug(logUpdate("碟片排名",
-            disc.getPrevRank(), disc.getThisRank(), disc.getLogName()));
-        return dataResult(disc.toJson());
-    }
-
 }
