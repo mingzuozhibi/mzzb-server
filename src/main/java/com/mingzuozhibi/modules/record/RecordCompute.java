@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -21,17 +20,17 @@ public class RecordCompute extends BaseSupport {
 
     @Transactional
     public void computeDisc(Disc disc) {
-        List<DateRecord> records = recordService.findDateRecordsAsc(disc);
-        int size = records.size();
+        var records = recordService.findDateRecordsAsc(disc);
+        var size = records.size();
         log.debug("[计算碟片][共%d个][%s]".formatted(size, disc.getLogName()));
         records.forEach(record0 -> {
-            LocalDate date = record0.getDate();
-            DateRecord record1 = recordService.findDateRecord(disc, date.minusDays(1));
-            DateRecord record7 = recordService.findDateRecord(disc, date.minusDays(7));
+            var date = record0.getDate();
+            var record1 = recordService.findDateRecord(disc, date.minusDays(1));
+            var record7 = recordService.findDateRecord(disc, date.minusDays(7));
             computePt(disc, date, record0, record1, record7);
         });
-        LocalDateTime now = LocalDateTime.now();
-        LocalDate date = now.toLocalDate();
+        var now = LocalDateTime.now();
+        var date = now.toLocalDate();
         if (date.isBefore(disc.getReleaseDate())) {
             computePtNow(disc, date, now.getHour());
         } else if (size > 0) {
@@ -41,21 +40,21 @@ public class RecordCompute extends BaseSupport {
 
     @Transactional
     public void computeDate(LocalDate date) {
-        List<DateRecord> records = recordService.findDateRecords(date);
+        var records = recordService.findDateRecords(date);
         log.debug("[计算碟片][共%d个]".formatted(records.size()));
         records.forEach(record0 -> {
-            Disc disc = record0.getDisc();
-            DateRecord record1 = recordService.findDateRecord(disc, date.minusDays(1));
-            DateRecord record7 = recordService.findDateRecord(disc, date.minusDays(7));
+            var disc = record0.getDisc();
+            var record1 = recordService.findDateRecord(disc, date.minusDays(1));
+            var record7 = recordService.findDateRecord(disc, date.minusDays(7));
             computePt(disc, date, record0, record1, record7);
         });
     }
 
     @Transactional
     public void computePtNow(Disc disc, LocalDate date, int hour) {
-        HourRecord record0 = recordService.buildHourRecord(disc, date);
-        DateRecord record1 = recordService.findDateRecord(disc, date.minusDays(1));
-        DateRecord record7 = recordService.findDateRecord(disc, date.minusDays(7));
+        var record0 = recordService.buildHourRecord(disc, date);
+        var record1 = recordService.findDateRecord(disc, date.minusDays(1));
+        var record7 = recordService.findDateRecord(disc, date.minusDays(7));
 
         record0.setRank(hour, disc.getThisRank());
         computePt(disc, date, record0, record1, record7);
@@ -101,10 +100,10 @@ public class RecordCompute extends BaseSupport {
             return;
         }
         if (record0.getTotalPt() != null && record7.getTotalPt() != null) {
-            double addPt = (record0.getTotalPt() - record7.getTotalPt()) / 7d;
-            LocalDate releaseDate = record0.getDisc().getReleaseDate();
-            LocalDate currentDate = record0.getDate();
-            long days = releaseDate.toEpochDay() - currentDate.toEpochDay() - 1;
+            var addPt = (record0.getTotalPt() - record7.getTotalPt()) / 7d;
+            var releaseDate = record0.getDisc().getReleaseDate();
+            var currentDate = record0.getDate();
+            var days = releaseDate.toEpochDay() - currentDate.toEpochDay() - 1;
             record0.setGuessPt(record0.getTotalPt() + addPt * days);
         }
     }

@@ -1,12 +1,11 @@
 package com.mingzuozhibi.modules.vultr;
 
-import com.google.gson.*;
+import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.modules.vultr.sdk.VultrJsoup;
 import org.jsoup.Connection.Method;
-import org.jsoup.Connection.Response;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +30,7 @@ public class VultrApi extends BaseSupport {
     }
 
     public boolean createInstance(String code, String snapshotId, String firewallId) throws Exception {
-        JsonObject payload = new JsonObject();
+        var payload = new JsonObject();
         payload.addProperty("region", code);
         payload.addProperty("plan", "vc2-1c-1gb");
         payload.addProperty("snapshot_id", snapshotId);
@@ -40,10 +39,10 @@ public class VultrApi extends BaseSupport {
         payload.addProperty("firewall_group_id", firewallId);
         payload.addProperty("label", TARGET);
         payload.addProperty("hostname", TARGET);
-        String body = payload.toString();
+        var body = payload.toString();
         bind.debug("服务器参数 = %s".formatted(body));
 
-        Response response = jsoupPost("https://api.vultr.com/v2/instances", body);
+        var response = jsoupPost("https://api.vultr.com/v2/instances", body);
         if (response.statusCode() == 202) {
             bind.success("创建服务器成功");
             return true;
@@ -54,8 +53,8 @@ public class VultrApi extends BaseSupport {
     }
 
     public boolean deleteInstance(String instanceId) throws Exception {
-        String url = "https://api.vultr.com/v2/instances/%s".formatted(instanceId);
-        Response response = jsoup(url, connection -> connection.method(Method.DELETE));
+        var url = "https://api.vultr.com/v2/instances/%s".formatted(instanceId);
+        var response = jsoup(url, connection -> connection.method(Method.DELETE));
         if (response.statusCode() == 204) {
             bind.success("删除服务器成功");
             return true;
@@ -66,11 +65,11 @@ public class VultrApi extends BaseSupport {
     }
 
     public Optional<JsonObject> getInstance() throws Exception {
-        String body = jsoupGet("https://api.vultr.com/v2/instances");
-        JsonObject root = gson.fromJson(body, JsonObject.class);
-        JsonArray instances = root.get("instances").getAsJsonArray();
-        for (JsonElement e : instances) {
-            JsonObject instance = e.getAsJsonObject();
+        var body = jsoupGet("https://api.vultr.com/v2/instances");
+        var root = gson.fromJson(body, JsonObject.class);
+        var instances = root.get("instances").getAsJsonArray();
+        for (var e : instances) {
+            var instance = e.getAsJsonObject();
             if (Objects.equals(instance.get("label").getAsString(), TARGET)) {
                 return Optional.of(instance);
             }
@@ -79,11 +78,11 @@ public class VultrApi extends BaseSupport {
     }
 
     public Optional<String> getSnapshotId() throws Exception {
-        String body = jsoupGet("https://api.vultr.com/v2/snapshots");
-        JsonObject root = gson.fromJson(body, JsonObject.class);
-        JsonArray snapshots = root.get("snapshots").getAsJsonArray();
-        for (JsonElement e : snapshots) {
-            JsonObject snapshot = e.getAsJsonObject();
+        var body = jsoupGet("https://api.vultr.com/v2/snapshots");
+        var root = gson.fromJson(body, JsonObject.class);
+        var snapshots = root.get("snapshots").getAsJsonArray();
+        for (var e : snapshots) {
+            var snapshot = e.getAsJsonObject();
             if (Objects.equals(snapshot.get("description").getAsString(), TARGET)) {
                 return Optional.ofNullable(snapshot.get("id").getAsString());
             }
@@ -92,11 +91,11 @@ public class VultrApi extends BaseSupport {
     }
 
     public Optional<String> getFirewallId() throws Exception {
-        String body = jsoupGet("https://api.vultr.com/v2/firewalls");
-        JsonObject root = gson.fromJson(body, JsonObject.class);
-        JsonArray firewalls = root.get("firewall_groups").getAsJsonArray();
-        for (JsonElement e : firewalls) {
-            JsonObject firewall = e.getAsJsonObject();
+        var body = jsoupGet("https://api.vultr.com/v2/firewalls");
+        var root = gson.fromJson(body, JsonObject.class);
+        var firewalls = root.get("firewall_groups").getAsJsonArray();
+        for (var e : firewalls) {
+            var firewall = e.getAsJsonObject();
             if (Objects.equals(firewall.get("description").getAsString(), TARGET)) {
                 return Optional.ofNullable(firewall.get("id").getAsString());
             }

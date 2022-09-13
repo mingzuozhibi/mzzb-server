@@ -11,7 +11,7 @@ public abstract class ChecksUtils {
 
     @SafeVarargs
     public static Optional<String> runChecks(Optional<String>... checks) {
-        for (Optional<String> check : checks) {
+        for (var check : checks) {
             if (check.isPresent()) return check;
         }
         return Optional.empty();

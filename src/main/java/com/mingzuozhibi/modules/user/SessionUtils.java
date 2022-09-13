@@ -42,8 +42,8 @@ public abstract class SessionUtils {
 
     public static Authentication buildUserAuthentication(User user) {
         UserDetails userDetails = new UserDetailsImpl(user);
-        WebAuthenticationDetails details = new WebAuthenticationDetails(getAttributes().getRequest());
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
+        var details = new WebAuthenticationDetails(getAttributes().getRequest());
+        var token = new UsernamePasswordAuthenticationToken(
             userDetails, userDetails.getPassword(), userDetails.getAuthorities());
         token.setDetails(details);
         return token;

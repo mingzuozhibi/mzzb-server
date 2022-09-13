@@ -27,12 +27,12 @@ public class SessionService {
         if (token == null || token.length() != 36) {
             return Optional.empty();
         }
-        Optional<Remember> byToken = rememberRepository.findByToken(token);
+        var byToken = rememberRepository.findByToken(token);
         if (byToken.isEmpty()) {
             setSessionTokenToHeader("");
             return Optional.empty();
         }
-        Remember remember = byToken.get();
+        var remember = byToken.get();
         if (remember.getExpired().isBefore(Instant.now())) {
             rememberRepository.delete(remember);
             return Optional.empty();
@@ -45,9 +45,9 @@ public class SessionService {
 
     @Transactional
     public Remember buildSession(User user) {
-        String token = UUID.randomUUID().toString();
-        Instant expired = Instant.now().plusMillis(TimeUnit.DAYS.toMillis(14));
-        Remember remember = new Remember(user, token, expired);
+        var token = UUID.randomUUID().toString();
+        var expired = Instant.now().plusMillis(TimeUnit.DAYS.toMillis(14));
+        var remember = new Remember(user, token, expired);
         rememberRepository.save(remember);
         return remember;
     }
@@ -61,7 +61,7 @@ public class SessionService {
 
     @Transactional
     public Long countSession() {
-        String sql = "SELECT COUNT(*) FROM SPRING_SESSION";
+        var sql = "SELECT COUNT(*) FROM SPRING_SESSION";
         try {
             return jdbcTemplate.query(sql, rs -> rs.next() ? rs.getLong(1) : -1L);
         } catch (DataAccessException e) {

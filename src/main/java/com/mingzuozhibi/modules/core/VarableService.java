@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.util.function.Function;
 
 @Service
@@ -19,9 +18,9 @@ public class VarableService extends BaseSupport {
 
     @Transactional
     public <T> VarBean<T> create(String key, T value, Function<T, String> format, Function<String, T> parse) {
-        Optional<Varable> byKey = this.varableRepository.findByKey(key);
+        var byKey = this.varableRepository.findByKey(key);
         if (byKey.isPresent()) {
-            T load = parse.apply(byKey.get().getContent());
+            var load = parse.apply(byKey.get().getContent());
             return new VarBean<>(key, load, format, this);
         } else {
             varableRepository.save(new Varable(key, format.apply(value)));

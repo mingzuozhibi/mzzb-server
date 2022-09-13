@@ -35,26 +35,26 @@ public class ContentService extends BaseSupport {
     }
 
     public Disc createWith(Content content) {
-        String asin = content.getAsin();
-        String title = content.getTitle();
-        DiscType discType = DiscType.valueOf(content.getType());
-        LocalDate releaseDate = Optional.ofNullable(content.getDate())
+        var asin = content.getAsin();
+        var title = content.getTitle();
+        var discType = DiscType.valueOf(content.getType());
+        var releaseDate = Optional.ofNullable(content.getDate())
             .map(date -> LocalDate.parse(date, fmtDate))
             .orElse(null);
         return new Disc(asin, title, discType, releaseDate);
     }
 
     private SearchTask<Content> contentSearch(String asin) {
-        SearchTask<Content> task = new SearchTask<>(asin);
+        var task = new SearchTask<Content>(asin);
         amqpSender.send(CONTENT_SEARCH, gson.toJson(task));
-        String uuid = task.getUuid();
+        var uuid = task.getUuid();
         waitMap.put(uuid, task);
 
-        long time = Instant.now().toEpochMilli();
+        var time = Instant.now().toEpochMilli();
         ThreadUtils.waitSecond(task, 15);
-        long cost = Instant.now().toEpochMilli() - time;
+        var cost = Instant.now().toEpochMilli() - time;
 
-        SearchTask<Content> remove = waitMap.remove(uuid);
+        var remove = waitMap.remove(uuid);
         if (!remove.isSuccess()) {
             bind.warning("[%s][查询碟片失败][asin=%s][cost=%d ms][error=%s]".formatted(getName(), asin, cost, remove.getMessage()));
         }
@@ -63,9 +63,9 @@ public class ContentService extends BaseSupport {
 
     @RabbitListener(queues = CONTENT_RETURN)
     public void contentReturn(String json) {
-        TypeToken<?> token = TypeToken.getParameterized(SearchTask.class, Content.class);
+        var token = TypeToken.getParameterized(SearchTask.class, Content.class);
         SearchTask<Content> task = gson.fromJson(json, token.getType());
-        SearchTask<Content> lock = waitMap.remove(task.getUuid());
+        var lock = waitMap.remove(task.getUuid());
         if (lock != null) {
             waitMap.put(task.getUuid(), task);
             ThreadUtils.notifyAll(lock);

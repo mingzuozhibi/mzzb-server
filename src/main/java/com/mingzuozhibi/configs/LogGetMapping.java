@@ -17,9 +17,9 @@ public class LogGetMapping {
 
     @Around(value = "pointCut()")
     public Object aroundPringLog(ProceedingJoinPoint joinPoint) throws Throwable {
-        StopWatch sw = new StopWatch();
+        var sw = new StopWatch();
         sw.start();
-        Object proceed = joinPoint.proceed(joinPoint.getArgs());
+        var proceed = joinPoint.proceed(joinPoint.getArgs());
         sw.stop();
         log.debug("Log @GetMapping: %s %dms".formatted(joinPoint.getSignature(), sw.getTime()));
         return proceed;

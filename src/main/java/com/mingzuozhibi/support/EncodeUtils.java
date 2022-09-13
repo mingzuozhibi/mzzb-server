@@ -14,8 +14,8 @@ public abstract class EncodeUtils {
 
     private static String md5(String text) {
         try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] bytes = md.digest(text.getBytes(StandardCharsets.UTF_8));
+            var md = MessageDigest.getInstance("MD5");
+            var bytes = md.digest(text.getBytes(StandardCharsets.UTF_8));
             return toHex(bytes);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -23,9 +23,9 @@ public abstract class EncodeUtils {
     }
 
     private static String toHex(byte[] bytes) {
-        final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
-        StringBuilder ret = new StringBuilder(bytes.length * 2);
-        for (byte b : bytes) {
+        final var HEX_DIGITS = "0123456789abcdef".toCharArray();
+        var ret = new StringBuilder(bytes.length * 2);
+        for (var b : bytes) {
             ret.append(HEX_DIGITS[(b >> 4) & 0x0f]);
             ret.append(HEX_DIGITS[b & 0x0f]);
         }

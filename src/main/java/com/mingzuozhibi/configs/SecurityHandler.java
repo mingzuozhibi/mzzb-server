@@ -40,7 +40,7 @@ public class SecurityHandler implements AuthenticationEntryPoint, AccessDeniedHa
 
     public static void responseText(HttpServletResponse response, String content) throws IOException {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
+        var bytes = content.getBytes(StandardCharsets.UTF_8);
         response.setContentLength(bytes.length);
         response.getOutputStream().write(bytes);
         response.flushBuffer();

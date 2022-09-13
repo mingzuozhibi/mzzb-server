@@ -62,7 +62,7 @@ public class VultrContext extends BaseSupport {
 
     public String nextCode() {
         int regionIdx = this.regionIdx.getValue();
-        int nextIndex = (regionIdx + 1) % REGIONS.size();
+        var nextIndex = (regionIdx + 1) % REGIONS.size();
         this.regionIdx.setValue(nextIndex);
         return REGIONS.get(regionIdx).getCode();
     }
@@ -95,7 +95,7 @@ public class VultrContext extends BaseSupport {
     }
 
     private String formatRegion(String code) {
-        for (int index = 0; index < REGIONS.size(); index++) {
+        for (var index = 0; index < REGIONS.size(); index++) {
             if (Objects.equals(REGIONS.get(index).getCode(), code)) {
                 return formatRegion(index, REGIONS.get(index));
             }

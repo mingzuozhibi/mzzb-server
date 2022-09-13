@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
-import java.util.Optional;
 
 import static com.mingzuozhibi.support.ChecksUtils.*;
 import static com.mingzuozhibi.support.ModifyUtils.*;
@@ -37,7 +36,7 @@ public class UserController extends BaseController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/api/users/{id}", produces = MEDIA_TYPE)
     public String findById(@PathVariable Long id) {
-        Optional<User> byId = userRepository.findById(id);
+        var byId = userRepository.findById(id);
         if (byId.isEmpty()) {
             return paramNotExists("用户ID");
         }
@@ -55,7 +54,7 @@ public class UserController extends BaseController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/api/users", produces = MEDIA_TYPE)
     public String createUser(@RequestBody EntityForm form) {
-        Optional<String> checks = runChecks(
+        var checks = runChecks(
             checkNotEmpty(form.username, "用户名称"),
             checkStrMatch(form.username, "用户名称", "[A-Za-z0-9_]{4,20}"),
             checkNotEmpty(form.password, "用户密码"),
@@ -67,7 +66,7 @@ public class UserController extends BaseController {
         if (userRepository.existsByUsername(form.username)) {
             return paramExists("用户名称");
         }
-        User user = new User(form.username, form.password, form.enabled);
+        var user = new User(form.username, form.password, form.enabled);
         userRepository.save(user);
         bind.success(logCreate("用户", user.getUsername(), gson.toJson(user)));
         return dataResult(user);
@@ -78,7 +77,7 @@ public class UserController extends BaseController {
     @PutMapping(value = "/api/users/{id}", produces = MEDIA_TYPE)
     public String updateUser(@PathVariable Long id,
                              @RequestBody EntityForm form) {
-        Optional<String> checks = runChecks(
+        var checks = runChecks(
             checkNotEmpty(form.username, "用户名称"),
             checkStrMatch(form.username, "用户名称", "[A-Za-z0-9_]{4,20}"),
             checkStrMatch(form.password, "用户密码", "[0-9a-f]{32}"),
@@ -87,11 +86,11 @@ public class UserController extends BaseController {
         if (checks.isPresent()) {
             return errorResult(checks.get());
         }
-        Optional<User> byId = userRepository.findById(id);
+        var byId = userRepository.findById(id);
         if (byId.isEmpty()) {
             return paramNotExists("用户ID");
         }
-        User user = byId.get();
+        var user = byId.get();
         if (!Objects.equals(user.getUsername(), form.username)) {
             bind.notify(logUpdate("用户名称", user.getUsername(), form.username, user.getUsername()));
             user.setUsername(form.username);

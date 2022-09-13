@@ -25,7 +25,7 @@ public abstract class MetaLoader {
         var loader = MetaLoader.class.getClassLoader();
         try (var in = Objects.requireNonNull(loader.getResourceAsStream("regions.json"));
              var br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             while (br.ready()) {
                 sb.append(br.readLine());
             }
