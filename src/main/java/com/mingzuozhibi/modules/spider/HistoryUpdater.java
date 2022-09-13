@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
@@ -47,9 +46,9 @@ public class HistoryUpdater extends BaseSupport {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public boolean updateHistory(History history) {
-        Optional<History> byAsin = historyRepository.findByAsin(history.getAsin());
+        var byAsin = historyRepository.findByAsin(history.getAsin());
         if (byAsin.isPresent()) {
-            History toUpdate = byAsin.get();
+            var toUpdate = byAsin.get();
             toUpdate.setType(history.getType());
             toUpdate.setTitle(history.getTitle());
             return false;

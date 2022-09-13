@@ -14,9 +14,9 @@ public class UserService {
 
     @Transactional
     public void initAdminUser(String encodedPassword) {
-        User user = userRepository.findByUsername("admin").orElseGet(() -> {
+        var user = userRepository.findByUsername("admin").orElseGet(() -> {
             log.info("初始化管理员用户");
-            User admin = new User("admin", encodedPassword, true);
+            var admin = new User("admin", encodedPassword, true);
             admin.getRoles().add("ROLE_ADMIN");
             return userRepository.save(admin);
         });

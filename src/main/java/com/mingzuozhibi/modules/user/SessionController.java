@@ -5,14 +5,12 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.Optional;
 
 import static com.mingzuozhibi.commons.utils.MyTimeUtils.fmtDateTime;
 import static com.mingzuozhibi.commons.utils.sdk.RealIpUtils.findRealIp;
@@ -34,10 +32,10 @@ public class SessionController extends BaseController {
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping(value = "/api/session/current", produces = MEDIA_TYPE)
     public String sessionCurrent() {
-        Optional<Authentication> optional = findAuthentication();
+        var optional = findAuthentication();
         if (optional.isPresent()) {
-            String name = optional.get().getName();
-            Optional<User> byUsername = userRepository.findByUsername(name);
+            var name = optional.get().getName();
+            var byUsername = userRepository.findByUsername(name);
             if (byUsername.isPresent()) {
                 return dataResult(byUsername.get());
             }
@@ -48,12 +46,12 @@ public class SessionController extends BaseController {
     @Transactional
     @GetMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionQuery() {
-        Optional<Authentication> optional = findAuthentication();
+        var optional = findAuthentication();
         if (optional.isEmpty()) {
             log.debug("sessionQuery: Authentication is null");
             setAuthentication(buildGuestAuthentication());
         } else if (!isLogged(optional.get())) {
-            String token = getSessionTokenFromHeader();
+            var token = getSessionTokenFromHeader();
             sessionService.vaildSession(token).ifPresent(remember -> {
                 onSessionLogin(remember.getUser(), false);
             });
@@ -70,7 +68,7 @@ public class SessionController extends BaseController {
     @Transactional
     @PostMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionLogin(@RequestBody LoginForm form) {
-        Optional<String> checks = runChecks(
+        var checks = runChecks(
             checkNotEmpty(form.username, "用户名称"),
             checkStrMatch(form.username, "用户名称", "[A-Za-z0-9_]{4,20}"),
             checkNotEmpty(form.password, "用户密码"),
@@ -79,11 +77,11 @@ public class SessionController extends BaseController {
         if (checks.isPresent()) {
             return errorResult(checks.get());
         }
-        Optional<User> byUsername = userRepository.findByUsername(form.username);
+        var byUsername = userRepository.findByUsername(form.username);
         if (byUsername.isEmpty()) {
             return paramNotExists("用户名称");
         }
-        User user = byUsername.get();
+        var user = byUsername.get();
         if (!Objects.equals(user.getPassword(), form.password)) {
             logLoginFailed(form.username);
             return errorResult("用户密码错误");
@@ -105,7 +103,7 @@ public class SessionController extends BaseController {
     @Transactional
     @DeleteMapping(value = "/api/session", produces = MEDIA_TYPE)
     public String sessionLogout() {
-        Long sessionId = getSessionIdFromHttpSession();
+        var sessionId = getSessionIdFromHttpSession();
         sessionService.cleanSession(sessionId);
         setSessionTokenToHeader("");
         setAuthentication(buildGuestAuthentication());
@@ -113,8 +111,8 @@ public class SessionController extends BaseController {
     }
 
     private String buildSessionAndCount() {
-        Long count = sessionService.countSession();
-        Optional<Authentication> optional = findAuthentication();
+        var count = sessionService.countSession();
+        var optional = findAuthentication();
         if (optional.isPresent()) {
             return dataResult(new SessionAndCount(optional.get(), count));
         } else {
@@ -124,7 +122,7 @@ public class SessionController extends BaseController {
 
     private void onSessionLogin(User user, boolean buildNew) {
         if (buildNew) {
-            Remember remember = sessionService.buildSession(user);
+            var remember = sessionService.buildSession(user);
             setSessionIdToHttpSession(remember.getId());
             setSessionTokenToHeader(remember.getToken());
         }

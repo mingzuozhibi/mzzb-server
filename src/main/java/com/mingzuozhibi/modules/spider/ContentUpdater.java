@@ -15,7 +15,8 @@ import org.springframework.util.StringUtils;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.mingzuozhibi.commons.utils.LoggerUtils.logWarn;
@@ -37,7 +38,7 @@ public class ContentUpdater extends BaseSupport {
     public long updateAllContent(List<Content> contents, Instant updateOn) {
         var proxy = (ContentUpdater) AopContext.currentProxy();
         var updateCount = new AtomicLong(0);
-        for (Content content : contents) {
+        for (var content : contents) {
             try {
                 proxy.updateContent(content, updateOn);
                 updateCount.incrementAndGet();
@@ -53,19 +54,19 @@ public class ContentUpdater extends BaseSupport {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateContent(Content content, Instant updateOn) {
-        String asin = content.getAsin();
+        var asin = content.getAsin();
         if (content.isOffTheShelf()) {
             bind.warning("[碟片可能已下架][%s]".formatted(asin));
             return;
         }
 
-        Optional<Disc> byAsin = discRepository.findByAsin(asin);
+        var byAsin = discRepository.findByAsin(asin);
         if (byAsin.isEmpty()) {
             bind.warning("[应用碟片更新时，发现未知碟片][%s]".formatted(asin));
             return;
         }
 
-        Disc disc = byAsin.get();
+        var disc = byAsin.get();
         updateTitle(disc, content);
         updateType(disc, content);
         updateDate(disc, content);
@@ -73,7 +74,7 @@ public class ContentUpdater extends BaseSupport {
     }
 
     private void updateTitle(Disc disc, Content content) {
-        String title = content.getTitle();
+        var title = content.getTitle();
         if (!Objects.equals(title, disc.getTitle())) {
             bind.debug("[碟片标题更新][%s => %s][%s]".formatted(disc.getTitle(), title, disc.getAsin()));
             disc.setTitle(title);
@@ -81,7 +82,7 @@ public class ContentUpdater extends BaseSupport {
     }
 
     private void updateType(Disc disc, Content content) {
-        DiscType type = DiscType.valueOf(content.getType());
+        var type = DiscType.valueOf(content.getType());
         if (type != disc.getDiscType() && disc.getDiscType() == DiscType.Auto) {
             disc.setDiscType(type);
         }
@@ -92,8 +93,8 @@ public class ContentUpdater extends BaseSupport {
     }
 
     private void updateDate(Disc disc, Content content) {
-        String asin = disc.getAsin();
-        boolean buyset = content.isBuyset();
+        var asin = disc.getAsin();
+        var buyset = content.isBuyset();
 
         if (!StringUtils.hasLength(content.getDate())) {
             bind.debug("[发售时间为空][当前设置为%s][%s][套装=%b][类型=%s]".formatted(
@@ -101,7 +102,7 @@ public class ContentUpdater extends BaseSupport {
             return;
         }
 
-        LocalDate date = LocalDate.parse(content.getDate(), fmtDate);
+        var date = LocalDate.parse(content.getDate(), fmtDate);
         if (date.isAfter(disc.getReleaseDate())) {
             bind.notify("[发售时间更新][%s => %s][%s]".formatted(disc.getReleaseDate(), date, asin));
             disc.setReleaseDate(date);

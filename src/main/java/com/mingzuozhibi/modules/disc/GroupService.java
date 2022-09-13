@@ -28,7 +28,7 @@ public class GroupService {
 
     @Transactional
     public Set<Disc> findNeedUpdateDiscs() {
-        List<Disc> discs = groupRepository.findActiveDiscs();
+        var discs = groupRepository.findActiveDiscs();
 
         Predicate<Disc> isNeedQuick = disc -> disc.getUpdateTime() == null ||
             disc.getUpdateTime().isBefore(Instant.now().minus(5, ChronoUnit.HOURS));
@@ -48,7 +48,7 @@ public class GroupService {
 
     @Transactional
     public Set<Disc> findNeedRecordDiscs() {
-        LocalDate target = LocalDate.now().minusDays(7);
+        var target = LocalDate.now().minusDays(7);
         return groupRepository.findActiveDiscs().stream()
             .filter(disc -> disc.getReleaseDate().isAfter(target))
             .collect(toCollection(LinkedHashSet::new));

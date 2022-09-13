@@ -27,7 +27,7 @@ public class RecordService extends BaseSupport {
 
     @Transactional
     public HourRecord buildHourRecord(Disc disc, LocalDate date) {
-        Optional<HourRecord> hourRecords = findHourRecords(disc, date);
+        var hourRecords = findHourRecords(disc, date);
         if (hourRecords.isEmpty()) {
             return hourRecordRepository.save(new HourRecord(disc, date));
         }
@@ -62,7 +62,7 @@ public class RecordService extends BaseSupport {
 
     @Transactional
     public JsonArray buildDiscRecords(Disc disc) {
-        JsonArray array = new JsonArray();
+        var array = new JsonArray();
         findHourRecords(disc, LocalDate.now()).ifPresent(record -> {
             array.add(buildRecord(record));
         });
@@ -85,12 +85,12 @@ public class RecordService extends BaseSupport {
     }
 
     private JsonObject buildRecord(Record record) {
-        JsonObject object = new JsonObject();
+        var object = new JsonObject();
         object.addProperty("id", record.getId());
         object.addProperty("date", record.getDate().format(fmtDate));
         Optional.ofNullable(record.getAverRank()).ifPresent(rank -> {
             if (rank < 10) {
-                double doubleValue = BigDecimal.valueOf(rank)
+                var doubleValue = BigDecimal.valueOf(rank)
                     .setScale(1, RoundingMode.HALF_UP)
                     .doubleValue();
                 object.addProperty("averRank", doubleValue);

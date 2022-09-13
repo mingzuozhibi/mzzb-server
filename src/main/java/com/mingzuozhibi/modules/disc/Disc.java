@@ -96,7 +96,7 @@ public class Disc extends BaseEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Disc disc = (Disc) o;
+        var disc = (Disc) o;
         return Objects.equals(asin, disc.asin);
     }
 
@@ -106,7 +106,7 @@ public class Disc extends BaseEntity {
     }
 
     public JsonObject toJson() {
-        JsonObject object = GSON.toJsonTree(this).getAsJsonObject();
+        var object = GSON.toJsonTree(this).getAsJsonObject();
         object.addProperty("surplusDays", this.getSurplusDays());
         return object;
     }

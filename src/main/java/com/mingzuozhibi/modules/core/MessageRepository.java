@@ -16,7 +16,7 @@ public interface MessageRepository extends JpaRepository<Message, Long>, JpaSpec
 
     default Page<Message> findBy(Name name, List<Type> types, String search, Pageable pageable) {
         return findAll((Specification<Message>) (root, query, cb) -> {
-            ArrayList<Predicate> array = new ArrayList<>();
+            var array = new ArrayList<Predicate>();
             array.add(cb.equal(root.get("name"), name));
             if (types != null && !types.isEmpty() && types.size() < BaseKeys.Type.values().length) {
                 array.add(cb.in(root.get("type")).value(types));
@@ -30,8 +30,8 @@ public interface MessageRepository extends JpaRepository<Message, Long>, JpaSpec
 
     default int cleanup(Name name, int size, Type... typeIn) {
         if (typeIn.length == 0) typeIn = Type.values();
-        int[] types = Arrays.stream(typeIn).mapToInt(Enum::ordinal).toArray();
-        Long id = findTargetId(name.name(), types, size * 20);
+        var types = Arrays.stream(typeIn).mapToInt(Enum::ordinal).toArray();
+        var id = findTargetId(name.name(), types, size * 20);
         if (id == null) return 0;
         return deleteByTargetId(name.name(), types, id);
     }

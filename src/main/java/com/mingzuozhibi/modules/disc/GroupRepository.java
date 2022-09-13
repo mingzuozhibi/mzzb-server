@@ -11,7 +11,7 @@ public interface GroupRepository extends JpaRepository<Group, Long>, JpaSpecific
 
     default List<Group> findBy(boolean hasPrivate, boolean hasDisable) {
         return findAll((root, query, cb) -> {
-            ArrayList<Predicate> predicates = new ArrayList<>();
+            var predicates = new ArrayList<Predicate>();
             if (!hasPrivate) {
                 predicates.add(cb.notEqual(root.get("viewType"), ViewType.PrivateList));
             }

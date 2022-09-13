@@ -20,7 +20,7 @@ public class MessageListener extends BaseSupport {
 
     @RabbitListener(queues = MODULE_MESSAGE)
     public void moduleMessage(String json) {
-        Message message = gson.fromJson(json, Message.class);
+        var message = gson.fromJson(json, Message.class);
         if (message.getText().length() > 1000) {
             log.info("moduleMessage(json=%s)".formatted(message));
             message.setText(message.getText().substring(0, 1000));

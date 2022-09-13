@@ -42,7 +42,7 @@ public class CsrfBindingFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, javax.servlet.FilterChain filterChain) throws ServletException, IOException {
-        CsrfToken token = (CsrfToken) request.getAttribute(REQUEST_ATTRIBUTE_NAME);
+        var token = (CsrfToken) request.getAttribute(REQUEST_ATTRIBUTE_NAME);
 
         if (token != null) {
             response.setHeader(RESPONSE_HEADER_NAME, token.getHeaderName());

@@ -19,13 +19,13 @@ public class AmqpSender {
     private AmqpTemplate template;
 
     public void info(Name name, Type type, String text) {
-        AmqpLogger amqpLogger = new AmqpLogger(name, type, text);
+        var amqpLogger = new AmqpLogger(name, type, text);
         log.info("JMS -> %s msg=%s".formatted(MODULE_MESSAGE, amqpLogger));
         send(MODULE_MESSAGE, GSON.toJson(amqpLogger));
     }
 
     public void send(String destination, String json) {
-        for (int i = 0; i < 3; i++) {
+        for (var i = 0; i < 3; i++) {
             try {
                 template.convertAndSend(destination, json);
                 break;

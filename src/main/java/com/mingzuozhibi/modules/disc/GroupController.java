@@ -1,7 +1,6 @@
 package com.mingzuozhibi.modules.disc;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import com.mingzuozhibi.commons.logger.LoggerBind;
@@ -12,7 +11,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.Objects;
 
 import static com.mingzuozhibi.modules.disc.DiscUtils.*;
 import static com.mingzuozhibi.support.ChecksUtils.*;
@@ -37,10 +37,10 @@ public class GroupController extends BaseController {
     @GetMapping(value = "/api/discGroups", produces = MEDIA_TYPE)
     public String findAll(@RequestParam(defaultValue = "false") boolean hasPrivate,
                           @RequestParam(defaultValue = "true") boolean hasDisable) {
-        List<Group> groups = groupRepository.findBy(hasPrivate, hasDisable);
-        JsonArray array = new JsonArray();
+        var groups = groupRepository.findBy(hasPrivate, hasDisable);
+        var array = new JsonArray();
         groups.stream().sorted(GROUP_COMPARATOR).forEach(group -> {
-            long count = discRepository.countByGroup(group);
+            var count = discRepository.countByGroup(group);
             array.add(buildWithCount(group, count));
         });
         return dataResult(array);
@@ -49,7 +49,7 @@ public class GroupController extends BaseController {
     @Transactional
     @GetMapping(value = "/api/discGroups/key/{key}", produces = MEDIA_TYPE)
     public String findByKey(@PathVariable String key) {
-        Optional<Group> byKey = groupRepository.findByKey(key);
+        var byKey = groupRepository.findByKey(key);
         if (byKey.isEmpty()) {
             return paramNotExists("列表索引");
         }
@@ -74,7 +74,7 @@ public class GroupController extends BaseController {
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/api/discGroups", produces = MEDIA_TYPE)
     public String doCreate(@RequestBody EntityForm form) {
-        Optional<String> checks = runChecks(
+        var checks = runChecks(
             checkNotEmpty(form.key, "列表索引"),
             checkNotEmpty(form.title, "列表标题"),
             checkNotEmpty(form.enabled, "是否更新"),
@@ -86,7 +86,7 @@ public class GroupController extends BaseController {
         if (groupRepository.findByKey(form.key).isPresent()) {
             return paramExists("列表索引");
         }
-        Group group = new Group(form.key, form.title, form.enabled, form.viewType);
+        var group = new Group(form.key, form.title, form.enabled, form.viewType);
         groupRepository.save(group);
         bind.success(logCreate("列表", group.getTitle(), gson.toJson(group)));
         return dataResult(group);
@@ -97,7 +97,7 @@ public class GroupController extends BaseController {
     @PutMapping(value = "/api/discGroups/{id}", produces = MEDIA_TYPE)
     public String doUpdate(@PathVariable("id") Long id,
                            @RequestBody EntityForm form) {
-        Optional<String> checks = runChecks(
+        var checks = runChecks(
             checkNotEmpty(form.key, "列表索引"),
             checkNotEmpty(form.title, "列表标题"),
             checkNotEmpty(form.enabled, "是否更新"),
@@ -106,11 +106,11 @@ public class GroupController extends BaseController {
         if (checks.isPresent()) {
             return errorResult(checks.get());
         }
-        Optional<Group> byId = groupRepository.findById(id);
+        var byId = groupRepository.findById(id);
         if (byId.isEmpty()) {
             return paramNotExists("列表ID");
         }
-        Group group = byId.get();
+        var group = byId.get();
         if (!Objects.equals(group.getKey(), form.key)) {
             bind.notify(logUpdate("列表索引", group.getKey(), form.key, group.getTitle()));
             group.setKey(form.key);
@@ -134,11 +134,11 @@ public class GroupController extends BaseController {
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(value = "/api/discGroups/{id}", produces = MEDIA_TYPE)
     public String doDelete(@PathVariable("id") Long id) {
-        Optional<Group> byId = groupRepository.findById(id);
+        var byId = groupRepository.findById(id);
         if (byId.isEmpty()) {
             return paramNotExists("列表ID");
         }
-        Group group = byId.get();
+        var group = byId.get();
         if (discRepository.countByGroup(group) > 0) {
             bind.warning(logDelete("列表", group.getTitle(), gson.toJson(group)));
             group.getDiscs().forEach(disc -> {
@@ -155,12 +155,12 @@ public class GroupController extends BaseController {
     @Transactional
     @GetMapping(value = "/api/discGroups/key/{key}/discs", produces = MEDIA_TYPE)
     public String findDiscs(@PathVariable String key) {
-        Optional<Group> byKey = groupRepository.findByKey(key);
+        var byKey = groupRepository.findByKey(key);
         if (byKey.isEmpty()) {
             return paramNotExists("列表索引");
         }
-        Group group = byKey.get();
-        JsonObject object = buildWithDiscs(group);
+        var group = byKey.get();
+        var object = buildWithDiscs(group);
         return dataResult(object);
     }
 
@@ -169,17 +169,17 @@ public class GroupController extends BaseController {
     @PostMapping(value = "/api/discGroups/{gid}/discs/{did}", produces = MEDIA_TYPE)
     public synchronized String pushDiscs(@PathVariable Long gid,
                                          @PathVariable Long did) {
-        Optional<Group> byGid = groupRepository.findById(gid);
+        var byGid = groupRepository.findById(gid);
         if (byGid.isEmpty()) {
             return paramNotExists("列表ID");
         }
-        Group group = byGid.get();
+        var group = byGid.get();
 
-        Optional<Disc> byDid = discRepository.findById(did);
+        var byDid = discRepository.findById(did);
         if (byDid.isEmpty()) {
             return paramNotExists("碟片ID");
         }
-        Disc disc = byDid.get();
+        var disc = byDid.get();
 
         if (discRepository.countByGroup(group, disc) > 0) {
             return itemsExists("碟片");
@@ -195,17 +195,17 @@ public class GroupController extends BaseController {
     @DeleteMapping(value = "/api/discGroups/{gid}/discs/{did}", produces = MEDIA_TYPE)
     public synchronized String dropDiscs(@PathVariable("gid") Long gid,
                                          @PathVariable("did") Long did) {
-        Optional<Group> byGid = groupRepository.findById(gid);
+        var byGid = groupRepository.findById(gid);
         if (byGid.isEmpty()) {
             return paramNotExists("列表ID");
         }
-        Group group = byGid.get();
+        var group = byGid.get();
 
-        Optional<Disc> byDid = discRepository.findById(did);
+        var byDid = discRepository.findById(did);
         if (byDid.isEmpty()) {
             return paramNotExists("碟片ID");
         }
-        Disc disc = byDid.get();
+        var disc = byDid.get();
 
         if (!(discRepository.countByGroup(group, disc) > 0)) {
             return itemsNotExists("碟片");

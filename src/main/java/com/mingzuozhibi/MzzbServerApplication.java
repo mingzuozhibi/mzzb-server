@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession;
@@ -23,7 +22,7 @@ import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHtt
 public class MzzbServerApplication {
 
     public static void main(String[] args) {
-        ConfigurableApplicationContext context =
+        var context =
             SpringApplication.run(MzzbServerApplication.class, args);
         context.getBean(AmqpSender.class).bind(Name.SERVER_CORE)
             .notify("MzzbServerApplication已启动");

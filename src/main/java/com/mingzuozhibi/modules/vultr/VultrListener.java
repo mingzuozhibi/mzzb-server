@@ -41,7 +41,7 @@ public class VultrListener extends BaseSupport {
     @RabbitListener(queues = CONTENT_FINISH)
     public void contentFinish(String json) {
         var logger = amqpSender.bind(Name.SERVER_DISC);
-        TypeToken<?> token = getParameterized(List.class, Content.class);
+        var token = getParameterized(List.class, Content.class);
         List<Content> contents = gson.fromJson(json, token.getType());
         logger.info("JMS <- %s size=%d".formatted(CONTENT_FINISH, contents.size()));
         logWithAction(logger, "更新碟片信息", () ->
@@ -60,7 +60,7 @@ public class VultrListener extends BaseSupport {
 
     @RabbitListener(queues = FETCH_TASK_DONE2)
     public void fetchTaskDone2(String json) {
-        int doneCount = Integer.parseInt(json);
+        var doneCount = Integer.parseInt(json);
         vultrService.finishServer(doneCount);
     }
 

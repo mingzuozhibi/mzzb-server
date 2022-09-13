@@ -8,7 +8,6 @@ import lombok.*;
 import javax.persistence.*;
 import java.io.Serial;
 import java.time.LocalDate;
-import java.util.OptionalDouble;
 import java.util.stream.DoubleStream;
 
 @Entity
@@ -68,14 +67,14 @@ public class HourRecord extends BaseEntity implements Record {
         if (this.embedded == null) {
             return null;
         }
-        DoubleStream.Builder builder = DoubleStream.builder();
-        for (int hour = 0; hour < 24; hour++) {
-            Integer rank = getRank(hour);
+        var builder = DoubleStream.builder();
+        for (var hour = 0; hour < 24; hour++) {
+            var rank = getRank(hour);
             if (rank != null) {
                 builder.add(rank);
             }
         }
-        OptionalDouble average = builder.build().average();
+        var average = builder.build().average();
         return average.isPresent() ? average.getAsDouble() : null;
     }
 

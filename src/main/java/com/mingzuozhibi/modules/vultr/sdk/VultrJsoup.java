@@ -35,10 +35,10 @@ public abstract class VultrJsoup {
 
     public static Response jsoup(String url, Consumer<Connection> consumer) throws Exception {
         Exception lastThrow = null;
-        int maxCount = 8;
-        for (int i = 0; i < maxCount; i++) {
+        var maxCount = 8;
+        for (var i = 0; i < maxCount; i++) {
             try {
-                Connection connection = Jsoup.connect(url)
+                var connection = Jsoup.connect(url)
                     .header("Authorization", "Bearer %s".formatted(apiKey))
                     .header("Content-Type", "application/json")
                     .timeout(10000)
