@@ -29,10 +29,10 @@ import static com.mingzuozhibi.modules.disc.DiscUtils.updateRank;
 public class ContentUpdater extends BaseSupport {
 
     @Autowired
-    private GroupService groupService;
+    private DiscRepository discRepository;
 
     @Autowired
-    private DiscRepository discRepository;
+    private GroupRepository groupRepository;
 
     @Transactional
     public long updateAllContent(List<Content> contents, Instant updateOn) {
@@ -48,7 +48,7 @@ public class ContentUpdater extends BaseSupport {
                 log.debug("updateContent", e);
             }
         }
-        groupService.updateUpdateOn();
+        groupRepository.updateModifyTime();
         return updateCount.get();
     }
 

@@ -3,7 +3,7 @@ package com.mingzuozhibi.modules.vultr;
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.commons.utils.*;
-import com.mingzuozhibi.modules.disc.GroupService;
+import com.mingzuozhibi.modules.disc.DiscRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,7 @@ public class VultrService extends BaseController {
     private VultrContext vultrContext;
 
     @Autowired
-    private GroupService groupService;
+    private DiscRepository discRepository;
 
     @PostConstruct
     public void init() {
@@ -71,7 +71,7 @@ public class VultrService extends BaseController {
     }
 
     public void createServer() {
-        var tasks = groupService.findNeedUpdateDiscs().stream()
+        var tasks = discRepository.findNeedUpdate().stream()
             .map(disc -> new TaskOfContent(disc.getAsin(), disc.getThisRank()))
             .collect(Collectors.toList());
 

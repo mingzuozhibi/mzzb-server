@@ -22,6 +22,7 @@ import static com.mingzuozhibi.modules.disc.DiscUtils.updateRank;
 import static com.mingzuozhibi.support.ChecksUtils.*;
 import static com.mingzuozhibi.support.ModifyUtils.*;
 
+@Transactional
 @RestController
 @LoggerBind(Name.SERVER_USER)
 public class DiscController extends BaseController {
@@ -35,7 +36,6 @@ public class DiscController extends BaseController {
     @Autowired
     private HistoryRepository historyRepository;
 
-    @Transactional
     @GetMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
     public String findById(@PathVariable Long id) {
         var byId = discRepository.findById(id);
@@ -45,7 +45,6 @@ public class DiscController extends BaseController {
         return dataResult(byId.get().toJson());
     }
 
-    @Transactional
     @GetMapping(value = "/api/discs/asin/{asin}", produces = MEDIA_TYPE)
     public String findByAsin(@PathVariable String asin) {
         var byAsin = discRepository.findByAsin(asin);
@@ -55,7 +54,6 @@ public class DiscController extends BaseController {
         return dataResult(byAsin.get().toJson());
     }
 
-    @Transactional
     @GetMapping(value = "/api/discs/{id}/records", produces = MEDIA_TYPE)
     public String findRecords(@PathVariable Long id) {
         var byId = discRepository.findById(id);
@@ -76,7 +74,6 @@ public class DiscController extends BaseController {
         private String releaseDate;
     }
 
-    @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/api/discs", produces = MEDIA_TYPE)
     public String doCreate(@RequestBody CreateForm form) {
@@ -111,7 +108,6 @@ public class DiscController extends BaseController {
         private String releaseDate;
     }
 
-    @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PutMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
     public String doUpdate(@PathVariable Long id,
@@ -150,7 +146,6 @@ public class DiscController extends BaseController {
         Integer rank;
     }
 
-    @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PatchMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
     public String doPatch(@PathVariable Long id, @RequestBody PatchForm form) {

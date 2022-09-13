@@ -5,7 +5,7 @@ import com.mingzuozhibi.commons.base.BaseKeys.Type;
 import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.modules.core.MessageRepository;
-import com.mingzuozhibi.modules.disc.GroupService;
+import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.record.*;
 import com.mingzuozhibi.modules.user.RememberRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -21,13 +21,13 @@ import java.time.*;
 public class AdminService extends BaseSupport {
 
     @Autowired
-    private GroupService groupService;
-
-    @Autowired
     private RecordService recordService;
 
     @Autowired
     private RecordCompute recordCompute;
+
+    @Autowired
+    private DiscRepository discRepository;
 
     @Autowired
     private MessageRepository messageRepository;
@@ -65,7 +65,7 @@ public class AdminService extends BaseSupport {
         var now = LocalDateTime.now();
         var date = now.toLocalDate();
         var hour = now.getHour();
-        var discs = groupService.findNeedRecordDiscs();
+        var discs = discRepository.findNeedRecord();
         discs.forEach(disc -> recordCompute.computePtNow(disc, date, hour));
         bind.debug("[自动任务][记录计算排名][共%d个]".formatted(discs.size()));
     }

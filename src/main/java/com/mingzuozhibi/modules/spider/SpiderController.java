@@ -4,7 +4,6 @@ import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import com.mingzuozhibi.commons.base.PageController;
 import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.modules.disc.DiscRepository;
-import com.mingzuozhibi.modules.disc.GroupService;
 import com.mingzuozhibi.modules.record.RecordCompute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -22,9 +21,6 @@ import static com.mingzuozhibi.support.ModifyUtils.*;
 @RestController
 @LoggerBind(Name.SERVER_USER)
 public class SpiderController extends PageController {
-
-    @Autowired
-    private GroupService groupService;
 
     @Autowired
     private RecordCompute recordCompute;
@@ -54,7 +50,7 @@ public class SpiderController extends PageController {
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping(value = "/api/spider/fetchCount", produces = MEDIA_TYPE)
     public String fetchCount() {
-        return dataResult(groupService.getFetchCount());
+        return dataResult(discRepository.countActiveDiscs());
     }
 
     @Transactional
