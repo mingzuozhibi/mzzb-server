@@ -5,6 +5,7 @@ import com.mingzuozhibi.commons.base.PageController;
 import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.record.RecordCompute;
+import com.mingzuozhibi.modules.vultr.VultrContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -21,6 +22,9 @@ import static com.mingzuozhibi.support.ModifyUtils.*;
 @RestController
 @LoggerBind(Name.SERVER_USER)
 public class SpiderController extends PageController {
+
+    @Autowired
+    private VultrContext vultrContext;
 
     @Autowired
     private RecordCompute recordCompute;
@@ -94,6 +98,17 @@ public class SpiderController extends PageController {
         var pt2 = disc.getTotalPt();
         bind.info(logUpdate("碟片PT", pt1, pt2, disc.getLogName()));
         return dataResult("compute: " + pt1 + "->" + pt2);
+    }
+
+    @Transactional
+    @GetMapping(value = "/admin/setDisable/{disable}")
+    public void setDisable(@PathVariable Boolean disable) {
+        var bean = vultrContext.getDisable();
+        var value = bean.getValue();
+        bean.setValue(disable);
+        if (!value.equals(disable)) {
+            amqpSender.bind(Name.SERVER_CORE).notify("Change Vultr Disable = %b".formatted(disable));
+        }
     }
 
 }
