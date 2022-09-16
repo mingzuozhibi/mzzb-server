@@ -110,10 +110,20 @@ public class VultrService extends BaseController {
         vultrContext.getStartted().setValue(startted);
     }
 
+    public void setRetry(int retry) {
+        vultrContext.getRetry().setValue(retry);
+    }
+
     private void tryRedoTask() {
         if (deleteInstance()) {
-            waitForDelete();
-            createServer();
+            var retry = vultrContext.getRetry().getValue();
+            if (retry > 0) {
+                vultrContext.getRetry().setValue(retry - 1);
+                waitForDelete();
+                createServer();
+            } else {
+                bind.warning("重试次数已耗尽");
+            }
         } else {
             bind.warning("未能重新开始任务");
         }
