@@ -5,6 +5,7 @@ import com.mingzuozhibi.commons.base.PageController;
 import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.record.RecordCompute;
+import com.mingzuozhibi.modules.vultr.TaskOfContent;
 import com.mingzuozhibi.modules.vultr.VultrContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -15,7 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.stream.Collectors;
 
+import static com.mingzuozhibi.commons.base.BaseKeys.FETCH_TASK_START;
 import static com.mingzuozhibi.support.ChecksUtils.paramNotExists;
 import static com.mingzuozhibi.support.ModifyUtils.*;
 
@@ -109,6 +112,16 @@ public class SpiderController extends PageController {
         if (!value.equals(disable)) {
             amqpSender.bind(Name.SERVER_CORE).notify("Change Vultr Disable = %b".formatted(disable));
         }
+    }
+
+    @Transactional
+    @GetMapping(value = "/admin/sendTasks")
+    public void sendTasks() {
+        var tasks = discRepository.findNeedUpdate().stream()
+            .map(disc -> new TaskOfContent(disc.getAsin(), disc.getThisRank()))
+            .collect(Collectors.toList());
+        amqpSender.send(FETCH_TASK_START, gson.toJson(tasks));
+        bind.info("JMS -> %s size=%d".formatted(FETCH_TASK_START, tasks.size()));
     }
 
 }
