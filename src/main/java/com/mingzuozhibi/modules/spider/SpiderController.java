@@ -5,6 +5,8 @@ import com.mingzuozhibi.commons.base.PageController;
 import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.record.RecordCompute;
+import com.mingzuozhibi.modules.vultr.TaskOfContent;
+import com.mingzuozhibi.modules.vultr.VultrContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -14,13 +16,18 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.stream.Collectors;
 
+import static com.mingzuozhibi.commons.base.BaseKeys.FETCH_TASK_START;
 import static com.mingzuozhibi.support.ChecksUtils.paramNotExists;
 import static com.mingzuozhibi.support.ModifyUtils.*;
 
 @RestController
 @LoggerBind(Name.SERVER_USER)
 public class SpiderController extends PageController {
+
+    @Autowired
+    private VultrContext vultrContext;
 
     @Autowired
     private RecordCompute recordCompute;
@@ -94,6 +101,27 @@ public class SpiderController extends PageController {
         var pt2 = disc.getTotalPt();
         bind.info(logUpdate("碟片PT", pt1, pt2, disc.getLogName()));
         return dataResult("compute: " + pt1 + "->" + pt2);
+    }
+
+    @Transactional
+    @GetMapping(value = "/admin/setDisable/{disable}")
+    public void setDisable(@PathVariable Boolean disable) {
+        var bean = vultrContext.getDisable();
+        var value = bean.getValue();
+        bean.setValue(disable);
+        if (!value.equals(disable)) {
+            amqpSender.bind(Name.SERVER_CORE).notify("Change Vultr Disable = %b".formatted(disable));
+        }
+    }
+
+    @Transactional
+    @GetMapping(value = "/admin/sendTasks")
+    public void sendTasks() {
+        var tasks = discRepository.findNeedUpdate().stream()
+            .map(disc -> new TaskOfContent(disc.getAsin(), disc.getThisRank()))
+            .collect(Collectors.toList());
+        amqpSender.send(FETCH_TASK_START, gson.toJson(tasks));
+        bind.info("JMS -> %s size=%d".formatted(FETCH_TASK_START, tasks.size()));
     }
 
 }

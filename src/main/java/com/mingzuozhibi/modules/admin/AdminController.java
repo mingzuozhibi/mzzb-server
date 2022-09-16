@@ -54,6 +54,7 @@ public class AdminController extends BaseController {
             return;
         }
         runWithDaemon(bind, "创建抓取服务器", () -> {
+            vultrService.setRetry(1);
             vultrService.createServer();
         });
     }

@@ -32,6 +32,8 @@ public class VultrContext extends BaseSupport {
     private static final String KEY_DONE_COUNT = "VultrService.doneCount";
     private static final String KEY_STARTTED = "VultrService.startted";
     private static final String KEY_TIMEOUT = "VultrService.timeout";
+    private static final String KEY_RETRY = "VultrService.retry";
+    private static final String KEY_DISABLE = "VultrService.disable";
 
     @Autowired
     private VarableService varableService;
@@ -46,6 +48,10 @@ public class VultrContext extends BaseSupport {
     private VarBean<Boolean> startted;
     @Getter
     private VarBean<Instant> timeout;
+    @Getter
+    private VarBean<Integer> retry;
+    @Getter
+    private VarBean<Boolean> disable;
 
     public void init() {
         regionIdx = varableService.createInteger(KEY_REGION_IDX, 0);
@@ -55,9 +61,16 @@ public class VultrContext extends BaseSupport {
         timeout = varableService.create(KEY_TIMEOUT, Instant.now(),
             instant -> String.valueOf(instant.toEpochMilli()),
             string -> Instant.ofEpochMilli(Long.parseLong(string)));
+        retry = varableService.createInteger(KEY_RETRY, 0);
+        disable = varableService.createBoolean(KEY_DISABLE, false);
 
         log.info("Vultr Instance Region = %s".formatted(formatRegion()));
         log.info("Vultr Instance Startted = %b".formatted(startted.getValue()));
+        if (!startted.getValue()) {
+            log.info("Vultr Instance Timeout = %s".formatted(fmtDateTime.format(timeout.getValue())));
+            log.info("Vultr Instance Retry = %d".formatted(retry.getValue()));
+        }
+        log.info("Vultr Instance Disable = %b".formatted(disable.getValue()));
     }
 
     public String nextCode() {
