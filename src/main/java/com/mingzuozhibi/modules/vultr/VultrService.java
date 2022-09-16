@@ -71,6 +71,10 @@ public class VultrService extends BaseController {
     }
 
     public void createServer() {
+        if (vultrContext.getDisable().getValue()) {
+            bind.info("系统已设定为禁止更新");
+            return;
+        }
         var tasks = discRepository.findNeedUpdate().stream()
             .map(disc -> new TaskOfContent(disc.getAsin(), disc.getThisRank()))
             .collect(Collectors.toList());
