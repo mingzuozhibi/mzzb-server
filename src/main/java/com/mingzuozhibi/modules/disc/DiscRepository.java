@@ -40,7 +40,7 @@ public interface DiscRepository extends JpaRepository<Disc, Long> {
 
     default Set<Disc> findNeedUpdate() {
         var activeDiscs = findActiveDiscs();
-        var needQuick = Instant.now().minus(5, ChronoUnit.HOURS);
+        var needQuick = Instant.now().minus(7, ChronoUnit.HOURS);
         var needFetch = Instant.now().minus(1, ChronoUnit.HOURS);
         return DiscUtils.findNeedUpdate(activeDiscs, needQuick, needFetch);
     }
