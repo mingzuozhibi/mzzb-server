@@ -50,7 +50,9 @@ public class HistoryUpdater extends BaseSupport {
         if (byAsin.isPresent()) {
             var toUpdate = byAsin.get();
             toUpdate.setType(history.getType());
-            toUpdate.setDate(history.getDate());
+            if (history.getDate() != null) {
+                toUpdate.setDate(history.getDate());
+            }
             toUpdate.setTitle(history.getTitle());
             return false;
         } else {
