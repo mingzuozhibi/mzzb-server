@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.mingzuozhibi.commons.base.BaseKeys.FETCH_TASK_START;
@@ -105,13 +106,12 @@ public class SpiderController extends PageController {
 
     @Transactional
     @GetMapping(value = "/admin/setDisable/{disable}")
-    public void setDisable(@PathVariable Boolean disable) {
+    public void setDisable(@PathVariable("disable") Boolean next) {
         var bean = vultrContext.getDisable();
-        var value = bean.getValue();
-        bean.setValue(disable);
-        if (!value.equals(disable)) {
-            amqpSender.bind(Name.SERVER_CORE).notify("Change Vultr Disable = %b".formatted(disable));
-        }
+        var prev = bean.getValue();
+        bean.setValue(next);
+        if (!Objects.equals(prev, next)) amqpSender.bind(Name.SERVER_CORE)
+            .notify("Change Vultr Disable = %b".formatted(next));
     }
 
     @Transactional

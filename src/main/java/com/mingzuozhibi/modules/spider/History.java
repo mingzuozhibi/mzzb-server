@@ -23,6 +23,9 @@ public class History extends BaseEntity {
     @Column(nullable = false, length = 20)
     private String type;
 
+    @Column(length = 20)
+    private String date;
+
     @Column(nullable = false, length = 500)
     private String title;
 

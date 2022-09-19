@@ -46,7 +46,7 @@ public class AdminController extends BaseController {
         });
     }
 
-    @Scheduled(cron = "0 2 0/4 * * ?")
+    @Scheduled(cron = "0 2 0/6 * * ?")
     @GetMapping(value = "/admin/createServer", produces = MEDIA_TYPE)
     public void createServer() {
         if (EnvLoader.isDevMode()) {

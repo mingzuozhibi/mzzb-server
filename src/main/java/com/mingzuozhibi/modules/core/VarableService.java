@@ -3,6 +3,7 @@ package com.mingzuozhibi.modules.core;
 import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import com.mingzuozhibi.commons.base.BaseSupport;
 import com.mingzuozhibi.commons.logger.LoggerBind;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,13 +19,14 @@ public class VarableService extends BaseSupport {
 
     @Transactional
     public <T> VarBean<T> create(String key, T value, Function<T, String> format, Function<String, T> parse) {
+        var service = (VarableService) AopContext.currentProxy();
         var byKey = this.varableRepository.findByKey(key);
         if (byKey.isPresent()) {
             var load = parse.apply(byKey.get().getContent());
-            return new VarBean<>(key, load, format, this);
+            return new VarBean<>(key, load, format, service);
         } else {
             varableRepository.save(new Varable(key, format.apply(value)));
-            return new VarBean<>(key, value, format, this);
+            return new VarBean<>(key, value, format, service);
         }
     }
 
