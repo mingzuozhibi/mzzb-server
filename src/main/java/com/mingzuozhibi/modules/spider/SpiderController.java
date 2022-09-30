@@ -121,7 +121,8 @@ public class SpiderController extends PageController {
             .map(disc -> new TaskOfContent(disc.getAsin(), disc.getThisRank()))
             .collect(Collectors.toList());
         amqpSender.send(FETCH_TASK_START, gson.toJson(tasks));
-        bind.info("JMS -> %s size=%d".formatted(FETCH_TASK_START, tasks.size()));
+        amqpSender.bind(Name.SERVER_CORE)
+            .info("JMS -> %s size=%d".formatted(FETCH_TASK_START, tasks.size()));
     }
 
 }
