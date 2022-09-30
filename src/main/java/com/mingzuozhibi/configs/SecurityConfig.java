@@ -33,7 +33,6 @@ public class SecurityConfig {
         http.authorizeRequests()
             .antMatchers(HttpMethod.GET).permitAll()
             .antMatchers("/api/session/**").permitAll()
-            .antMatchers("/api/register").permitAll()
             .antMatchers("/api/**").hasRole("BASIC")
 
             .and().anonymous()
@@ -46,7 +45,6 @@ public class SecurityConfig {
 
             .and().csrf()
             .ignoringAntMatchers("/api/session/**")
-            .ignoringAntMatchers("/management/**")
 
             .and().addFilterAfter(new CsrfBindingFilter(), CsrfFilter.class);
         log.info("已成功配置安全策略");
