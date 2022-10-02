@@ -58,7 +58,7 @@ public class HistoryUpdater extends BaseSupport {
         } else {
             history.setTracked(discRepository.existsByAsin(history.getAsin()));
             historyRepository.save(history);
-            bind.info("[发现新碟片][asin=%s][type=%s][date=%s][title=%s]".formatted(
+            bind.notify("[发现新碟片][asin=%s][type=%s][date=%s][title=%s]".formatted(
                 history.getAsin(), history.getType(), history.getDate(), history.getTitle()));
             return true;
         }
