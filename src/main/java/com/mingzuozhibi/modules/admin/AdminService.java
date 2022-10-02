@@ -74,13 +74,13 @@ public class AdminService extends BaseSupport {
     public void cleanupModulesMessages() {
         var count = 0;
         {
-            var c1 = messageRepository.cleanup(Name.SPIDER_CONTENT, 300, Type.DEBUG);
+            var c1 = messageRepository.cleanup(Name.SPIDER_CONTENT, 300, Type.DEBUG, Type.INFO);
             var c2 = messageRepository.cleanup(Name.SPIDER_CONTENT, 400);
             count += c1 + c2;
             log.debug("[清理日志][name=%s][size=%d,%d]".formatted(Name.SPIDER_CONTENT, c1, c2));
         }
         {
-            var c1 = messageRepository.cleanup(Name.SPIDER_HISTORY, 150, Type.DEBUG);
+            var c1 = messageRepository.cleanup(Name.SPIDER_HISTORY, 150, Type.DEBUG, Type.INFO);
             var c2 = messageRepository.cleanup(Name.SPIDER_HISTORY, 200);
             count += c1 + c2;
             log.debug("[清理日志][name=%s][size=%d,%d]".formatted(Name.SPIDER_HISTORY, c1, c2));
