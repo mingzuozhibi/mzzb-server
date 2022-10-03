@@ -31,10 +31,10 @@ public interface MessageRepository extends JpaRepository<Message, Long>, JpaSpec
                 }
             }
             if (start != null) {
-                array.add(cb.greaterThan(root.get("createOn"), start));
+                array.add(cb.greaterThanOrEqualTo(root.get("createOn"), start));
             }
             if (end != null) {
-                array.add(cb.lessThan(root.get("createOn"), end));
+                array.add(cb.lessThanOrEqualTo(root.get("createOn"), end));
             }
             return query.where(array.toArray(new Predicate[0])).getRestriction();
         }, pageable);

@@ -32,13 +32,12 @@ public class MessageController extends PageController {
                           @RequestParam(defaultValue = "20") int size) {
 
         var messages = messageRepository.findBy(name, types, search,
-            safeInstance(start, LocalTime.of(0, 0, 0)),
-            safeInstance(end, LocalTime.of(23, 59, 59)),
+            toDate(start, LocalTime.MIN), toDate(end, LocalTime.MAX),
             PageRequest.of(page - 1, size, Sort.by(Order.desc("id"))));
         return pageResult(messages);
     }
 
-    private static Instant safeInstance(LocalDate date, LocalTime time) {
+    private static Instant toDate(LocalDate date, LocalTime time) {
         if (date == null) return null;
         return toInstant(LocalDateTime.of(date, time));
     }
