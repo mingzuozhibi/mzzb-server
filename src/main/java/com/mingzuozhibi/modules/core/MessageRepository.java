@@ -26,7 +26,9 @@ public interface MessageRepository extends JpaRepository<Message, Long>, JpaSpec
                 array.add(cb.in(root.get("type")).value(types));
             }
             if (StringUtils.isNotBlank(search)) {
-                array.add(cb.like(root.get("text"), "%" + search + "%"));
+                for (var word : search.split("\\s+")) {
+                    array.add(cb.like(root.get("text"), "%" + word + "%"));
+                }
             }
             if (start != null) {
                 array.add(cb.greaterThan(root.get("createOn"), start));
