@@ -35,14 +35,14 @@ public class GroupController extends BaseController {
 
     @Transactional
     @GetMapping(value = "/api/discGroups", produces = MEDIA_TYPE)
-    public String findAll(@RequestParam(defaultValue = "false") boolean hasPrivate,
-                          @RequestParam(defaultValue = "true") boolean hasDisable) {
-        var groups = groupRepository.findBy(hasPrivate, hasDisable);
+    public String findAll(@RequestParam(defaultValue = "top") String filter) {
         var array = new JsonArray();
-        groups.stream().sorted(GROUP_COMPARATOR).forEach(group -> {
-            var count = discRepository.countByGroup(group);
-            array.add(buildWithCount(group, count));
-        });
+        groupRepository.findByFilter(filter).stream()
+            .sorted(GROUP_COMPARATOR)
+            .forEach(group -> {
+                var count = discRepository.countByGroup(group);
+                array.add(buildWithCount(group, count));
+            });
         return dataResult(array);
     }
 
