@@ -55,7 +55,7 @@ public class ContentUpdater extends BaseSupport {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateContent(Content content, Instant updateOn) {
         var asin = content.getAsin();
-        if (content.isOffTheShelf()) {
+        if (content.isLogoff()) {
             bind.warning("[碟片可能已下架][%s]".formatted(asin));
             return;
         }
@@ -75,6 +75,10 @@ public class ContentUpdater extends BaseSupport {
 
     private void updateTitle(Disc disc, Content content) {
         var title = content.getTitle();
+        if (title.length() > 500) {
+            bind.warning("[碟片标题过长][length=%d][title=%s]".formatted(title.length(), title));
+            title = title.substring(0, 500);
+        }
         if (!Objects.equals(title, disc.getTitle())) {
             bind.debug("[碟片标题更新][%s => %s][%s]".formatted(disc.getTitle(), title, disc.getAsin()));
             disc.setTitle(title);
@@ -109,8 +113,8 @@ public class ContentUpdater extends BaseSupport {
         }
 
         if (!Objects.equals(date, disc.getReleaseDate())) {
-            bind.warning("[发售时间不符][%s => %s][%s][套装=%b]".formatted(
-                disc.getReleaseDate(), date, asin, buyset));
+            bind.warning("[发售时间不符][%s => %s][%s][套装=%b][类型=%s]".formatted(
+                disc.getReleaseDate(), date, asin, buyset, disc.getDiscType()));
         }
     }
 

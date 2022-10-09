@@ -12,9 +12,7 @@ public class Content {
     private String date;
     private String title;
     private Integer rank;
-    private Integer price;
     private boolean buyset;
-    private boolean outOfStock;
-    private boolean offTheShelf;
+    private boolean logoff;
 
 }
