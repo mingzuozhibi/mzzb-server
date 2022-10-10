@@ -1,10 +1,10 @@
 package com.mingzuozhibi.modules.disc;
 
 import com.mingzuozhibi.modules.disc.Group.ViewType;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.criteria.Predicate;
 import java.util.*;
 
 @Transactional
@@ -14,23 +14,28 @@ public interface GroupRepository extends JpaRepository<Group, Long>, JpaSpecific
 
     List<Group> findByEnabled(boolean enabled);
 
+    List<Group> findByViewType(ViewType viewType);
+
+    List<Group> findByEnabledAndViewType(boolean enabled, ViewType viewType, Pageable pageable);
+
     @Query(value = "Select g " +
         "From Group g " +
         "Join g.discs d " +
         "Where d.asin = :asin")
     List<Group> findByAsin(String asin);
 
-    default List<Group> findBy(boolean hasPrivate, boolean hasDisable) {
-        return findAll((root, query, cb) -> {
-            var predicates = new ArrayList<Predicate>();
-            if (!hasPrivate) {
-                predicates.add(cb.notEqual(root.get("viewType"), ViewType.PrivateList));
+    default List<Group> findByFilter(String filter) {
+        var groups = new LinkedList<Group>();
+        switch (filter) {
+            case "top" -> {
+                var pageRequest = PageRequest.of(0, 6, Sort.by(Sort.Order.desc("key")));
+                groups.addAll(findByEnabled(true));
+                groups.addAll(findByEnabledAndViewType(false, ViewType.PublicList, pageRequest));
             }
-            if (!hasDisable) {
-                predicates.add(cb.notEqual(root.get("enabled"), false));
-            }
-            return query.where(predicates.toArray(new Predicate[0])).getRestriction();
-        });
+            case "pub" -> groups.addAll(findByViewType(ViewType.PublicList));
+            case "all" -> groups.addAll(findAll());
+        }
+        return groups;
     }
 
     default void updateModifyTime() {

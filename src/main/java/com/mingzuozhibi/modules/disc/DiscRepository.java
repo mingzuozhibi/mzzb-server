@@ -1,7 +1,6 @@
 package com.mingzuozhibi.modules.disc;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
@@ -12,7 +11,7 @@ import java.util.*;
 import static java.util.stream.Collectors.toCollection;
 
 @Transactional
-public interface DiscRepository extends JpaRepository<Disc, Long> {
+public interface DiscRepository extends JpaRepository<Disc, Long>, JpaSpecificationExecutor<Disc> {
 
     Optional<Disc> findByAsin(String asin);
 
