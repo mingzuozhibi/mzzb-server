@@ -1,7 +1,7 @@
 package com.mingzuozhibi.modules.disc;
 
-import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.base.BaseKeys.Name;
+import com.mingzuozhibi.commons.base.PageController;
 import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
 import com.mingzuozhibi.modules.record.RecordService;
@@ -9,13 +9,16 @@ import com.mingzuozhibi.modules.spider.HistoryRepository;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.criteria.Predicate;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Objects;
+import java.util.*;
 
 import static com.mingzuozhibi.commons.utils.MyTimeUtils.fmtDate;
 import static com.mingzuozhibi.modules.disc.DiscUtils.updateRank;
@@ -25,7 +28,7 @@ import static com.mingzuozhibi.support.ModifyUtils.*;
 @Transactional
 @RestController
 @LoggerBind(Name.SERVER_USER)
-public class DiscController extends BaseController {
+public class DiscController extends PageController {
 
     @Autowired
     private RecordService recordService;
@@ -35,6 +38,25 @@ public class DiscController extends BaseController {
 
     @Autowired
     private HistoryRepository historyRepository;
+
+    @GetMapping(value = "/api/discs", produces = MEDIA_TYPE)
+    public String findAll(@RequestParam(required = false) String title,
+                          @RequestParam(defaultValue = "1") int page,
+                          @RequestParam(defaultValue = "20") int size) {
+        var discs = discRepository.findAll((Specification<Disc>) (root, query, cb) -> {
+            List<Predicate> predicates = new LinkedList<>();
+            if (title != null) {
+                Arrays.stream(title.split("\\s+")).forEach(text -> {
+                    predicates.add(cb.or(
+                        cb.like(root.get("title"), "%" + text + "%"),
+                        cb.like(root.get("titlePc"), "%" + text + "%")
+                    ));
+                });
+            }
+            return query.where(predicates.toArray(Predicate[]::new)).getRestriction();
+        }, PageRequest.of(page - 1, size));
+        return pageResult(discs.map(Disc::toJson));
+    }
 
     @GetMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
     public String findById(@PathVariable Long id) {
