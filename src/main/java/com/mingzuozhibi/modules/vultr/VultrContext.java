@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
-import static com.mingzuozhibi.commons.utils.MyTimeUtils.fmtDateTime;
+import static com.mingzuozhibi.commons.utils.MyTimeUtils.*;
 import static com.mingzuozhibi.support.FileIoUtils.writeLine;
 
 @Slf4j
@@ -67,7 +67,8 @@ public class VultrContext extends BaseSupport {
         log.info("Vultr Instance Region = %s".formatted(formatRegion()));
         log.info("Vultr Instance Startted = %b".formatted(startted.getValue()));
         if (!startted.getValue()) {
-            log.info("Vultr Instance Timeout = %s".formatted(fmtDateTime.format(timeout.getValue())));
+            var timeout = ofInstant(this.timeout.getValue());
+            log.info("Vultr Instance Timeout = %s".formatted(fmtDateTime.format(timeout)));
             log.info("Vultr Instance Retry = %d".formatted(retry.getValue()));
         }
         log.info("Vultr Instance Disable = %b".formatted(disable.getValue()));
