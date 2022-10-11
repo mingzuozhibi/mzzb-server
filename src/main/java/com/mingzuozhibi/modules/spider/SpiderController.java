@@ -7,6 +7,7 @@ import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.record.RecordCompute;
 import com.mingzuozhibi.modules.vultr.TaskOfContent;
 import com.mingzuozhibi.modules.vultr.VultrContext;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -15,8 +16,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.criteria.Predicate;
 import java.time.LocalDate;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.mingzuozhibi.commons.base.BaseKeys.FETCH_TASK_START;
@@ -43,15 +45,23 @@ public class SpiderController extends PageController {
     private HistoryRepository historyRepository;
 
     @Transactional
-    @GetMapping(value = "/api/spider/discShelfs", produces = MEDIA_TYPE)
-    public String discShelfs(@RequestParam(defaultValue = "1") int page,
-                             @RequestParam(defaultValue = "20") int size) {
-        if (size > 40) {
-            return errorResult("Size不能大于40");
+    @GetMapping(value = "/api/spider/historys", produces = MEDIA_TYPE)
+    public String findAll(@RequestParam(required = false) String title,
+                          @RequestParam(defaultValue = "1") int page,
+                          @RequestParam(defaultValue = "20") int size) {
+        if (size > 100) {
+            return errorResult("Size不能大于100");
         }
-        var pageRequest = PageRequest.of(page - 1, size, Sort.by(Order.desc("id")));
-        var pageResult = historyRepository.findAll(pageRequest);
-        return pageResult(pageResult);
+        var result = historyRepository.findAll((root, query, cb) -> {
+            List<Predicate> predicates = new LinkedList<>();
+            if (!StringUtils.isAllBlank(title)) {
+                Arrays.stream(title.trim().split("\\s+")).forEach(text -> {
+                    predicates.add(cb.like(root.get("title"), "%" + text + "%"));
+                });
+            }
+            return query.where(predicates.toArray(Predicate[]::new)).getRestriction();
+        }, PageRequest.of(page - 1, size, Sort.by(Order.desc("id"))));
+        return pageResult(result);
     }
 
     @Transactional
