@@ -1,5 +1,6 @@
 package com.mingzuozhibi.modules.spider;
 
+import com.mingzuozhibi.commons.base.BaseEntity;
 import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import com.mingzuozhibi.commons.base.PageController;
 import com.mingzuozhibi.commons.logger.LoggerBind;
@@ -9,9 +10,9 @@ import com.mingzuozhibi.modules.vultr.TaskOfContent;
 import com.mingzuozhibi.modules.vultr.VultrContext;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -46,13 +47,11 @@ public class SpiderController extends PageController {
 
     @Transactional
     @GetMapping(value = "/api/spider/historys", produces = MEDIA_TYPE)
-    public String findAll(@RequestParam(required = false) String title,
-                          @RequestParam(defaultValue = "1") int page,
-                          @RequestParam(defaultValue = "20") int size) {
-        if (size > 100) {
+    public String findAll(@RequestParam(required = false) String title, Pageable pageable) {
+        if (pageable.getPageSize() > 100) {
             return errorResult("Size不能大于100");
         }
-        var result = historyRepository.findAll((root, query, cb) -> {
+        var spec = (Specification<History>) (root, query, cb) -> {
             List<Predicate> predicates = new LinkedList<>();
             if (!StringUtils.isAllBlank(title)) {
                 Arrays.stream(title.trim().split("\\s+")).forEach(text -> {
@@ -60,8 +59,9 @@ public class SpiderController extends PageController {
                 });
             }
             return query.where(predicates.toArray(Predicate[]::new)).getRestriction();
-        }, PageRequest.of(page - 1, size, Sort.by(Order.desc("id"))));
-        return pageResult(result);
+        };
+        var sort = Sort.sort(History.class).by(BaseEntity::getId).descending();
+        return pageResult(historyRepository.findAll(spec, pageRequest(pageable, sort)));
     }
 
     @Transactional
