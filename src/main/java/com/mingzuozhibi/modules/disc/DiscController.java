@@ -9,7 +9,8 @@ import com.mingzuozhibi.modules.spider.HistoryRepository;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,22 +41,24 @@ public class DiscController extends PageController {
     private HistoryRepository historyRepository;
 
     @GetMapping(value = "/api/discs", produces = MEDIA_TYPE)
-    public String findAll(@RequestParam(required = false) String title,
-                          @RequestParam(defaultValue = "1") int page,
-                          @RequestParam(defaultValue = "20") int size) {
-        var discs = discRepository.findAll((Specification<Disc>) (root, query, cb) -> {
+    public String findAll(@RequestParam(required = false) String title, Pageable pageable) {
+        if (pageable.getPageSize() > 100) {
+            return errorResult("Size不能大于100");
+        }
+        var spec = (Specification<Disc>) (root, query, cb) -> {
             List<Predicate> predicates = new LinkedList<>();
             if (title != null) {
-                Arrays.stream(title.split("\\s+")).forEach(text -> {
+                Arrays.stream(title.trim().split("\\s+")).forEach(text -> {
                     predicates.add(cb.or(
-                        cb.like(root.get("title"), "%" + text + "%"),
-                        cb.like(root.get("titlePc"), "%" + text + "%")
+                        cb.like(root.get("title"), "%" + text.trim() + "%"),
+                        cb.like(root.get("titlePc"), "%" + text.trim() + "%")
                     ));
                 });
             }
             return query.where(predicates.toArray(Predicate[]::new)).getRestriction();
-        }, PageRequest.of(page - 1, size));
-        return pageResult(discs.map(Disc::toJson));
+        };
+        var sort = Sort.sort(Disc.class).by(Disc::getId).descending();
+        return pageResult(discRepository.findAll(spec, pageRequest(pageable, sort)).map(Disc::toJson));
     }
 
     @GetMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
