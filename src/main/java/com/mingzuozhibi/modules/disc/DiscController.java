@@ -9,7 +9,8 @@ import com.mingzuozhibi.modules.spider.HistoryRepository;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,7 +42,10 @@ public class DiscController extends PageController {
 
     @GetMapping(value = "/api/discs", produces = MEDIA_TYPE)
     public String findAll(@RequestParam(required = false) String title, Pageable pageable) {
-        var specification = (Specification<Disc>) (root, query, cb) -> {
+        if (pageable.getPageSize() > 100) {
+            return errorResult("Size不能大于100");
+        }
+        var spec = (Specification<Disc>) (root, query, cb) -> {
             List<Predicate> predicates = new LinkedList<>();
             if (title != null) {
                 Arrays.stream(title.trim().split("\\s+")).forEach(text -> {
@@ -53,11 +57,8 @@ public class DiscController extends PageController {
             }
             return query.where(predicates.toArray(Predicate[]::new)).getRestriction();
         };
-
-        var pageRequest = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(),
-            pageable.getSortOr(Sort.sort(Disc.class).by(Disc::getId).descending()));
-
-        return pageResult(discRepository.findAll(specification, pageRequest).map(Disc::toJson));
+        var sort = Sort.sort(Disc.class).by(Disc::getId).descending();
+        return pageResult(discRepository.findAll(spec, pageRequest(pageable, sort)).map(Disc::toJson));
     }
 
     @GetMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
