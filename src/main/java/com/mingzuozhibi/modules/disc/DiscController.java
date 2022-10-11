@@ -46,10 +46,10 @@ public class DiscController extends PageController {
         var discs = discRepository.findAll((Specification<Disc>) (root, query, cb) -> {
             List<Predicate> predicates = new LinkedList<>();
             if (title != null) {
-                Arrays.stream(title.split("\\s+")).forEach(text -> {
+                Arrays.stream(title.trim().split("\\s+")).forEach(text -> {
                     predicates.add(cb.or(
-                        cb.like(root.get("title"), "%" + text + "%"),
-                        cb.like(root.get("titlePc"), "%" + text + "%")
+                        cb.like(root.get("title"), "%" + text.trim() + "%"),
+                        cb.like(root.get("titlePc"), "%" + text.trim() + "%")
                     ));
                 });
             }
