@@ -6,11 +6,12 @@ import org.springframework.data.domain.*;
 public abstract class PageController extends BaseController {
 
     protected <T> String pageResult(Page<T> page) {
-        var p = page.getPageable();
-        var pageSize = p.getPageSize();
-        var currentPage = p.getPageNumber() + 1;
-        var totalElements = page.getTotalElements();
-        return pageResult(page.getContent(), new ResultPage(pageSize, currentPage, totalElements));
+        var pageable = page.getPageable();
+        var resultPage = new ResultPage(
+            pageable.getPageSize(),
+            pageable.getPageNumber() + 1,
+            page.getTotalElements());
+        return pageResult(page.getContent(), resultPage);
     }
 
     protected PageRequest pageRequest(Pageable pageable, Sort defaultSort) {
