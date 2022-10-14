@@ -50,16 +50,29 @@ public class SpiderController extends PageController {
 
     @Transactional
     @GetMapping("/api/spider/historys")
-    public String findAll(@RequestParam(required = false) String title, Pageable pageable) {
+    public String findAll(@RequestParam(required = false) String asin,
+                          @RequestParam(required = false) String type,
+                          @RequestParam(required = false) String title,
+                          @RequestParam(required = false) Boolean tracked,
+                          Pageable pageable) {
         if (pageable.getPageSize() > 100) {
             return errorResult("Size不能大于100");
         }
         var spec = (Specification<History>) (root, query, cb) -> {
             List<Predicate> predicates = new LinkedList<>();
+            if (!StringUtils.isAllBlank(asin)) {
+                predicates.add(cb.equal(root.get("asin"), asin));
+            }
+            if (!StringUtils.isAllBlank(type)) {
+                predicates.add(cb.equal(root.get("type"), type));
+            }
             if (!StringUtils.isAllBlank(title)) {
                 Arrays.stream(title.trim().split("\\s+")).forEach(text -> {
                     predicates.add(cb.like(root.get("title"), "%" + text + "%"));
                 });
+            }
+            if (!Objects.isNull(tracked)) {
+                predicates.add(cb.equal(root.get("tracked"), tracked));
             }
             return query.where(predicates.toArray(Predicate[]::new)).getRestriction();
         };
