@@ -15,7 +15,7 @@ import java.util.List;
 @Slf4j
 public abstract class BaseController extends BaseSupport {
 
-    protected static final String MEDIA_TYPE = MediaType.APPLICATION_JSON_VALUE;
+    public static final String DEFAULT_TYPE = MediaType.APPLICATION_JSON_VALUE;
 
     @ResponseBody
     @ExceptionHandler

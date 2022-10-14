@@ -21,14 +21,16 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 
+import static com.mingzuozhibi.commons.base.BaseController.DEFAULT_TYPE;
 import static com.mingzuozhibi.commons.utils.MyTimeUtils.fmtDate;
 import static com.mingzuozhibi.modules.disc.DiscUtils.updateRank;
 import static com.mingzuozhibi.support.ChecksUtils.*;
 import static com.mingzuozhibi.support.ModifyUtils.*;
 
+@LoggerBind(Name.SERVER_USER)
 @Transactional
 @RestController
-@LoggerBind(Name.SERVER_USER)
+@RequestMapping(produces = DEFAULT_TYPE)
 public class DiscController extends PageController {
 
     @Autowired
@@ -40,14 +42,14 @@ public class DiscController extends PageController {
     @Autowired
     private HistoryRepository historyRepository;
 
-    @GetMapping(value = "/api/discs", produces = MEDIA_TYPE)
+    @GetMapping("/api/discs")
     public String findAll(@RequestParam(required = false) String title, Pageable pageable) {
         if (pageable.getPageSize() > 100) {
             return errorResult("Size不能大于100");
         }
         var spec = (Specification<Disc>) (root, query, cb) -> {
             List<Predicate> predicates = new LinkedList<>();
-            if (title != null) {
+            if (!StringUtils.isAllBlank(title)) {
                 Arrays.stream(title.trim().split("\\s+")).forEach(text -> {
                     predicates.add(cb.or(
                         cb.like(root.get("title"), "%" + text.trim() + "%"),
@@ -61,7 +63,7 @@ public class DiscController extends PageController {
         return pageResult(discRepository.findAll(spec, pageRequest(pageable, sort)).map(Disc::toJson));
     }
 
-    @GetMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
+    @GetMapping("/api/discs/{id}")
     public String findById(@PathVariable Long id) {
         var byId = discRepository.findById(id);
         if (byId.isEmpty()) {
@@ -70,7 +72,7 @@ public class DiscController extends PageController {
         return dataResult(byId.get().toJson());
     }
 
-    @GetMapping(value = "/api/discs/asin/{asin}", produces = MEDIA_TYPE)
+    @GetMapping("/api/discs/asin/{asin}")
     public String findByAsin(@PathVariable String asin) {
         var byAsin = discRepository.findByAsin(asin);
         if (byAsin.isEmpty()) {
@@ -79,7 +81,7 @@ public class DiscController extends PageController {
         return dataResult(byAsin.get().toJson());
     }
 
-    @GetMapping(value = "/api/discs/{id}/records", produces = MEDIA_TYPE)
+    @GetMapping("/api/discs/{id}/records")
     public String findRecords(@PathVariable Long id) {
         var byId = discRepository.findById(id);
         if (byId.isEmpty()) {
@@ -100,7 +102,7 @@ public class DiscController extends PageController {
     }
 
     @PreAuthorize("hasRole('BASIC')")
-    @PostMapping(value = "/api/discs", produces = MEDIA_TYPE)
+    @PostMapping("/api/discs")
     public String doCreate(@RequestBody CreateForm form) {
         var checks = runChecks(
             checkNotEmpty(form.asin, "ASIN"),
@@ -134,7 +136,7 @@ public class DiscController extends PageController {
     }
 
     @PreAuthorize("hasRole('BASIC')")
-    @PutMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
+    @PutMapping("/api/discs/{id}")
     public String doUpdate(@PathVariable Long id,
                            @RequestBody UpdateForm form) {
         var checks = runChecks(
@@ -172,7 +174,7 @@ public class DiscController extends PageController {
     }
 
     @PreAuthorize("hasRole('BASIC')")
-    @PatchMapping(value = "/api/discs/{id}", produces = MEDIA_TYPE)
+    @PatchMapping("/api/discs/{id}")
     public String doPatch(@PathVariable Long id, @RequestBody PatchForm form) {
         var byId = discRepository.findById(id);
         if (byId.isEmpty()) {

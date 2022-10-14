@@ -14,13 +14,16 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Comparator;
 import java.util.Objects;
 
+import static com.mingzuozhibi.commons.base.BaseController.DEFAULT_TYPE;
 import static com.mingzuozhibi.modules.disc.DiscUtils.*;
 import static com.mingzuozhibi.support.ChecksUtils.*;
 import static com.mingzuozhibi.support.ModifyUtils.*;
 import static java.util.Comparator.*;
 
-@RestController
 @LoggerBind(Name.SERVER_USER)
+@Transactional
+@RestController
+@RequestMapping(produces = DEFAULT_TYPE)
 public class GroupController extends BaseController {
 
     public static final Comparator<Group> GROUP_COMPARATOR = comparing(Group::isEnabled, reverseOrder())
@@ -34,7 +37,7 @@ public class GroupController extends BaseController {
     private GroupRepository groupRepository;
 
     @Transactional
-    @GetMapping(value = "/api/discGroups", produces = MEDIA_TYPE)
+    @GetMapping("/api/discGroups")
     public String findAll(@RequestParam(defaultValue = "top") String filter,
                           @RequestParam(defaultValue = "true") boolean withCount) {
         var array = new JsonArray();
@@ -53,7 +56,7 @@ public class GroupController extends BaseController {
     }
 
     @Transactional
-    @GetMapping(value = "/api/discGroups/key/{key}", produces = MEDIA_TYPE)
+    @GetMapping("/api/discGroups/key/{key}")
     public String findByKey(@PathVariable String key) {
         var byKey = groupRepository.findByKey(key);
         if (byKey.isEmpty()) {
@@ -63,7 +66,7 @@ public class GroupController extends BaseController {
     }
 
     @Transactional
-    @GetMapping(value = "/api/discGroups/asin/{asin}", produces = MEDIA_TYPE)
+    @GetMapping("/api/discGroups/asin/{asin}")
     public String findByAsin(@PathVariable String asin) {
         return dataResult(groupRepository.findByAsin(asin));
     }
@@ -78,7 +81,7 @@ public class GroupController extends BaseController {
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
-    @PostMapping(value = "/api/discGroups", produces = MEDIA_TYPE)
+    @PostMapping("/api/discGroups")
     public String doCreate(@RequestBody EntityForm form) {
         var checks = runChecks(
             checkNotEmpty(form.key, "列表索引"),
@@ -100,7 +103,7 @@ public class GroupController extends BaseController {
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
-    @PutMapping(value = "/api/discGroups/{id}", produces = MEDIA_TYPE)
+    @PutMapping("/api/discGroups/{id}")
     public String doUpdate(@PathVariable("id") Long id,
                            @RequestBody EntityForm form) {
         var checks = runChecks(
@@ -138,7 +141,7 @@ public class GroupController extends BaseController {
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping(value = "/api/discGroups/{id}", produces = MEDIA_TYPE)
+    @DeleteMapping("/api/discGroups/{id}")
     public String doDelete(@PathVariable("id") Long id) {
         var byId = groupRepository.findById(id);
         if (byId.isEmpty()) {
@@ -159,7 +162,7 @@ public class GroupController extends BaseController {
     }
 
     @Transactional
-    @GetMapping(value = "/api/discGroups/key/{key}/discs", produces = MEDIA_TYPE)
+    @GetMapping("/api/discGroups/key/{key}/discs")
     public String findDiscs(@PathVariable String key) {
         var byKey = groupRepository.findByKey(key);
         if (byKey.isEmpty()) {
@@ -172,7 +175,7 @@ public class GroupController extends BaseController {
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
-    @PostMapping(value = "/api/discGroups/{gid}/discs/{did}", produces = MEDIA_TYPE)
+    @PostMapping("/api/discGroups/{gid}/discs/{did}")
     public synchronized String pushDiscs(@PathVariable Long gid,
                                          @PathVariable Long did) {
         var byGid = groupRepository.findById(gid);
@@ -198,7 +201,7 @@ public class GroupController extends BaseController {
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
-    @DeleteMapping(value = "/api/discGroups/{gid}/discs/{did}", produces = MEDIA_TYPE)
+    @DeleteMapping("/api/discGroups/{gid}/discs/{did}")
     public synchronized String dropDiscs(@PathVariable("gid") Long gid,
                                          @PathVariable("did") Long did) {
         var byGid = groupRepository.findById(gid);

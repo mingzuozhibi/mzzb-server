@@ -22,12 +22,15 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.mingzuozhibi.commons.base.BaseController.DEFAULT_TYPE;
 import static com.mingzuozhibi.commons.base.BaseKeys.FETCH_TASK_START;
 import static com.mingzuozhibi.support.ChecksUtils.paramNotExists;
 import static com.mingzuozhibi.support.ModifyUtils.*;
 
-@RestController
 @LoggerBind(Name.SERVER_USER)
+@Transactional
+@RestController
+@RequestMapping(produces = DEFAULT_TYPE)
 public class SpiderController extends PageController {
 
     @Autowired
@@ -46,17 +49,30 @@ public class SpiderController extends PageController {
     private HistoryRepository historyRepository;
 
     @Transactional
-    @GetMapping(value = "/api/spider/historys", produces = MEDIA_TYPE)
-    public String findAll(@RequestParam(required = false) String title, Pageable pageable) {
+    @GetMapping("/api/spider/historys")
+    public String findAll(@RequestParam(required = false) String asin,
+                          @RequestParam(required = false) String type,
+                          @RequestParam(required = false) String title,
+                          @RequestParam(required = false) Boolean tracked,
+                          Pageable pageable) {
         if (pageable.getPageSize() > 100) {
             return errorResult("Size不能大于100");
         }
         var spec = (Specification<History>) (root, query, cb) -> {
             List<Predicate> predicates = new LinkedList<>();
+            if (!StringUtils.isAllBlank(asin)) {
+                predicates.add(cb.equal(root.get("asin"), asin));
+            }
+            if (!StringUtils.isAllBlank(type)) {
+                predicates.add(cb.equal(root.get("type"), type));
+            }
             if (!StringUtils.isAllBlank(title)) {
                 Arrays.stream(title.trim().split("\\s+")).forEach(text -> {
                     predicates.add(cb.like(root.get("title"), "%" + text + "%"));
                 });
+            }
+            if (!Objects.isNull(tracked)) {
+                predicates.add(cb.equal(root.get("tracked"), tracked));
             }
             return query.where(predicates.toArray(Predicate[]::new)).getRestriction();
         };
@@ -66,14 +82,14 @@ public class SpiderController extends PageController {
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
-    @GetMapping(value = "/api/spider/fetchCount", produces = MEDIA_TYPE)
+    @GetMapping("/api/spider/fetchCount")
     public String fetchCount() {
         return dataResult(discRepository.countActiveDiscs());
     }
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
-    @GetMapping(value = "/api/spider/searchDisc/{asin}", produces = MEDIA_TYPE)
+    @GetMapping("/api/spider/searchDisc/{asin}")
     public String searchDisc(@PathVariable String asin) {
         var byAsin = discRepository.findByAsin(asin);
         if (byAsin.isPresent()) {
@@ -100,7 +116,7 @@ public class SpiderController extends PageController {
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
-    @PostMapping(value = "/api/spider/computePt/{id}", produces = MEDIA_TYPE)
+    @PostMapping("/api/spider/computePt/{id}")
     public String computePt(@PathVariable Long id) {
         var byId = discRepository.findById(id);
         if (byId.isEmpty()) {
@@ -115,7 +131,7 @@ public class SpiderController extends PageController {
     }
 
     @Transactional
-    @GetMapping(value = "/admin/setDisable/{disable}")
+    @GetMapping("/admin/setDisable/{disable}")
     public void setDisable(@PathVariable("disable") Boolean next) {
         var bean = vultrContext.getDisable();
         var prev = bean.getValue();
@@ -125,7 +141,7 @@ public class SpiderController extends PageController {
     }
 
     @Transactional
-    @GetMapping(value = "/admin/sendTasks")
+    @GetMapping("/admin/sendTasks")
     public void sendTasks() {
         var tasks = discRepository.findNeedUpdate().stream()
             .map(disc -> new TaskOfContent(disc.getAsin(), disc.getThisRank()))
