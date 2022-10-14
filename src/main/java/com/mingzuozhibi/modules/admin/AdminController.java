@@ -7,7 +7,6 @@ import com.mingzuozhibi.commons.utils.EnvLoader;
 import com.mingzuozhibi.modules.disc.DiscRepository;
 import com.mingzuozhibi.modules.record.RecordCompute;
 import com.mingzuozhibi.modules.vultr.VultrService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,12 +14,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
+import static com.mingzuozhibi.commons.base.BaseController.DEFAULT_TYPE;
 import static com.mingzuozhibi.commons.utils.MyTimeUtils.fmtDate;
 import static com.mingzuozhibi.commons.utils.ThreadUtils.runWithDaemon;
 
-@Slf4j
-@RestController
 @LoggerBind(Name.SERVER_CORE)
+@Transactional
+@RestController
+@RequestMapping(produces = DEFAULT_TYPE)
 public class AdminController extends BaseController {
 
     @Autowired
@@ -36,7 +37,7 @@ public class AdminController extends BaseController {
     private DiscRepository discRepository;
 
     @Scheduled(cron = "0 0 * * * ?")
-    @GetMapping(value = "/admin/startAutoTask", produces = MEDIA_TYPE)
+    @GetMapping("/admin/startAutoTask")
     public void startAutoTask() {
         runWithDaemon(bind, "每小时自动任务", () -> {
             adminService.deleteExpiredRemembers();
@@ -47,10 +48,10 @@ public class AdminController extends BaseController {
     }
 
     @Scheduled(cron = "0 2 0/6 * * ?")
-    @GetMapping(value = "/admin/createServer", produces = MEDIA_TYPE)
+    @GetMapping("/admin/createServer")
     public void createServer() {
         if (EnvLoader.isDevMode()) {
-            log.info("In development mode, stop createServer()");
+            bind.info("In development mode, stop createServer()");
             return;
         }
         runWithDaemon(bind, "创建抓取服务器", () -> {
@@ -60,13 +61,13 @@ public class AdminController extends BaseController {
     }
 
     @Transactional
-    @GetMapping(value = "/admin/reComputeDate/{date}", produces = MEDIA_TYPE)
+    @GetMapping("/admin/reComputeDate/{date}")
     public void reComputeDate(@PathVariable String date) {
         recordCompute.computeDate(LocalDate.parse(date, fmtDate));
     }
 
     @Transactional
-    @GetMapping(value = "/admin/reComputeDisc/{id}", produces = MEDIA_TYPE)
+    @GetMapping("/admin/reComputeDisc/{id}")
     public void reComputeDisc(@PathVariable Long id) {
         discRepository.findById(id).ifPresent(disc -> {
             recordCompute.computeDisc(disc);

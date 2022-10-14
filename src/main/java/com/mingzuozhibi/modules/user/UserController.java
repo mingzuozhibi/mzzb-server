@@ -12,11 +12,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
 
+import static com.mingzuozhibi.commons.base.BaseController.DEFAULT_TYPE;
 import static com.mingzuozhibi.support.ChecksUtils.*;
 import static com.mingzuozhibi.support.ModifyUtils.*;
 
-@RestController
 @LoggerBind(Name.SERVER_USER)
+@Transactional
+@RestController
+@RequestMapping(produces = DEFAULT_TYPE)
 public class UserController extends BaseController {
 
     @Autowired
@@ -27,14 +30,14 @@ public class UserController extends BaseController {
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping(value = "/api/users", produces = MEDIA_TYPE)
+    @GetMapping("/api/users")
     public String findAll() {
         return dataResult(userRepository.findAll());
     }
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping(value = "/api/users/{id}", produces = MEDIA_TYPE)
+    @GetMapping("/api/users/{id}")
     public String findById(@PathVariable Long id) {
         var byId = userRepository.findById(id);
         if (byId.isEmpty()) {
@@ -52,7 +55,7 @@ public class UserController extends BaseController {
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(value = "/api/users", produces = MEDIA_TYPE)
+    @PostMapping("/api/users")
     public String createUser(@RequestBody EntityForm form) {
         var checks = runChecks(
             checkNotEmpty(form.username, "用户名称"),
@@ -74,7 +77,7 @@ public class UserController extends BaseController {
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping(value = "/api/users/{id}", produces = MEDIA_TYPE)
+    @PutMapping("/api/users/{id}")
     public String updateUser(@PathVariable Long id,
                              @RequestBody EntityForm form) {
         var checks = runChecks(

@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import static com.mingzuozhibi.commons.base.BaseController.DEFAULT_TYPE;
 import static com.mingzuozhibi.commons.utils.MyTimeUtils.fmtDateTime;
 import static com.mingzuozhibi.commons.utils.sdk.RealIpUtils.findRealIp;
 import static com.mingzuozhibi.modules.user.SessionUtils.*;
@@ -19,7 +20,9 @@ import static com.mingzuozhibi.support.ChecksUtils.*;
 import static com.mingzuozhibi.support.FileIoUtils.writeLine;
 
 @Slf4j
+@Transactional
 @RestController
+@RequestMapping(produces = DEFAULT_TYPE)
 public class SessionController extends BaseController {
 
     @Autowired
@@ -30,7 +33,7 @@ public class SessionController extends BaseController {
 
     @Transactional
     @PreAuthorize("hasRole('BASIC')")
-    @GetMapping(value = "/api/session/current", produces = MEDIA_TYPE)
+    @GetMapping("/api/session/current")
     public String sessionCurrent() {
         var optional = findAuthentication();
         if (optional.isPresent()) {
@@ -44,7 +47,7 @@ public class SessionController extends BaseController {
     }
 
     @Transactional
-    @GetMapping(value = "/api/session", produces = MEDIA_TYPE)
+    @GetMapping("/api/session")
     public String sessionQuery() {
         var optional = findAuthentication();
         if (optional.isEmpty()) {
@@ -66,7 +69,7 @@ public class SessionController extends BaseController {
     }
 
     @Transactional
-    @PostMapping(value = "/api/session", produces = MEDIA_TYPE)
+    @PostMapping("/api/session")
     public String sessionLogin(@RequestBody LoginForm form) {
         var checks = runChecks(
             checkNotEmpty(form.username, "用户名称"),
@@ -101,7 +104,7 @@ public class SessionController extends BaseController {
     }
 
     @Transactional
-    @DeleteMapping(value = "/api/session", produces = MEDIA_TYPE)
+    @DeleteMapping("/api/session")
     public String sessionLogout() {
         var sessionId = getSessionIdFromHttpSession();
         sessionService.cleanSession(sessionId);

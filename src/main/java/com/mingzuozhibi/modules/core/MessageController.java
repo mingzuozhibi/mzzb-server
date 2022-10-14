@@ -13,16 +13,18 @@ import org.springframework.web.bind.annotation.*;
 import java.time.*;
 import java.util.List;
 
+import static com.mingzuozhibi.commons.base.BaseController.DEFAULT_TYPE;
 import static com.mingzuozhibi.commons.utils.MyTimeUtils.toInstant;
 
 @Transactional
 @RestController
+@RequestMapping(produces = DEFAULT_TYPE)
 public class MessageController extends PageController {
 
     @Autowired
     private MessageRepository messageRepository;
 
-    @GetMapping(value = "/api/messages/{name}", produces = MEDIA_TYPE)
+    @GetMapping("/api/messages/{name}")
     public String findAll(@PathVariable Name name,
                           @RequestParam(required = false) String search,
                           @RequestParam(required = false) List<Type> types,
