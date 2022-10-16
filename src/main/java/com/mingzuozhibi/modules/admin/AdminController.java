@@ -60,13 +60,11 @@ public class AdminController extends BaseController {
         });
     }
 
-    @Transactional
     @GetMapping("/admin/reComputeDate/{date}")
     public void reComputeDate(@PathVariable String date) {
         recordCompute.computeDate(LocalDate.parse(date, fmtDate));
     }
 
-    @Transactional
     @GetMapping("/admin/reComputeDisc/{id}")
     public void reComputeDisc(@PathVariable Long id) {
         discRepository.findById(id).ifPresent(disc -> {

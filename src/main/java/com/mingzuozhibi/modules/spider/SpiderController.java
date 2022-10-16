@@ -48,7 +48,6 @@ public class SpiderController extends PageController {
     @Autowired
     private HistoryRepository historyRepository;
 
-    @Transactional
     @GetMapping("/api/spider/historys")
     public String findAll(@RequestParam(required = false) String asin,
                           @RequestParam(required = false) String type,
@@ -80,14 +79,12 @@ public class SpiderController extends PageController {
         return pageResult(historyRepository.findAll(spec, pageRequest(pageable, sort)));
     }
 
-    @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping("/api/spider/fetchCount")
     public String fetchCount() {
         return dataResult(discRepository.countActiveDiscs());
     }
 
-    @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping("/api/spider/searchDisc/{asin}")
     public String searchDisc(@PathVariable String asin) {
@@ -114,7 +111,6 @@ public class SpiderController extends PageController {
         return dataResult(disc.toJson());
     }
 
-    @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping("/api/spider/computePt/{id}")
     public String computePt(@PathVariable Long id) {
@@ -130,7 +126,6 @@ public class SpiderController extends PageController {
         return dataResult("compute: " + pt1 + "->" + pt2);
     }
 
-    @Transactional
     @GetMapping("/admin/setDisable/{disable}")
     public void setDisable(@PathVariable("disable") Boolean next) {
         var bean = vultrContext.getDisable();
@@ -140,7 +135,6 @@ public class SpiderController extends PageController {
             .notify("Change Vultr Disable = %b".formatted(next));
     }
 
-    @Transactional
     @GetMapping("/admin/sendTasks")
     public void sendTasks() {
         var tasks = discRepository.findNeedUpdate().stream()
