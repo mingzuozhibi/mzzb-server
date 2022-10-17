@@ -52,13 +52,13 @@ public class SpiderController extends PageController {
         }
         var spec = (Specification<History>) (root, query, cb) -> {
             List<Predicate> predicates = new LinkedList<>();
-            if (!StringUtils.isAllBlank(asin)) {
+            if (!StringUtils.isBlank(asin)) {
                 predicates.add(cb.equal(root.get("asin"), asin));
             }
-            if (!StringUtils.isAllBlank(type)) {
+            if (!StringUtils.isBlank(type)) {
                 predicates.add(cb.equal(root.get("type"), type));
             }
-            if (!StringUtils.isAllBlank(title)) {
+            if (!StringUtils.isBlank(title)) {
                 Arrays.stream(title.trim().split("\\s+")).forEach(text -> {
                     predicates.add(cb.like(root.get("title"), "%" + text + "%"));
                 });
