@@ -134,8 +134,8 @@ public class VultrService extends BaseController {
     }
 
     private void waitForDelete() {
-        ThreadUtils.sleepSeconds(60);
         bind.debug("等待60秒以重新开始任务");
+        ThreadUtils.sleepSeconds(60);
     }
 
     private boolean createInstance() {
