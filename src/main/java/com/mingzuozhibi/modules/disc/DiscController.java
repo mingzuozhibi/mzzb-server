@@ -49,7 +49,7 @@ public class DiscController extends PageController {
         }
         var spec = (Specification<Disc>) (root, query, cb) -> {
             List<Predicate> predicates = new LinkedList<>();
-            if (!StringUtils.isAllBlank(title)) {
+            if (!StringUtils.isBlank(title)) {
                 Arrays.stream(title.trim().split("\\s+")).forEach(text -> {
                     predicates.add(cb.or(
                         cb.like(root.get("title"), "%" + text.trim() + "%"),

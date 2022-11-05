@@ -31,7 +31,6 @@ public class SessionController extends BaseController {
     @Autowired
     private UserRepository userRepository;
 
-    @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping("/api/session/current")
     public String sessionCurrent() {
@@ -46,7 +45,6 @@ public class SessionController extends BaseController {
         return errorResult("登入状态异常");
     }
 
-    @Transactional
     @GetMapping("/api/session")
     public String sessionQuery() {
         var optional = findAuthentication();
@@ -68,7 +66,6 @@ public class SessionController extends BaseController {
         private String password;
     }
 
-    @Transactional
     @PostMapping("/api/session")
     public String sessionLogin(@RequestBody LoginForm form) {
         var checks = runChecks(
@@ -103,7 +100,6 @@ public class SessionController extends BaseController {
         });
     }
 
-    @Transactional
     @DeleteMapping("/api/session")
     public String sessionLogout() {
         var sessionId = getSessionIdFromHttpSession();

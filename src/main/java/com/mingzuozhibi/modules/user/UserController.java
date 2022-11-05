@@ -28,14 +28,12 @@ public class UserController extends BaseController {
     @Autowired
     private RememberRepository rememberRepository;
 
-    @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/api/users")
     public String findAll() {
         return dataResult(userRepository.findAll());
     }
 
-    @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/api/users/{id}")
     public String findById(@PathVariable Long id) {
@@ -53,7 +51,6 @@ public class UserController extends BaseController {
         private Boolean enabled;
     }
 
-    @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/api/users")
     public String createUser(@RequestBody EntityForm form) {
@@ -75,7 +72,6 @@ public class UserController extends BaseController {
         return dataResult(user);
     }
 
-    @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/api/users/{id}")
     public String updateUser(@PathVariable Long id,

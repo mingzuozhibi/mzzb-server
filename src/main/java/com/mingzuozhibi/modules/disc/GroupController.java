@@ -36,7 +36,6 @@ public class GroupController extends BaseController {
     @Autowired
     private GroupRepository groupRepository;
 
-    @Transactional
     @GetMapping("/api/discGroups")
     public String findAll(@RequestParam(defaultValue = "top") String filter,
                           @RequestParam(defaultValue = "true") boolean withCount) {
@@ -55,7 +54,6 @@ public class GroupController extends BaseController {
         }
     }
 
-    @Transactional
     @GetMapping("/api/discGroups/key/{key}")
     public String findByKey(@PathVariable String key) {
         var byKey = groupRepository.findByKey(key);
@@ -65,7 +63,6 @@ public class GroupController extends BaseController {
         return dataResult(byKey.get());
     }
 
-    @Transactional
     @GetMapping("/api/discGroups/asin/{asin}")
     public String findByAsin(@PathVariable String asin) {
         return dataResult(groupRepository.findByAsin(asin));
@@ -79,7 +76,6 @@ public class GroupController extends BaseController {
         private ViewType viewType;
     }
 
-    @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping("/api/discGroups")
     public String doCreate(@RequestBody EntityForm form) {
@@ -101,7 +97,6 @@ public class GroupController extends BaseController {
         return dataResult(group);
     }
 
-    @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PutMapping("/api/discGroups/{id}")
     public String doUpdate(@PathVariable("id") Long id,
@@ -139,7 +134,6 @@ public class GroupController extends BaseController {
         return dataResult(group);
     }
 
-    @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/api/discGroups/{id}")
     public String doDelete(@PathVariable("id") Long id) {
@@ -161,7 +155,6 @@ public class GroupController extends BaseController {
         return dataResult(group);
     }
 
-    @Transactional
     @GetMapping("/api/discGroups/key/{key}/discs")
     public String findDiscs(@PathVariable String key) {
         var byKey = groupRepository.findByKey(key);
@@ -173,7 +166,6 @@ public class GroupController extends BaseController {
         return dataResult(object);
     }
 
-    @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping("/api/discGroups/{gid}/discs/{did}")
     public synchronized String pushDiscs(@PathVariable Long gid,
@@ -199,7 +191,6 @@ public class GroupController extends BaseController {
         return dataResult(disc.toJson());
     }
 
-    @Transactional
     @PreAuthorize("hasRole('BASIC')")
     @DeleteMapping("/api/discGroups/{gid}/discs/{did}")
     public synchronized String dropDiscs(@PathVariable("gid") Long gid,
