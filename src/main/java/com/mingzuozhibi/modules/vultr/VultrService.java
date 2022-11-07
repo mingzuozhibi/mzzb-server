@@ -146,6 +146,7 @@ public class VultrService extends BaseController {
     }
 
     private void tryRedoTask() {
+        vultrContext.getStartted().setValue(true);
         if (deleteInstance()) {
             var retry = vultrContext.getRetry().getValue();
             if (retry > 0) {
