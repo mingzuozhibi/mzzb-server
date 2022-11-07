@@ -81,6 +81,10 @@ public class VultrContext extends BaseSupport {
         return REGIONS.get(regionIdx).getCode();
     }
 
+    public String findCode(int index) {
+        return REGIONS.get(index % REGIONS.size()).getCode();
+    }
+
     public void printStatus(JsonObject instance) {
         var taskCount = this.taskCount.getValue();
         var doneCount = this.doneCount.getValue();
@@ -108,7 +112,7 @@ public class VultrContext extends BaseSupport {
         return formatRegion(regionIdx, REGIONS.get(regionIdx));
     }
 
-    private String formatRegion(String code) {
+    public String formatRegion(String code) {
         for (var index = 0; index < REGIONS.size(); index++) {
             if (Objects.equals(REGIONS.get(index).getCode(), code)) {
                 return formatRegion(index, REGIONS.get(index));
