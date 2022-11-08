@@ -53,7 +53,7 @@ public class AdminController extends BaseController {
         });
     }
 
-    @Scheduled(cron = "0 2 0/6 * * ?")
+    @Scheduled(cron = "0 2 0/12 * * ?")
     @GetMapping("/admin/createServer")
     public void createServer() {
         if (EnvLoader.isDevMode()) {
