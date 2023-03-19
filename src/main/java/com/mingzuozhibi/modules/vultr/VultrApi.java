@@ -19,7 +19,8 @@ import static com.mingzuozhibi.modules.vultr.sdk.VultrJsoup.*;
 @LoggerBind(Name.SERVER_CORE)
 public class VultrApi extends BaseSupport {
 
-    private static final String TARGET = "BCloud";
+    private static final String PRO_LABEL = "BCloud";
+    private static final String DEV_LABEL = "Dev";
 
     @Value("${bcloud.apikey}")
     private String apiKey;
@@ -29,7 +30,8 @@ public class VultrApi extends BaseSupport {
         VultrJsoup.init(bind, apiKey);
     }
 
-    public boolean createInstance(String code, String snapshotId, String firewallId) throws Exception {
+    public boolean createInstance(String code, String snapshotId, String firewallId, boolean isDev) throws Exception {
+        var label = isDev ? DEV_LABEL : PRO_LABEL;
         var payload = new JsonObject();
         payload.addProperty("region", code);
         payload.addProperty("plan", "vc2-1c-1gb");
@@ -37,8 +39,8 @@ public class VultrApi extends BaseSupport {
         payload.addProperty("backups", "disabled");
         payload.addProperty("enable_ipv6", false);
         payload.addProperty("firewall_group_id", firewallId);
-        payload.addProperty("label", TARGET);
-        payload.addProperty("hostname", TARGET);
+        payload.addProperty("label", label);
+        payload.addProperty("hostname", label);
         var body = payload.toString();
         bind.debug("服务器参数 = %s".formatted(body));
 
@@ -70,7 +72,7 @@ public class VultrApi extends BaseSupport {
         var instances = root.get("instances").getAsJsonArray();
         for (var e : instances) {
             var instance = e.getAsJsonObject();
-            if (Objects.equals(instance.get("label").getAsString(), TARGET)) {
+            if (Objects.equals(instance.get("label").getAsString(), PRO_LABEL)) {
                 return Optional.of(instance);
             }
         }
@@ -83,7 +85,7 @@ public class VultrApi extends BaseSupport {
         var snapshots = root.get("snapshots").getAsJsonArray();
         for (var e : snapshots) {
             var snapshot = e.getAsJsonObject();
-            if (Objects.equals(snapshot.get("description").getAsString(), TARGET)) {
+            if (Objects.equals(snapshot.get("description").getAsString(), PRO_LABEL)) {
                 return Optional.ofNullable(snapshot.get("id").getAsString());
             }
         }
@@ -96,7 +98,7 @@ public class VultrApi extends BaseSupport {
         var firewalls = root.get("firewall_groups").getAsJsonArray();
         for (var e : firewalls) {
             var firewall = e.getAsJsonObject();
-            if (Objects.equals(firewall.get("description").getAsString(), TARGET)) {
+            if (Objects.equals(firewall.get("description").getAsString(), PRO_LABEL)) {
                 return Optional.ofNullable(firewall.get("id").getAsString());
             }
         }

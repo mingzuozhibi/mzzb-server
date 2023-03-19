@@ -110,6 +110,33 @@ public class VultrService extends BaseController {
         }
     }
 
+    public boolean createDevServer(Integer index) {
+        try {
+            bind.notify("开始创建测试服务器");
+
+            bind.debug("正在获取快照ID");
+            var snapshotId = vultrApi.getSnapshotId();
+            if (snapshotId.isEmpty()) {
+                bind.warning("未能获取快照ID");
+                return false;
+            }
+
+            bind.debug("正在获取防火墙策略ID");
+            var firewallId = vultrApi.getFirewallId();
+            if (firewallId.isEmpty()) {
+                bind.warning("未能获取防火墙策略ID");
+                return false;
+            }
+
+            var code = vultrContext.findCode(index);
+            bind.debug("Create Dev Instance Region = %s".formatted(vultrContext.formatRegion(code)));
+            return vultrApi.createInstance(code, snapshotId.get(), firewallId.get(), true);
+        } catch (Exception e) {
+            bind.error("创建测试服务器异常：%s".formatted(e));
+            return false;
+        }
+    }
+
     public void setStartted(boolean startted) {
         vultrContext.getStartted().setValue(startted);
     }
@@ -119,6 +146,7 @@ public class VultrService extends BaseController {
     }
 
     private void tryRedoTask() {
+        vultrContext.getStartted().setValue(true);
         if (deleteInstance()) {
             var retry = vultrContext.getRetry().getValue();
             if (retry > 0) {
@@ -168,7 +196,7 @@ public class VultrService extends BaseController {
             }
 
             bind.debug("This Vultr Instance Region = %s".formatted(vultrContext.formatRegion()));
-            return vultrApi.createInstance(vultrContext.nextCode(), snapshotId.get(), firewallId.get());
+            return vultrApi.createInstance(vultrContext.nextCode(), snapshotId.get(), firewallId.get(), false);
         } catch (Exception e) {
             bind.error("创建服务器异常：%s".formatted(e));
             return false;

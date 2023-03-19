@@ -53,7 +53,7 @@ public class AdminController extends BaseController {
         });
     }
 
-    @Scheduled(cron = "0 2 0/6 * * ?")
+    @Scheduled(cron = "0 2 0/12 * * ?")
     @GetMapping("/admin/createServer")
     public void createServer() {
         if (EnvLoader.isDevMode()) {
@@ -79,22 +79,30 @@ public class AdminController extends BaseController {
     }
 
     @GetMapping("/admin/setDisable/{disable}")
-    public void setDisable(@PathVariable("disable") Boolean next) {
+    public String setDisable(@PathVariable("disable") Boolean next) {
         var bean = vultrContext.getDisable();
         var prev = bean.getValue();
         bean.setValue(next);
         if (!Objects.equals(prev, next)) {
             bind.notify("Change Vultr Disable = %b".formatted(next));
         }
+        return "Disable vlltr update %b".formatted(next);
     }
 
     @GetMapping("/admin/sendTasks")
-    public void sendTasks() {
+    public String sendTasks() {
         var tasks = discRepository.findNeedUpdate().stream()
             .map(disc -> new TaskOfContent(disc.getAsin(), disc.getThisRank()))
             .collect(Collectors.toList());
         amqpSender.send(FETCH_TASK_START, gson.toJson(tasks));
         bind.info("JMS -> %s size=%d".formatted(FETCH_TASK_START, tasks.size()));
+        return "Send tasks count %d".formatted(tasks.size());
+    }
+
+    @GetMapping("/admin/createDev/{index}")
+    public String createDev(@PathVariable Integer index) {
+        var success = vultrService.createDevServer(index);
+        return "Create dev server %s".formatted(success ? "success" : "failed");
     }
 
 }
