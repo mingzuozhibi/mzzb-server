@@ -49,4 +49,14 @@ public interface GroupRepository extends JpaRepository<Group, Long>, JpaSpecific
         });
     }
 
+    @Query(value = "Select g.key " +
+        "From Group g " +
+        "Order By g.id Desc")
+    List<String> listKeys();
+
+    @Query(value = "Select g.title " +
+        "From Group g " +
+        "Order By g.id Desc")
+    List<String> listTitles();
+
 }
