@@ -1,6 +1,7 @@
 package com.mingzuozhibi.modules.disc;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.mingzuozhibi.commons.base.BaseController;
 import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import com.mingzuozhibi.commons.logger.LoggerBind;
@@ -15,6 +16,7 @@ import java.util.Comparator;
 import java.util.Objects;
 
 import static com.mingzuozhibi.commons.base.BaseController.DEFAULT_TYPE;
+import static com.mingzuozhibi.commons.gson.GsonUtils.buildArray;
 import static com.mingzuozhibi.modules.disc.DiscUtils.*;
 import static com.mingzuozhibi.support.ChecksUtils.*;
 import static com.mingzuozhibi.support.ModifyUtils.*;
@@ -35,6 +37,14 @@ public class GroupController extends BaseController {
 
     @Autowired
     private GroupRepository groupRepository;
+
+    @GetMapping("/api/discGroups/createMeta")
+    public String createMeta() {
+        var meta = new JsonObject();
+        meta.add("keys", buildArray(groupRepository.listKeys()));
+        meta.add("titles", buildArray(groupRepository.listTitles()));
+        return dataResult(meta);
+    }
 
     @GetMapping("/api/discGroups")
     public String findAll(@RequestParam(defaultValue = "top") String filter,
