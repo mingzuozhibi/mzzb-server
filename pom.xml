@@ -21,6 +21,7 @@
     <properties>
         <java.version>17</java.version>
         <app.profiles>dev</app.profiles>
+        <snakeyaml.version>2.0</snakeyaml.version>
     </properties>
 
     <dependencies>
