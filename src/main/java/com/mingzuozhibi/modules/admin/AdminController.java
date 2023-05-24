@@ -53,7 +53,7 @@ public class AdminController extends BaseController {
         });
     }
 
-    @Scheduled(cron = "0 2 0/12 * * ?")
+    @Scheduled(cron = "0 2 0 * * ?")
     @GetMapping("/admin/createServer")
     public void createServer() {
         if (EnvLoader.isDevMode()) {
@@ -61,7 +61,7 @@ public class AdminController extends BaseController {
             return;
         }
         runWithDaemon(bind, "创建抓取服务器", () -> {
-            vultrService.setRetry(1);
+            vultrService.setRetry(0);
             vultrService.createServer();
         });
     }
