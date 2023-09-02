@@ -4,6 +4,7 @@ import com.mingzuozhibi.commons.base.BaseKeys.Name;
 import com.mingzuozhibi.commons.base.PageController;
 import com.mingzuozhibi.commons.logger.LoggerBind;
 import com.mingzuozhibi.modules.disc.Disc.DiscType;
+import com.mingzuozhibi.modules.record.RecordCompute;
 import com.mingzuozhibi.modules.record.RecordService;
 import com.mingzuozhibi.modules.spider.HistoryRepository;
 import lombok.Setter;
@@ -35,6 +36,9 @@ public class DiscController extends PageController {
 
     @Autowired
     private RecordService recordService;
+
+    @Autowired
+    private RecordCompute recordCompute;
 
     @Autowired
     private DiscRepository discRepository;
@@ -183,6 +187,7 @@ public class DiscController extends PageController {
         var disc = byId.get();
         if (form.rank != null && !(Objects.equals(form.rank, disc.getThisRank()))) {
             updateRank(disc, form.rank, Instant.now());
+            recordCompute.computeDisc(disc);
             amqpSender.bind(Name.DEFAULT).debug(logUpdate("碟片排名",
                 disc.getPrevRank(), disc.getThisRank(), disc.getLogName()));
         }
